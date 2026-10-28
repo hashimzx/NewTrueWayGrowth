@@ -78,7 +78,11 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
   const [countryOfResidence, setCountryOfResidence] = useState('United Kingdom');
   const [course, setCourse] = useState(defaultCourse);
 
-  // Card Payment Details (Replaced old bank accounts)
+  // Payment Method Selection: 'card' or 'paypal'
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const [paypalEmail, setPaypalEmail] = useState('');
+
+  // Card Payment Details
   const [cardHolder, setCardHolder] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -112,7 +116,7 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
 
   const handleWhatsAppDirect = () => {
     const text = encodeURIComponent(
-      `Assalam-o-Alaikum True Way Quran Admissions,\n\nI have enrolled in "${course}".\nName: ${firstName || 'Student'} ${lastName}\nCountry: ${countryOfResidence}\nPhone: ${phone}\nEmail: ${email}\nCardholder: ${cardHolder || firstName}`
+      `Assalam-o-Alaikum True Way Quran Admissions,\n\nI have enrolled in "${course}".\nPayment Method: ${paymentMethod === 'card' ? 'Credit/Debit Card' : 'PayPal'}\nName: ${firstName || 'Student'} ${lastName}\nCountry: ${countryOfResidence}\nPhone: ${phone}\nEmail: ${email}\nBilling/Payer: ${paymentMethod === 'card' ? (cardHolder || firstName) : (paypalEmail || email)}`
     );
     window.open(`https://wa.me/923068959085?text=${text}`, '_blank');
   };
@@ -210,106 +214,172 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
                   </p>
                 </div>
 
-                {/* Credit / Debit Card Payment Section */}
-                <div className="bg-white border-2 border-[#6B1B7E]/25 rounded-2xl p-5 space-y-4 shadow-sm">
-                  <div className="flex items-center justify-between border-b border-purple-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-[#E0107F]" />
-                      <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
-                        Credit / Debit Card
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500">
-                      <span className="px-1.5 py-0.5 bg-slate-100 rounded border">VISA</span>
-                      <span className="px-1.5 py-0.5 bg-slate-100 rounded border">MC</span>
-                      <span className="px-1.5 py-0.5 bg-slate-100 rounded border">AMEX</span>
-                    </div>
+                {/* Payment Selection Tabs: Credit/Debit Card or PayPal */}
+                <div className="bg-white border-2 border-[#6B1B7E]/25 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+                  
+                  {/* Method Switcher Pills */}
+                  <div className="grid grid-cols-2 gap-2 p-1 bg-purple-50 rounded-xl border border-purple-100">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('card')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                        paymentMethod === 'card'
+                          ? 'bg-[#6B1B7E] text-white shadow-sm'
+                          : 'text-slate-600 hover:text-[#6B1B7E]'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      <span>Credit / Card</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('paypal')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                        paymentMethod === 'paypal'
+                          ? 'bg-[#0070BA] text-white shadow-sm'
+                          : 'text-slate-600 hover:text-[#0070BA]'
+                      }`}
+                    >
+                      <span className="font-extrabold italic text-amber-300">P</span>
+                      <span>PayPal</span>
+                    </button>
                   </div>
 
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Cardholder Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={cardHolder}
-                        onChange={(e) => setCardHolder(e.target.value)}
-                        placeholder="Name as it appears on card"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Card Number *
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          required
-                          value={cardNumber}
-                          onChange={handleCardNumberChange}
-                          placeholder="4242 •••• •••• 4242"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition pl-9"
-                        />
-                        <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  {paymentMethod === 'card' ? (
+                    /* Credit / Debit Card Form */
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-purple-100 pb-2">
+                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                          Card Details
+                        </span>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                          <span className="px-1.5 py-0.5 bg-slate-100 rounded border">VISA</span>
+                          <span className="px-1.5 py-0.5 bg-slate-100 rounded border">MC</span>
+                          <span className="px-1.5 py-0.5 bg-slate-100 rounded border">AMEX</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          Expiry (MM/YY) *
+                          Cardholder Name *
                         </label>
                         <input
                           type="text"
-                          required
-                          value={cardExpiry}
-                          onChange={handleExpiryChange}
-                          placeholder="12/28"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
+                          required={paymentMethod === 'card'}
+                          value={cardHolder}
+                          onChange={(e) => setCardHolder(e.target.value)}
+                          placeholder="Name as it appears on card"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
                         />
                       </div>
 
                       <div>
                         <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                          CVV / CVC *
+                          Card Number *
                         </label>
                         <div className="relative">
                           <input
-                            type="password"
-                            required
-                            maxLength={4}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                            placeholder="123"
-                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition pl-8"
+                            type="text"
+                            required={paymentMethod === 'card'}
+                            value={cardNumber}
+                            onChange={handleCardNumberChange}
+                            placeholder="4242 •••• •••• 4242"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition pl-9"
                           />
-                          <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                          <CreditCard className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                         </div>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                        Billing Postal / Zip Code *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={billingZip}
-                        onChange={(e) => setBillingZip(e.target.value)}
-                        placeholder="e.g. SW1A 1AA / 10001"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
-                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Expiry (MM/YY) *
+                          </label>
+                          <input
+                            type="text"
+                            required={paymentMethod === 'card'}
+                            value={cardExpiry}
+                            onChange={handleExpiryChange}
+                            placeholder="12/28"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            CVV / CVC *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="password"
+                              required={paymentMethod === 'card'}
+                              maxLength={4}
+                              value={cardCvv}
+                              onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
+                              placeholder="123"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition pl-8"
+                            />
+                            <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Billing Postal / Zip Code *
+                        </label>
+                        <input
+                          type="text"
+                          required={paymentMethod === 'card'}
+                          value={billingZip}
+                          onChange={(e) => setBillingZip(e.target.value)}
+                          placeholder="e.g. SW1A 1AA / 10001"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* PayPal Interactive Details */
+                    <div className="space-y-3.5">
+                      <div className="p-3.5 bg-[#0070BA]/5 border border-[#0070BA]/20 rounded-xl text-left space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-lg italic text-[#0070BA]">Pay<span className="text-[#003087]">Pal</span></span>
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                            Buyer Protection
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          Safe & instant international payment without sharing financial details. Compatible with PayPal balances, linked bank accounts, and Pay in 4.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          PayPal Account Email *
+                        </label>
+                        <input
+                          type="email"
+                          required={paymentMethod === 'paypal'}
+                          value={paypalEmail}
+                          onChange={(e) => setPaypalEmail(e.target.value)}
+                          placeholder="your-paypal-email@domain.com"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#0070BA] focus:bg-white transition"
+                        />
+                      </div>
+
+                      <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-2.5 text-[11px] text-amber-900 flex items-start gap-2">
+                        <span className="font-bold shrink-0">💡 Note:</span>
+                        <span>
+                          You will be instantly redirected to PayPal's secure portal upon clicking confirm.
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="pt-2 text-[11px] text-slate-500 flex items-center gap-1.5 border-t border-purple-50">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>256-Bit Encrypted · Powered by Truth way growth</span>
+                    <span>256-Bit SSL Encrypted · Powered by Truth way growth</span>
                   </div>
                 </div>
 
@@ -437,23 +507,31 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full py-3.5 bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white font-black text-sm rounded-xl shadow-lg shadow-purple-900/20 hover:opacity-95 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    className={`w-full py-3.5 text-white font-black text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 ${
+                      paymentMethod === 'paypal'
+                        ? 'bg-[#0070BA] hover:bg-[#005ea6] shadow-blue-900/20'
+                        : 'bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] hover:opacity-95 shadow-purple-900/20'
+                    }`}
                   >
                     {isProcessing ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Processing Card Payment...</span>
+                        <span>Processing {paymentMethod === 'card' ? 'Card Payment' : 'PayPal Authorization'}...</span>
                       </>
                     ) : (
                       <>
                         <Lock className="w-4 h-4" />
-                        <span>Complete Registration & Pay Securely</span>
+                        <span>
+                          {paymentMethod === 'card' 
+                            ? 'Complete Registration & Pay via Card' 
+                            : 'Continue & Pay with PayPal'}
+                        </span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
                   <p className="text-[10px] text-slate-500 text-center mt-2">
-                    Guaranteed 100% Halal Education · 30-Day Money-Back Guarantee
+                    Guaranteed 100% Halal Education · 30-Day Money-Back Guarantee · Card & PayPal Protected
                   </p>
                 </div>
 

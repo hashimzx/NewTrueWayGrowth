@@ -31,6 +31,7 @@ import { QuranHistoryCarousel } from './components/QuranHistoryCarousel';
 import { AudioResumeBar } from './components/AudioResumeBar';
 import { PrayerTimeSidebar } from './components/PrayerTimeSidebar';
 import { WorshipGuideSection } from './components/WorshipGuideSection';
+import { HifzSection } from './components/HifzSection';
 import { Footer } from './components/Footer';
 import { MessageCircle } from 'lucide-react';
 
@@ -111,8 +112,16 @@ export default function App() {
   // Modals state
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isEnrollOpen, setIsEnrollOpen] = useState(false);
+  const [enrollDefaultCourse, setEnrollDefaultCourse] = useState<string>('Quran Hifz (Memorization) Program');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedCheckoutItem, setSelectedCheckoutItem] = useState<Course | SubscriptionTier | null>(null);
+
+  const handleOpenEnroll = (courseName?: string) => {
+    if (courseName) {
+      setEnrollDefaultCourse(courseName);
+    }
+    setIsEnrollOpen(true);
+  };
 
   // Sync state to local storage
   useEffect(() => {
@@ -224,7 +233,7 @@ export default function App() {
         }}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
-        onOpenEnroll={() => setIsEnrollOpen(true)}
+        onOpenEnroll={() => handleOpenEnroll()}
         onLogout={() => setCurrentUser(null)}
         currency={currency}
         setCurrency={setCurrency}
@@ -244,13 +253,20 @@ export default function App() {
                 setCurrentView('quran');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              onOpenEnroll={() => setIsEnrollOpen(true)}
+              onOpenEnroll={() => handleOpenEnroll()}
             />
 
             {/* Specialized Classes for Kids, Sisters & Adults */}
             <SpecializedClasses
               onBookTrial={(cat) => handleOpenTrial(cat)}
               onExploreQaida={() => setCurrentView('qaida')}
+            />
+
+            {/* Quran Memorization (Hifz) Program with Sabaq/Sabqi/Manzil */}
+            <HifzSection
+              onOpenEnroll={handleOpenEnroll}
+              onOpenQaida={() => setCurrentView('qaida')}
+              currency={currency}
             />
 
             {/* True Way of Namaz, Eid, Janazah & Roza (Do This & Avoid This) Guide */}
@@ -276,6 +292,14 @@ export default function App() {
             {/* Contact & Free Trial Section with UstadLeads info */}
             <ContactSection initialTrack={selectedTrackForTrial} />
           </div>
+        )}
+
+        {currentView === 'hifz' && (
+          <HifzSection
+            onOpenEnroll={handleOpenEnroll}
+            onOpenQaida={() => setCurrentView('qaida')}
+            currency={currency}
+          />
         )}
 
         {currentView === 'history' && (
@@ -493,6 +517,7 @@ export default function App() {
         isOpen={isEnrollOpen}
         onClose={() => setIsEnrollOpen(false)}
         currency={currency}
+        defaultCourse={enrollDefaultCourse}
       />
 
       <CheckoutModal
