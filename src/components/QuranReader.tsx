@@ -133,7 +133,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   const [isRecordingStudent, setIsRecordingStudent] = useState<boolean>(false);
   const [studentAssessment, setStudentAssessment] = useState<AyahAssessmentResult | null>(null);
   const [stepUnlocked, setStepUnlocked] = useState<boolean>(false);
-  const [passingThreshold] = useState<number>(75);
+  const [passingThreshold, setPassingThreshold] = useState<number>(85);
 
   // Custom Teacher Voice Studio
   const [customTeacherRecordings, setCustomTeacherRecordings] = useState<Record<string, string>>(() => {
@@ -345,6 +345,17 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     });
   };
 
+  const stopAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    soundEngine.stopVoice();
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setActiveAyahIndex(null);
+  };
+
   const togglePlayAudio = () => {
     if (isPlaying) {
       if (audioRef.current) {
@@ -389,13 +400,26 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     const ayah = fullSurahData.ayahs[index];
     if (!ayah) return;
 
+    // If currently playing this verse, stop it cleanly
+    if (isPlaying && activeAyahIndex === index) {
+      stopAudio();
+      return;
+    }
+
     if (audioRef.current) {
       audioRef.current.pause();
     }
+    soundEngine.stopVoice();
 
     const audioUrl = getAyahAudioUrl(ayah, currentReciter, fullSurahData.number);
     if (!audioUrl) {
       soundEngine.speakArabic(ayah.arabic, 0.85);
+      setIsPlaying(true);
+      setActiveAyahIndex(index);
+      setTimeout(() => {
+        setIsPlaying(false);
+        setActiveAyahIndex(null);
+      }, 5000);
       return;
     }
 
@@ -408,21 +432,29 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
       setActiveAyahIndex(index);
     };
 
+    // User requirement: "and when 1 verse or ayat plays end dont start with second verse or ayat in quran"
     audio.onended = () => {
-      if (index < fullSurahData.ayahs.length - 1) {
-        playAyah(index + 1);
-      } else {
-        setIsPlaying(false);
-        setActiveAyahIndex(null);
-      }
+      setIsPlaying(false);
+      setActiveAyahIndex(null);
+    };
+
+    audio.onerror = () => {
+      setIsPlaying(false);
+      setActiveAyahIndex(null);
     };
 
     audio.play().catch(() => {
       soundEngine.speakArabic(ayah.arabic, 0.85);
+      setIsPlaying(true);
+      setActiveAyahIndex(index);
+      setTimeout(() => {
+        setIsPlaying(false);
+        setActiveAyahIndex(null);
+      }, 5000);
     });
   };
 
-  // Recite and practice strict speech recognition
+  // Recite and practice strict speech recognition (80-90% threshold requirement)
   const handleStartAyahVoiceTest = async () => {
     if (!fullSurahData) return;
     const currentAyah = fullSurahData.ayahs[currentStepAyahIndex];
@@ -460,7 +492,8 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
       setIsRecordingStudent(false);
       soundEngine.playCueSound('recording_stop');
 
-      const evaluatedTranscript = transcript || currentAyah.arabic;
+      // Accurately evaluate what the user actually recited
+      const evaluatedTranscript = transcript.trim();
       const result = evaluateAyahPronunciation(
         evaluatedTranscript,
         currentAyah.arabic,
@@ -470,7 +503,8 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
 
       setStudentAssessment(result);
 
-      if (result.passed) {
+      // Strictly lock next option if score is below the 80-90% threshold
+      if (result.passed && result.score >= passingThreshold) {
         setStepUnlocked(true);
         soundEngine.playCueSound('success');
         confetti({
@@ -487,7 +521,10 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   };
 
   const handleNextStep = () => {
-    if (!stepUnlocked || !fullSurahData) return;
+    // Strictly block progression if user has not achieved the required 80-90% accuracy
+    if (!stepUnlocked || !studentAssessment || studentAssessment.score < passingThreshold || !fullSurahData) {
+      return;
+    }
     if (currentStepAyahIndex < fullSurahData.ayahs.length - 1) {
       setCurrentStepAyahIndex(prev => prev + 1);
       setStepUnlocked(false);
@@ -757,11 +794,29 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-              <span>Required Threshold:</span>
-              <span className="px-2.5 py-1 bg-purple-100 text-[#6B1B7E] rounded-lg">
-                {passingThreshold}%
-              </span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
+              <span className="text-[#6B1B7E]">Passing Requirement (80–90%):</span>
+              <div className="flex items-center gap-1">
+                {[80, 85, 90].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => {
+                      setPassingThreshold(val);
+                      if (studentAssessment) {
+                        setStepUnlocked(studentAssessment.score >= val);
+                      }
+                    }}
+                    className={`px-2.5 py-0.5 rounded-lg text-xs font-black transition cursor-pointer ${
+                      passingThreshold === val
+                        ? 'bg-[#6B1B7E] text-white shadow-xs'
+                        : 'bg-white text-slate-600 hover:bg-purple-100 border border-purple-200'
+                    }`}
+                    title={`Require at least ${val}% accuracy to unlock next Ayah`}
+                  >
+                    {val}%
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -1124,11 +1179,11 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                 </select>
               </div>
 
-              {/* Playback Pace & Actions */}
-              <div className="md:col-span-3 flex items-end gap-2">
+              {/* Playback Pace, Play/Pause & Explicit Stop Option */}
+              <div className="md:col-span-3 flex items-end gap-1.5 sm:gap-2">
                 <button
                   onClick={togglePlayAudio}
-                  className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-2 transition shadow-md cursor-pointer ${
+                  className={`flex-1 py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-black flex items-center justify-center gap-1.5 sm:gap-2 transition shadow-md cursor-pointer ${
                     isPlaying
                       ? 'bg-amber-500 hover:bg-amber-600 text-purple-950 animate-pulse'
                       : 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] hover:opacity-95 text-white'
@@ -1137,7 +1192,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                   {isPlaying ? (
                     <>
                       <Pause className="w-4 h-4 fill-current" />
-                      <span>Pause Recitation</span>
+                      <span>Pause</span>
                     </>
                   ) : (
                     <>
@@ -1147,6 +1202,16 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                   )}
                 </button>
 
+                {/* Explicit Stop Option as requested by user */}
+                <button
+                  onClick={stopAudio}
+                  className="py-3 px-3 sm:px-3.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer active:scale-95 shrink-0"
+                  title="Stop Playing Quran Audio and Reset"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <span>Stop</span>
+                </button>
+
                 <button
                   onClick={() => {
                     const speeds = [0.85, 1.0, 1.25];
@@ -1154,7 +1219,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                     setPlaybackSpeed(next);
                     if (audioRef.current) audioRef.current.playbackRate = next;
                   }}
-                  className="px-3.5 py-3 bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200 rounded-xl text-xs font-bold cursor-pointer"
+                  className="px-2.5 sm:px-3 py-3 bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200 rounded-xl text-xs font-bold cursor-pointer shrink-0"
                   title="Playback Pace"
                 >
                   {playbackSpeed}x
@@ -1337,21 +1402,24 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
 
                       <div className="flex flex-wrap items-center gap-2">
                         <button
-                          onClick={() => playAyah(index)}
+                          onClick={() => {
+                            if (isThisPlaying) {
+                              stopAudio();
+                            } else {
+                              playAyah(index);
+                            }
+                          }}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                             isThisPlaying
-                              ? 'bg-[#6B1B7E] text-white'
+                              ? 'bg-red-600 hover:bg-red-700 text-white shadow-xs'
                               : 'bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200'
                           }`}
+                          title={isThisPlaying ? 'Stop playing this verse' : 'Play this verse only'}
                         >
                           {isThisPlaying ? (
                             <>
-                              <div className="flex items-center gap-0.5">
-                                <span className="w-1 h-3 bg-white wave-bar-1" />
-                                <span className="w-1 h-4 bg-white wave-bar-2" />
-                                <span className="w-1 h-2 bg-white wave-bar-3" />
-                              </div>
-                              <span>Playing</span>
+                              <Square className="w-3.5 h-3.5 fill-current" />
+                              <span>Stop Verse</span>
                             </>
                           ) : (
                             <>

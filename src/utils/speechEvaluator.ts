@@ -153,7 +153,7 @@ export function evaluateAyahPronunciation(
   spoken: string,
   ayahArabic: string,
   ayahTransliteration: string,
-  threshold: number = 75
+  threshold: number = 85
 ): AyahAssessmentResult {
   const normSpoken = normalizeArabic(spoken);
   const normExpected = normalizeArabic(ayahArabic);
@@ -168,12 +168,14 @@ export function evaluateAyahPronunciation(
   const bestSim = Math.max(sim, phonSim);
   let score = Math.round(bestSim * 100);
 
-  // If recognition gave partial syllables
-  if (score < 40 && spoken.trim().length > 3) {
+  // If no words spoken or empty transcript
+  if (!spoken || spoken.trim().length === 0) {
+    score = 15;
+  } else if (score < 40 && spoken.trim().length > 3) {
     score = 45; // baseline effort detected
   }
 
-  score = Math.min(100, Math.max(15, score));
+  score = Math.min(100, Math.max(10, score));
   const passed = score >= threshold;
 
   const details: string[] = [];
@@ -182,17 +184,17 @@ export function evaluateAyahPronunciation(
   if (passed) {
     feedback = `MashaAllah! Accurate recitation (${score}% accuracy). Articulation and rhythm meet the required standard.`;
     details.push('Correct pronunciation of verse letters.');
-    details.push('Passing threshold fulfilled — next Ayah unlocked!');
+    details.push(`Passing threshold of ${threshold}% fulfilled — next Ayah unlocked!`);
   } else {
-    feedback = `Pronunciation error detected (${score}% accuracy). Target threshold is ${threshold}%. You cannot advance to the next step until this Ayah is recited correctly.`;
-    details.push('Noticeable errors or omissions in letter articulation or vowels.');
-    details.push('Please listen to the scholar recitation, repeat aloud, and recite again.');
+    feedback = `Pronunciation accuracy (${score}%) is below the mandatory ${threshold}% passing mark. You must achieve at least ${threshold}% (80-90% standard) to unlock and advance to the next Ayah.`;
+    details.push(`Score achieved: ${score}% (Minimum required: ${threshold}%).`);
+    details.push('Please listen to the scholar recitation, repeat aloud, and record your recitation again.');
   }
 
   return {
     score,
     passed,
-    spokenText: spoken || '(Voice not clearly captured)',
+    spokenText: spoken || '(No voice captured)',
     expectedText: ayahArabic,
     feedback,
     details

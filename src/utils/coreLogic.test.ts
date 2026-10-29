@@ -142,3 +142,29 @@ test('getPrayerAvailabilitySchedule accurately detects active prayer and window 
   assert.equal(resultNight.upcomingNext?.id, 'fajr');
 });
 
+test('evaluateAyahPronunciation strictly blocks advancement if user scores below 80-90% threshold', async () => {
+  const { evaluateAyahPronunciation } = await import('./speechEvaluator');
+  
+  const targetArabic = 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ';
+  const targetTranslit = 'Al-hamdu lillahi Rabbil-alameen';
+
+  // Test 1: Flawed/incorrect recitation produces score below 85% and passed=false
+  const flawedRecitation = 'Al hamdu wa salam';
+  const resultFlawed = evaluateAyahPronunciation(flawedRecitation, targetArabic, targetTranslit, 85);
+  assert.equal(resultFlawed.passed, false);
+  assert.ok(resultFlawed.score < 85);
+  assert.ok(resultFlawed.feedback.includes('below the mandatory 85%'));
+
+  // Test 2: Empty/unclear audio gives failing score
+  const emptyRecitation = '';
+  const resultEmpty = evaluateAyahPronunciation(emptyRecitation, targetArabic, targetTranslit, 85);
+  assert.equal(resultEmpty.passed, false);
+  assert.ok(resultEmpty.score < 80);
+
+  // Test 3: Accurate recitation with >= 85% accuracy passes
+  const correctRecitation = 'الحمد لله رب العالمين';
+  const resultCorrect = evaluateAyahPronunciation(correctRecitation, targetArabic, targetTranslit, 85);
+  assert.equal(resultCorrect.passed, true);
+  assert.ok(resultCorrect.score >= 85);
+});
+

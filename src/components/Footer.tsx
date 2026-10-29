@@ -85,9 +85,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenEnroll }) => {
                 </button>
               </li>
               <li>
-                <button onClick={() => onNavigate('quran')} className="hover:text-white transition cursor-pointer">
-                  Full Holy Quran (Audio)
-                </button>
+                <a href="?view=quran" target="_blank" rel="noopener noreferrer" className="hover:text-white transition cursor-pointer">
+                  Full Holy Quran (Open in New Tab)
+                </a>
               </li>
               <li>
                 <button onClick={() => onNavigate('qaida')} className="hover:text-white transition cursor-pointer">

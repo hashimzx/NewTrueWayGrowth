@@ -114,6 +114,14 @@ class AudioEngine {
     });
   }
 
+  public stopVoice() {
+    try {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    } catch {}
+  }
+
   /**
    * Plays harmonic cue tones (success, retry, chime)
    */

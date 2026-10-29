@@ -96,13 +96,16 @@ export const Hero: React.FC<HeroProps> = ({
             <span>Book 3-Day Free Trial</span>
           </button>
 
-          <button
-            onClick={onOpenQuranReader}
-            className="w-full sm:w-auto px-6 py-4 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] font-bold text-sm rounded-2xl border border-purple-200 transition flex items-center justify-center gap-2 cursor-pointer"
+          <a
+            href="?view=quran"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto px-6 py-4 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] font-bold text-sm rounded-2xl border border-purple-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            title="Open Quran Reader in a new tab"
           >
             <BookOpen className="w-4 h-4 text-[#E0107F]" />
-            <span>Read Holy Quran</span>
-          </button>
+            <span>Read Holy Quran (New Tab)</span>
+          </a>
         </div>
 
         {/* WhatsApp Callout */}

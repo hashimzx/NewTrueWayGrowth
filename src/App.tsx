@@ -36,7 +36,33 @@ import { Footer } from './components/Footer';
 import { MessageCircle } from 'lucide-react';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<string>('home');
+  const [currentView, setCurrentView] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const v = params.get('view');
+        if (v) return v;
+        if (window.location.hash === '#quran') return 'quran';
+      }
+    } catch {}
+    return 'home';
+  });
+
+  // Keep URL search query in sync with currentView
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        if (currentView === 'home') {
+          url.searchParams.delete('view');
+        } else {
+          url.searchParams.set('view', currentView);
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch {}
+  }, [currentView]);
+
   const [currency, setCurrency] = useState<'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD'>('GBP');
   const [timezone, setTimezone] = useState<string>('Europe/London');
   const [selectedTrackForTrial, setSelectedTrackForTrial] = useState<'kids' | 'adults' | 'female' | null>(null);

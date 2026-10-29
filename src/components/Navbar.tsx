@@ -202,17 +202,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* 3. Full Quran (All 114 Surahs) */}
-            <button
-              onClick={() => {
-                setCurrentView('quran');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+            {/* 3. Full Quran (All 114 Surahs - Opens in New Tab) */}
+            <a
+              href="?view=quran"
+              target="_blank"
+              rel="noopener noreferrer"
               className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
                 currentView === 'quran'
                   ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
                   : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
               }`}
+              title="Open Holy Quran in a new tab"
             >
               <BookOpen className={`w-4 h-4 ${currentView === 'quran' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
               <span>Full Quran</span>
@@ -221,7 +221,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}>
                 114
               </span>
-            </button>
+            </a>
 
             {/* 4. Namaz & Spiritual Dropdown */}
             <div 
@@ -514,20 +514,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               )}
 
-              <button
-                onClick={() => {
-                  setCurrentView('quran');
-                  setMobileMenuOpen(false);
-                }}
+              <a
+                href="?view=quran"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
                 className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
                   currentView === 'quran'
                     ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
                     : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
                 }`}
+                title="Open Holy Quran in a new tab"
               >
                 <BookOpen className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                <span>Full Quran (114 Surahs)</span>
-              </button>
+                <span>Full Quran (114 Surahs - New Tab)</span>
+              </a>
 
               <button
                 onClick={() => {
