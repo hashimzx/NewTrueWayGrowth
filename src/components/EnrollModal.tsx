@@ -369,7 +369,7 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
                       </div>
 
                       <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-2.5 text-[11px] text-amber-900 flex items-start gap-2">
-                        <span className="font-bold shrink-0">💡 Note:</span>
+                        <span className="font-bold shrink-0">Notice:</span>
                         <span>
                           You will be instantly redirected to PayPal's secure portal upon clicking confirm.
                         </span>

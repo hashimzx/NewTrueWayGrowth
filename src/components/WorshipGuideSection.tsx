@@ -45,7 +45,9 @@ interface StepItem {
 export const WorshipGuideSection: React.FC<{
   onOpenFullQuran?: () => void;
   onOpenDuas?: () => void;
-}> = ({ onOpenFullQuran, onOpenDuas }) => {
+  onOpenSalahGuide?: () => void;
+  onOpenTahajjud?: () => void;
+}> = ({ onOpenFullQuran, onOpenDuas, onOpenSalahGuide, onOpenTahajjud }) => {
   const [activeTab, setActiveTab] = useState<WorshipGuideCategory>('namaz');
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
 
@@ -720,7 +722,7 @@ export const WorshipGuideSection: React.FC<{
                 : 'text-slate-600 hover:text-[#6B1B7E] hover:bg-purple-50'
             }`}
           >
-            <span>🕌</span>
+            <BookOpen className="w-4 h-4 shrink-0" />
             <span>Daily Namaz</span>
           </button>
 
@@ -732,7 +734,7 @@ export const WorshipGuideSection: React.FC<{
                 : 'text-slate-600 hover:text-[#6B1B7E] hover:bg-purple-50'
             }`}
           >
-            <span>🌙</span>
+            <Sparkles className="w-4 h-4 shrink-0" />
             <span>Eid Namaz</span>
           </button>
 
@@ -744,7 +746,7 @@ export const WorshipGuideSection: React.FC<{
                 : 'text-slate-600 hover:text-[#6B1B7E] hover:bg-purple-50'
             }`}
           >
-            <span>⚰️</span>
+            <Users className="w-4 h-4 shrink-0" />
             <span>Namaz Janazah</span>
           </button>
 
@@ -756,9 +758,78 @@ export const WorshipGuideSection: React.FC<{
                 : 'text-slate-600 hover:text-[#6B1B7E] hover:bg-purple-50'
             }`}
           >
-            <span>📿</span>
+            <ShieldCheck className="w-4 h-4 shrink-0" />
             <span>Roza (Fasting)</span>
           </button>
+        </div>
+
+        {/* Dedicated Namaz Sub-Sections Banner: Step-by-Step Salah Guide & How to Pray Tahajjud */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+          <div className="bg-white rounded-2xl p-5 border border-[#6B1B7E]/20 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#E0107F] transition">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-100 text-[#6B1B7E] text-[10px] font-black uppercase tracking-wider">
+                <CheckCircle2 className="w-3 h-3 text-[#E0107F]" />
+                <span>Namaz Sub-Section 1</span>
+              </span>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 leading-snug">
+                A step-by-step guide to performing the daily Islamic prayer (Salah)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Complete Wudu, 5 Prayers Rak'at Table & 11-Step Salah Guide (Salam Center PDF)
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {onOpenSalahGuide && (
+                <button
+                  onClick={onOpenSalahGuide}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white text-xs font-black shadow-xs hover:opacity-95 transition cursor-pointer"
+                >
+                  Open Guide →
+                </button>
+              )}
+              <a
+                href="https://salamcenter.org/wp-content/uploads/2020/09/Prayer-Guide.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200 text-xs font-bold transition"
+              >
+                PDF
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-5 border border-pink-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[#6B1B7E] transition">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-100 text-[#E0107F] text-[10px] font-black uppercase tracking-wider">
+                <Moon className="w-3 h-3 text-[#6B1B7E]" />
+                <span>Namaz Sub-Section 2</span>
+              </span>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 leading-snug">
+                How to pray tahajjud
+              </h3>
+              <p className="text-xs text-slate-500">
+                Last Third of the Night prayer method, Rak'at rules & Prophetic Tahajjud Dua
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {onOpenTahajjud && (
+                <button
+                  onClick={onOpenTahajjud}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#5B2A9A] to-[#E0107F] text-white text-xs font-black shadow-xs hover:opacity-95 transition cursor-pointer"
+                >
+                  Open Tahajjud →
+                </button>
+              )}
+              <a
+                href="https://islamic-relief.org/knowledge-base/how-to-pray-tahajjud/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-2 rounded-xl bg-pink-50 hover:bg-pink-100 text-[#E0107F] border border-pink-200 text-xs font-bold transition"
+              >
+                Source
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* TAB 1: DAILY NAMAZ POSTURES & RIGHT/WRONG */}

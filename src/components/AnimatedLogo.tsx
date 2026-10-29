@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface AnimatedLogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   showUrl?: boolean;
   className?: string;
   lightBg?: boolean;
@@ -28,7 +28,8 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
 
   // Height configurations mapping cleanly across layouts
   const heightClasses = {
-    sm: 'h-9 sm:h-11 md:h-13',
+    xs: 'h-7 sm:h-8',
+    sm: 'h-9 sm:h-10 md:h-11',
     md: 'h-13 sm:h-15 md:h-17',
     lg: 'h-20 sm:h-22 md:h-24',
     xl: 'h-26 sm:h-28 md:h-32'
@@ -44,7 +45,9 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
       {/* Outer Chassis with Brand Aura Glow */}
       <div
         className={`relative flex items-center justify-center rounded-xl transition-all duration-300 transform group-hover:scale-[1.02] ${
-          lightBg
+          size === 'xs'
+            ? 'bg-white p-0.5 sm:p-1 shadow-xs border border-purple-100/90 hover:border-[#E0107F]/40'
+            : lightBg
             ? 'bg-white p-1 sm:p-1.5 shadow-sm border border-purple-100/90 hover:border-[#E0107F]/40 hover:shadow-md'
             : 'bg-white p-1.5 sm:p-2 shadow-lg border border-purple-200 hover:border-[#E0107F]/50 hover:shadow-xl'
         }`}

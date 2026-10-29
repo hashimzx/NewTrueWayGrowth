@@ -80,14 +80,27 @@ test('loadFullSurah loads full Ayahs for Surah 1 Al-Fatihah', async () => {
   assert.ok(fatihah.ayahs[0].arabic.includes('بِسْمِ'));
 });
 
-test('getHijriDateDetails returns valid Hijri details and month structure', async () => {
-  const { getHijriDateDetails, ISLAMIC_MONTHS, toArabicNumerals } = await import('./hijriCalendar');
-  const details = getHijriDateDetails(new Date('2026-10-26T12:00:00Z'));
-  assert.ok(details.day >= 1 && details.day <= 30);
-  assert.ok(details.year >= 1445 && details.year <= 1450);
-  assert.ok(details.monthName.length > 0);
-  assert.ok(details.formattedEnglish.includes('AH'));
-  assert.equal(ISLAMIC_MONTHS.length, 12);
-  assert.equal(toArabicNumerals(123), '١٢٣');
+test('getWorldDateMetrics and getWorldMonthGrid compute accurate Gregorian world calendar data', async () => {
+  const { getWorldDateMetrics, getWorldMonthGrid, getWorldTimezoneHubs, isLeapYear } = await import('./worldCalendar');
+  const d = new Date('2026-10-29T12:00:00Z');
+  const metrics = getWorldDateMetrics(d);
+
+  assert.equal(metrics.year, 2026);
+  assert.equal(metrics.monthName, 'October');
+  assert.equal(metrics.quarter, 'Q4');
+  assert.equal(isLeapYear(2026), false);
+  assert.equal(metrics.totalDaysInYear, 365);
+  assert.ok(metrics.dayOfYear > 300);
+  assert.ok(metrics.weekNumber >= 43 && metrics.weekNumber <= 45);
+
+  const grid = getWorldMonthGrid(d, 0);
+  assert.equal(grid.daysInMonth, 31);
+  assert.equal(grid.days.length, 31);
+
+  const hubs = getWorldTimezoneHubs(d);
+  assert.ok(hubs.length >= 7);
+  assert.ok(hubs.some(h => h.city.includes('UTC')));
+  assert.ok(hubs.some(h => h.city.includes('London')));
+  assert.ok(hubs.some(h => h.city.includes('New York')));
 });
 

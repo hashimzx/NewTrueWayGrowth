@@ -273,7 +273,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>{isCheckedInToday ? 'Attended Today ✓' : 'Mark Today\'s Attendance'}</span>
+                  <span>{isCheckedInToday ? 'Attended Today (Verified)' : 'Mark Today\'s Attendance'}</span>
                 </button>
 
                 <p className="text-[11px] text-purple-300">

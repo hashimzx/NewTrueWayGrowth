@@ -30,13 +30,13 @@ export const Hero: React.FC<HeroProps> = ({
   };
 
   const countries = [
-    { name: 'United Kingdom', flag: '🇬🇧' },
-    { name: 'United States', flag: '🇺🇸' },
-    { name: 'Canada', flag: '🇨🇦' },
-    { name: 'Australia', flag: '🇦🇺' },
-    { name: 'Malaysia', flag: '🇲🇾' },
-    { name: 'Saudi Arabia', flag: '🇸🇦' },
-    { name: 'Pakistan', flag: '🇵🇰' }
+    { name: 'United Kingdom', code: 'UK' },
+    { name: 'United States', code: 'USA' },
+    { name: 'Canada', code: 'CAN' },
+    { name: 'Australia', code: 'AUS' },
+    { name: 'Malaysia', code: 'MYS' },
+    { name: 'Saudi Arabia', code: 'KSA' },
+    { name: 'Pakistan', code: 'PAK' }
   ];
 
   return (
@@ -63,16 +63,16 @@ export const Hero: React.FC<HeroProps> = ({
           </p>
         </div>
 
-        {/* Centered Countries Served Badge */}
+        {/* Centered Countries Served Badge (Formal) */}
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="text-xs font-bold text-slate-500">Students from 25+ countries:</span>
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-[#6B1B7E]/20 rounded-full text-xs font-medium text-slate-700 shadow-2xs">
+          <span className="text-xs font-bold text-slate-500">Global Student Base:</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#6B1B7E]/20 rounded-full text-xs font-semibold text-slate-700 shadow-2xs">
             {countries.map((c, i) => (
-              <span key={i} title={c.name} className="text-sm hover:scale-125 transition inline-block">
-                {c.flag}
+              <span key={i} title={c.name} className="px-1.5 py-0.5 rounded bg-purple-50 text-[10px] font-bold text-[#6B1B7E]">
+                {c.code}
               </span>
             ))}
-            <span className="text-[11px] font-bold text-[#6B1B7E] ml-1">UK, USA, CA, AU, PK +</span>
+            <span className="text-[11px] font-bold text-[#E0107F] ml-1">+25 Countries</span>
           </div>
         </div>
 

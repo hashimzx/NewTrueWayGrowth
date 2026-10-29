@@ -279,6 +279,14 @@ export default function App() {
                 setCurrentView('duas');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
+              onOpenSalahGuide={() => {
+                setCurrentView('namaz_salah_guide');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenTahajjud={() => {
+                setCurrentView('namaz_tahajjud');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
 
             {/* History of the Holy Quran Carousel (Requested Feature) */}
@@ -356,8 +364,15 @@ export default function App() {
           </div>
         )}
 
-        {currentView === 'namaz' && (
+        {(currentView === 'namaz' || currentView === 'namaz_salah_guide' || currentView === 'namaz_tahajjud') && (
           <NamazSection
+            initialSubSection={
+              currentView === 'namaz_salah_guide'
+                ? 'salah_guide'
+                : currentView === 'namaz_tahajjud'
+                ? 'tahajjud'
+                : 'times'
+            }
             onOpenDuas={() => {
               setCurrentView('duas');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -410,6 +425,14 @@ export default function App() {
               setCurrentView('attendance');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            onNavigateToHifz={() => {
+              setCurrentView('hifz');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onNavigateToQuran={() => {
+              setCurrentView('quran');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             attemptsHistory={pronunciationAttempts}
           />
         )}
@@ -422,6 +445,14 @@ export default function App() {
             }}
             onOpenDuas={() => {
               setCurrentView('duas');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenSalahGuide={() => {
+              setCurrentView('namaz_salah_guide');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenTahajjud={() => {
+              setCurrentView('namaz_tahajjud');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           />
