@@ -256,7 +256,16 @@ export function computePrayerTimes(
   };
 }
 
-export function formatTimeAmPm(d: Date): string {
+export function formatTimeAmPm(d: Date | string): string {
+  if (typeof d === 'string') {
+    const parts = d.split(':');
+    const h = parseInt(parts[0], 10);
+    if (isNaN(h)) return d;
+    const m = parts[1] || '00';
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${m} ${period}`;
+  }
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
@@ -350,5 +359,221 @@ export function getNextPrayer(times: {
     remainingMinutes: mins,
     remainingFormatted: `${hours}h ${remainingMins}m`,
     currentActive: 'Isha'
+  };
+}
+
+export interface PrayerAvailabilitySlot {
+  id: 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+  name: string;
+  arabicName: string;
+  startTime: string;
+  endTime: string;
+  isAvailableNow: boolean;
+  status: 'available_now' | 'upcoming_next' | 'completed';
+  minutesRemainingInWindow: number;
+  timeRemainingFormatted: string;
+  description: string;
+}
+
+export interface PrayerAvailabilityScheduleResult {
+  slots: PrayerAvailabilitySlot[];
+  currentlyAvailable: PrayerAvailabilitySlot | null;
+  upcomingNext: PrayerAvailabilitySlot | null;
+  activeSummary: string;
+}
+
+/**
+ * Computes exact Islamic prayer availability windows based on current time
+ * and marks which prayer is currently available to pray right now.
+ */
+export function getPrayerAvailabilitySchedule(
+  times: {
+    fajr: string;
+    sunrise: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+  },
+  now: Date = new Date()
+): PrayerAvailabilityScheduleResult {
+  const toMins = (t: string) => {
+    const parts = (t || '00:00').split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const fajrM = toMins(times.fajr);
+  const sunriseM = toMins(times.sunrise);
+  const dhuhrM = toMins(times.dhuhr);
+  const asrM = toMins(times.asr);
+  const maghribM = toMins(times.maghrib);
+  const ishaM = toMins(times.isha);
+
+  const rawSlots: Array<{
+    id: 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+    name: string;
+    arabicName: string;
+    startTimeStr: string;
+    endTimeStr: string;
+    startM: number;
+    endM: number;
+    description: string;
+  }> = [
+    {
+      id: 'fajr',
+      name: 'Fajr',
+      arabicName: 'الفَجْر',
+      startTimeStr: times.fajr,
+      endTimeStr: times.sunrise,
+      startM: fajrM,
+      endM: sunriseM,
+      description: 'Dawn Obligatory Prayer (2 Sunnah + 2 Fard)'
+    },
+    {
+      id: 'sunrise',
+      name: 'Sunrise (Ishraq / Duha)',
+      arabicName: 'الشُّرُوق',
+      startTimeStr: times.sunrise,
+      endTimeStr: times.dhuhr,
+      startM: sunriseM,
+      endM: dhuhrM,
+      description: 'Morning Voluntary Ishraq & Chasht / Duha Prayer'
+    },
+    {
+      id: 'dhuhr',
+      name: 'Dhuhr',
+      arabicName: 'الظُّهْر',
+      startTimeStr: times.dhuhr,
+      endTimeStr: times.asr,
+      startM: dhuhrM,
+      endM: asrM,
+      description: 'Midday Obligatory Prayer (4 Sunnah + 4 Fard + 2 Sunnah)'
+    },
+    {
+      id: 'asr',
+      name: 'Asr',
+      arabicName: 'العَصْر',
+      startTimeStr: times.asr,
+      endTimeStr: times.maghrib,
+      startM: asrM,
+      endM: maghribM,
+      description: 'Afternoon Obligatory Prayer (4 Fard)'
+    },
+    {
+      id: 'maghrib',
+      name: 'Maghrib',
+      arabicName: 'المَغْرِب',
+      startTimeStr: times.maghrib,
+      endTimeStr: times.isha,
+      startM: maghribM,
+      endM: ishaM,
+      description: 'Sunset Obligatory Prayer (3 Fard + 2 Sunnah)'
+    },
+    {
+      id: 'isha',
+      name: 'Isha',
+      arabicName: 'العِشَاء',
+      startTimeStr: times.isha,
+      endTimeStr: times.fajr,
+      startM: ishaM,
+      endM: fajrM,
+      description: 'Night Obligatory Prayer (4 Fard + 2 Sunnah + 3 Witr)'
+    }
+  ];
+
+  let activeIndex = -1;
+
+  // Determine which slot is active right now
+  for (let i = 0; i < rawSlots.length; i++) {
+    const s = rawSlots[i];
+    if (s.id === 'isha') {
+      // Crosses midnight
+      if (nowMinutes >= ishaM || nowMinutes < fajrM) {
+        activeIndex = i;
+        break;
+      }
+    } else {
+      if (nowMinutes >= s.startM && nowMinutes < s.endM) {
+        activeIndex = i;
+        break;
+      }
+    }
+  }
+
+  // Fallback to Isha if late night / before Fajr
+  if (activeIndex === -1) {
+    activeIndex = rawSlots.length - 1; // Isha
+  }
+
+  // Determine next upcoming slot
+  let upcomingIndex = (activeIndex + 1) % rawSlots.length;
+
+  const slots: PrayerAvailabilitySlot[] = rawSlots.map((s, idx) => {
+    const isNow = idx === activeIndex;
+    const isUpcoming = idx === upcomingIndex;
+
+    let status: 'available_now' | 'upcoming_next' | 'completed' = 'completed';
+    if (isNow) {
+      status = 'available_now';
+    } else if (isUpcoming) {
+      status = 'upcoming_next';
+    } else if (s.id !== 'isha' && nowMinutes < s.startM) {
+      status = 'upcoming_next';
+    }
+
+    // Calculate minutes remaining in this window
+    let remainingMins = 0;
+    if (isNow) {
+      if (s.id === 'isha') {
+        if (nowMinutes >= ishaM) {
+          remainingMins = (1440 - nowMinutes) + fajrM;
+        } else {
+          remainingMins = fajrM - nowMinutes;
+        }
+      } else {
+        remainingMins = Math.max(0, s.endM - nowMinutes);
+      }
+    } else if (isUpcoming) {
+      if (s.id === 'isha' && nowMinutes < ishaM) {
+        remainingMins = ishaM - nowMinutes;
+      } else if (s.startM > nowMinutes) {
+        remainingMins = s.startM - nowMinutes;
+      } else {
+        remainingMins = (1440 - nowMinutes) + s.startM;
+      }
+    }
+
+    const hrs = Math.floor(remainingMins / 60);
+    const mins = remainingMins % 60;
+    const timeRemainingFormatted = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+
+    return {
+      id: s.id,
+      name: s.name,
+      arabicName: s.arabicName,
+      startTime: formatTimeAmPm(s.startTimeStr),
+      endTime: formatTimeAmPm(s.endTimeStr),
+      isAvailableNow: isNow,
+      status,
+      minutesRemainingInWindow: remainingMins,
+      timeRemainingFormatted,
+      description: s.description
+    };
+  });
+
+  const currentlyAvailable = slots[activeIndex] || null;
+  const upcomingNext = slots[upcomingIndex] || null;
+
+  const activeSummary = currentlyAvailable
+    ? `${currentlyAvailable.name} Salah is AVAILABLE NOW (${currentlyAvailable.startTime} – ${currentlyAvailable.endTime}) · ${currentlyAvailable.timeRemainingFormatted} remaining in prayer window`
+    : 'Waiting for next prayer time';
+
+  return {
+    slots,
+    currentlyAvailable,
+    upcomingNext,
+    activeSummary
   };
 }

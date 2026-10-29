@@ -8,6 +8,7 @@ import { saveAudioSession, getAudioSession, formatTime } from '../utils/audioSta
 import confetti from 'canvas-confetti';
 import { 
   BookOpen, 
+  BookMarked,
   Play, 
   Pause, 
   Volume2, 
@@ -45,8 +46,44 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   initialSurah,
   initialSeekTime
 }) => {
+  // Check if user has a previously saved reading position
+  const [resumedBannerInfo, setResumedBannerInfo] = useState<{
+    surahNumber: number;
+    surahName: string;
+    englishName: string;
+    ayahNumber: number;
+    ayahIndex: number;
+  } | null>(() => {
+    try {
+      const saved = localStorage.getItem('twq_last_read_quran_position');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.surahNumber >= 1 && parsed.surahNumber <= 114) {
+          const idx = parsed.ayahIndex !== undefined ? parsed.ayahIndex : 0;
+          return {
+            surahNumber: parsed.surahNumber,
+            surahName: parsed.surahName,
+            englishName: parsed.englishName,
+            ayahNumber: parsed.ayahNumber || (idx + 1),
+            ayahIndex: idx
+          };
+        }
+      }
+    } catch {}
+    return null;
+  });
+
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(() => {
     if (initialSurah && initialSurah >= 1 && initialSurah <= 114) return initialSurah;
+    try {
+      const savedRead = localStorage.getItem('twq_last_read_quran_position');
+      if (savedRead) {
+        const parsed = JSON.parse(savedRead);
+        if (parsed.surahNumber >= 1 && parsed.surahNumber <= 114) {
+          return parsed.surahNumber;
+        }
+      }
+    } catch {}
     const saved = getAudioSession();
     if (saved && saved.surahNumber >= 1 && saved.surahNumber <= 114) {
       return saved.surahNumber;
@@ -59,7 +96,18 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     return saved?.reciterId || 'alafasy';
   });
 
-  const [activeAyahIndex, setActiveAyahIndex] = useState<number | null>(null);
+  const [activeAyahIndex, setActiveAyahIndex] = useState<number | null>(() => {
+    try {
+      const savedRead = localStorage.getItem('twq_last_read_quran_position');
+      if (savedRead) {
+        const parsed = JSON.parse(savedRead);
+        if (parsed.ayahIndex !== undefined && parsed.ayahIndex !== null) {
+          return parsed.ayahIndex;
+        }
+      }
+    } catch {}
+    return null;
+  });
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(initialSeekTime || 0);
   const [duration, setDuration] = useState<number>(0);
@@ -174,6 +222,34 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     setStepUnlocked(false);
     setStudentAssessment(null);
   }, [selectedSurahNumber]);
+
+  // Auto-save current reading position (Surah, Ayah) so reopening Quran restores exact position
+  useEffect(() => {
+    try {
+      const pos = {
+        surahNumber: selectedSurahNumber,
+        surahName: surahMeta.name,
+        englishName: surahMeta.englishName,
+        ayahIndex: activeAyahIndex !== null ? activeAyahIndex : 0,
+        ayahNumber: activeAyahIndex !== null ? activeAyahIndex + 1 : 1,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('twq_last_read_quran_position', JSON.stringify(pos));
+    } catch {}
+  }, [selectedSurahNumber, activeAyahIndex, surahMeta]);
+
+  // Smooth scroll to restored reading position once Ayahs finish loading
+  useEffect(() => {
+    if (!isLoadingAyahs && fullSurahData && activeAyahIndex !== null && activeAyahIndex > 0) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(`ayah-${activeAyahIndex}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingAyahs, fullSurahData, activeAyahIndex]);
 
   // Handle initial seek time if provided
   useEffect(() => {
@@ -468,6 +544,49 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8" id="quran">
       
+      {/* Resumed Reading Position Notice Banner */}
+      {resumedBannerInfo && (
+        <div className="bg-gradient-to-r from-purple-900 via-[#6B1B7E] to-[#E0107F] text-white p-4 sm:p-5 rounded-3xl shadow-xl border-2 border-pink-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/25 shadow-inner">
+              <BookMarked className="w-6 h-6 text-pink-200" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-pink-500/80 text-white px-2.5 py-0.5 rounded-full">
+                  Resumed Reading
+                </span>
+                <span className="text-xs text-pink-200 font-semibold">
+                  Continued where you last left off
+                </span>
+              </div>
+              <p className="text-base sm:text-lg font-black text-white mt-0.5">
+                Surah {resumedBannerInfo.englishName} ({resumedBannerInfo.surahName}) · Ayah {resumedBannerInfo.ayahNumber}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            <button
+              onClick={() => {
+                const el = document.getElementById(`ayah-${resumedBannerInfo.ayahIndex}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }}
+              className="px-4 py-2 bg-white text-[#6B1B7E] hover:bg-purple-50 rounded-xl text-xs font-black transition shadow-sm cursor-pointer"
+            >
+              Go to Ayah {resumedBannerInfo.ayahNumber}
+            </button>
+            <button
+              onClick={() => setResumedBannerInfo(null)}
+              className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition cursor-pointer"
+              title="Dismiss notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Banner Card with Exact Brand Colors */}
       <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-[#6B1B7E]/50">
         <div className="absolute right-0 top-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />

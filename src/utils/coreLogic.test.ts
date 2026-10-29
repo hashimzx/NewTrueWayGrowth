@@ -104,3 +104,41 @@ test('getWorldDateMetrics and getWorldMonthGrid compute accurate Gregorian world
   assert.ok(hubs.some(h => h.city.includes('New York')));
 });
 
+test('getPrayerAvailabilitySchedule accurately detects active prayer and window remaining', async () => {
+  const { getPrayerAvailabilitySchedule } = await import('./prayerTimes');
+  
+  const sampleTimes = {
+    fajr: '05:00',
+    sunrise: '06:30',
+    dhuhr: '12:30',
+    asr: '15:45',
+    maghrib: '18:15',
+    isha: '19:45'
+  };
+
+  // 1. Test Dhuhr active at 13:00 (1:00 PM)
+  const dateAtDhuhr = new Date(2026, 9, 29, 13, 0, 0);
+  const resultDhuhr = getPrayerAvailabilitySchedule(sampleTimes, dateAtDhuhr);
+  assert.ok(resultDhuhr.currentlyAvailable);
+  assert.equal(resultDhuhr.currentlyAvailable.id, 'dhuhr');
+  assert.equal(resultDhuhr.currentlyAvailable.isAvailableNow, true);
+  assert.equal(resultDhuhr.currentlyAvailable.status, 'available_now');
+  assert.equal(resultDhuhr.currentlyAvailable.minutesRemainingInWindow, 165); // 15:45 - 13:00 = 2h 45m = 165 mins
+  assert.equal(resultDhuhr.upcomingNext?.id, 'asr');
+
+  // 2. Test Fajr active at 05:30 AM
+  const dateAtFajr = new Date(2026, 9, 29, 5, 30, 0);
+  const resultFajr = getPrayerAvailabilitySchedule(sampleTimes, dateAtFajr);
+  assert.ok(resultFajr.currentlyAvailable);
+  assert.equal(resultFajr.currentlyAvailable.id, 'fajr');
+  assert.equal(resultFajr.currentlyAvailable.minutesRemainingInWindow, 60); // 06:30 - 05:30 = 60 mins
+
+  // 3. Test late night Isha active at 23:00 (11:00 PM)
+  const dateAtLateNight = new Date(2026, 9, 29, 23, 0, 0);
+  const resultNight = getPrayerAvailabilitySchedule(sampleTimes, dateAtLateNight);
+  assert.ok(resultNight.currentlyAvailable);
+  assert.equal(resultNight.currentlyAvailable.id, 'isha');
+  assert.equal(resultNight.currentlyAvailable.isAvailableNow, true);
+  assert.equal(resultNight.upcomingNext?.id, 'fajr');
+});
+

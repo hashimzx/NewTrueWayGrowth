@@ -4,7 +4,8 @@ import {
   computePrayerTimes, 
   getNextPrayer, 
   formatLiveClock,
-  formatTimeAmPm
+  formatTimeAmPm,
+  getPrayerAvailabilitySchedule
 } from '../utils/prayerTimes';
 import { 
   getWorldDateMetrics, 
@@ -22,7 +23,8 @@ import {
   BookOpen,
   ArrowRight,
   TrendingUp,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 interface PrayerTimeSidebarProps {
@@ -54,12 +56,23 @@ export const PrayerTimeSidebar: React.FC<PrayerTimeSidebarProps> = ({
   const monthGrid = getWorldMonthGrid(now, calendarMonthOffset);
   const worldHubs = getWorldTimezoneHubs(now);
 
+  const toHHMM = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+  const availability = getPrayerAvailabilitySchedule({
+    fajr: toHHMM(prayerTimes.fajr),
+    sunrise: toHHMM(prayerTimes.sunrise),
+    dhuhr: toHHMM(prayerTimes.dhuhr),
+    asr: toHHMM(prayerTimes.asr),
+    maghrib: toHHMM(prayerTimes.maghrib),
+    isha: toHHMM(prayerTimes.isha)
+  }, now);
+
   const prayersList = [
-    { name: 'Fajr', time: formatTimeAmPm(prayerTimes.fajr) },
-    { name: 'Dhuhr', time: formatTimeAmPm(prayerTimes.dhuhr) },
-    { name: 'Asr', time: formatTimeAmPm(prayerTimes.asr) },
-    { name: 'Maghrib', time: formatTimeAmPm(prayerTimes.maghrib) },
-    { name: 'Isha', time: formatTimeAmPm(prayerTimes.isha) },
+    { id: 'fajr', name: 'Fajr', time: formatTimeAmPm(prayerTimes.fajr) },
+    { id: 'dhuhr', name: 'Dhuhr', time: formatTimeAmPm(prayerTimes.dhuhr) },
+    { id: 'asr', name: 'Asr', time: formatTimeAmPm(prayerTimes.asr) },
+    { id: 'maghrib', name: 'Maghrib', time: formatTimeAmPm(prayerTimes.maghrib) },
+    { id: 'isha', name: 'Isha', time: formatTimeAmPm(prayerTimes.isha) },
   ];
 
   const weekdayLetters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -152,6 +165,27 @@ export const PrayerTimeSidebar: React.FC<PrayerTimeSidebarProps> = ({
                   </div>
                 </div>
 
+                {/* CURRENTLY AVAILABLE PRAYER CARD */}
+                {availability.currentlyAvailable && (
+                  <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-3.5 rounded-2xl shadow-md space-y-1 border border-emerald-300/40">
+                    <div className="flex items-center justify-between text-[11px] font-bold text-emerald-200">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                        <span>AVAILABLE NOW TO PRAY</span>
+                      </span>
+                      <span className="bg-black/20 px-2 py-0.5 rounded-full text-amber-300 font-mono text-[10px]">
+                        {availability.currentlyAvailable.timeRemainingFormatted} left
+                      </span>
+                    </div>
+                    <p className="text-lg font-black">
+                      {availability.currentlyAvailable.name} Salah ({availability.currentlyAvailable.arabicName})
+                    </p>
+                    <p className="text-xs text-emerald-100 font-medium">
+                      Window: {availability.currentlyAvailable.startTime} – {availability.currentlyAvailable.endTime}
+                    </p>
+                  </div>
+                )}
+
                 {/* Next Namaz Countdown Card */}
                 <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white p-3.5 rounded-2xl shadow-md space-y-1">
                   <div className="flex items-center justify-between text-[11px] font-bold text-pink-200">
@@ -160,7 +194,7 @@ export const PrayerTimeSidebar: React.FC<PrayerTimeSidebarProps> = ({
                       in {nextPrayer.remainingFormatted}
                     </span>
                   </div>
-                  <p className="text-xl font-black">
+                  <p className="text-lg font-black">
                     {nextPrayer.name} Prayer
                   </p>
                   <p className="text-xs text-purple-100 font-mono">
@@ -175,21 +209,38 @@ export const PrayerTimeSidebar: React.FC<PrayerTimeSidebarProps> = ({
                   </p>
                   <div className="space-y-1">
                     {prayersList.map((prayer) => {
+                      const isAvail = availability.currentlyAvailable?.id === prayer.id;
                       const isNext = prayer.name === nextPrayer.name;
                       return (
                         <div
                           key={prayer.name}
-                          className={`flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                            isNext
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition ${
+                            isAvail
+                              ? 'bg-emerald-50 text-emerald-900 border-2 border-emerald-500 shadow-xs ring-1 ring-emerald-400'
+                              : isNext
                               ? 'bg-purple-100/90 text-[#6B1B7E] border border-[#6B1B7E]/30'
                               : 'text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           <span className="flex items-center gap-1.5">
-                            {isNext && <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F]" />}
+                            {isAvail ? (
+                              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                            ) : isNext ? (
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F]" />
+                            ) : null}
                             <span>{prayer.name}</span>
+                            {isAvail && (
+                              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-emerald-600 text-white">
+                                Available Now
+                              </span>
+                            )}
+                            {isNext && !isAvail && (
+                              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-pink-100 text-[#E0107F]">
+                                Next
+                              </span>
+                            )}
                           </span>
-                          <span className="font-mono text-slate-900">{prayer.time}</span>
+                          <span className={`font-mono ${isAvail ? 'text-emerald-800 font-black' : 'text-slate-900'}`}>{prayer.time}</span>
                         </div>
                       );
                     })}

@@ -26,11 +26,11 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
-  // Height configurations mapping cleanly across layouts
+  // Height configurations mapping cleanly across layouts (prominent & readable)
   const heightClasses = {
-    xs: 'h-7 sm:h-8',
-    sm: 'h-9 sm:h-10 md:h-11',
-    md: 'h-13 sm:h-15 md:h-17',
+    xs: 'h-8 sm:h-9',
+    sm: 'h-11 sm:h-12 md:h-13',
+    md: 'h-14 sm:h-16 md:h-18',
     lg: 'h-20 sm:h-22 md:h-24',
     xl: 'h-26 sm:h-28 md:h-32'
   }[size];

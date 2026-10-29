@@ -62,31 +62,31 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isSpiritualActive = ['namaz', 'namaz_salah_guide', 'namaz_tahajjud', 'duas', 'worship_guide'].includes(currentView);
 
   return (
-    <header className="sticky top-0 z-50 py-2.5 px-3 sm:px-6 transition-all duration-300 pointer-events-none">
+    <header className="sticky top-0 z-50 py-3 sm:py-4 px-3 sm:px-6 transition-all duration-300 pointer-events-none">
       
-      {/* Integrated Biosciences Style Floating Capsule Container */}
-      <div className="max-w-6xl mx-auto rounded-full bg-white/90 backdrop-blur-md border border-[#6B1B7E]/15 shadow-sm shadow-[#6B1B7E]/5 px-3 sm:px-6 py-2 transition-all duration-300 pointer-events-auto">
-        <div className="flex items-center justify-between gap-3 sm:gap-6 min-h-[44px] sm:min-h-[48px]">
+      {/* Big, Highly Interactive Floating Capsule Navbar */}
+      <div className="max-w-7xl mx-auto rounded-full bg-white/95 backdrop-blur-xl border-2 border-[#6B1B7E]/25 shadow-xl shadow-[#6B1B7E]/10 px-5 sm:px-8 py-3 sm:py-4 transition-all duration-300 pointer-events-auto">
+        <div className="flex items-center justify-between gap-3 sm:gap-6 min-h-[58px] sm:min-h-[66px]">
           
-          {/* Brand Animated Logo */}
+          {/* Prominent Interactive Brand Animated Logo */}
           <button
             onClick={() => {
               setCurrentView('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center focus:outline-none text-left shrink-0 cursor-pointer transition-transform hover:scale-[1.02] origin-left"
+            className="flex items-center focus:outline-none text-left shrink-0 cursor-pointer transition-transform hover:scale-[1.03] active:scale-[0.98] origin-left"
             aria-label="True Way Quran Home"
           >
             <div className="hidden sm:block">
-              <AnimatedLogo size="sm" showUrl={true} />
+              <AnimatedLogo size="md" showUrl={true} />
             </div>
             <div className="block sm:hidden">
-              <AnimatedLogo size="xs" showUrl={false} />
+              <AnimatedLogo size="sm" showUrl={false} />
             </div>
           </button>
 
-          {/* Desktop Navigation Menu (Integrated Biosciences Pill Style) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
+          {/* Desktop Navigation Menu (Big, prominent, easy to interact with) */}
+          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
             
             {/* 1. Home */}
             <button
@@ -94,10 +94,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setCurrentView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 cursor-pointer ${
+              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
                 currentView === 'home'
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
-                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
+                  ? 'bg-[#6B1B7E] text-white font-black shadow-sm'
+                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50'
               }`}
             >
               Home
@@ -116,14 +116,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <button
                 onClick={() => setLearnDropdownOpen(!learnDropdownOpen)}
-                className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 flex items-center gap-1 cursor-pointer ${
+                className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
                   isLearnActive
                     ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
                     : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
                 }`}
               >
                 <span>Learn</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isLearnActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${learnDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${isLearnActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${learnDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {learnDropdownOpen && (
@@ -208,15 +208,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setCurrentView('quran');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
                 currentView === 'quran'
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
+                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
                   : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
               }`}
             >
-              <BookOpen className={`w-3.5 h-3.5 ${currentView === 'quran' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
+              <BookOpen className={`w-4 h-4 ${currentView === 'quran' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
               <span>Full Quran</span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
                 currentView === 'quran' ? 'bg-white/20 text-white' : 'bg-pink-100 text-[#E0107F]'
               }`}>
                 114
@@ -236,29 +236,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <button
                 onClick={() => setSpiritualDropdownOpen(!spiritualDropdownOpen)}
-                className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 flex items-center gap-1 cursor-pointer ${
+                className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
                   isSpiritualActive
-                    ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
+                    ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
                     : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
                 }`}
               >
                 <span>Namaz & Spiritual</span>
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${isSpiritualActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${spiritualDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${isSpiritualActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${spiritualDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {spiritualDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-84 bg-white/98 backdrop-blur-xl border border-[#6B1B7E]/15 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
+                <div className="absolute top-full left-0 mt-2 w-88 bg-white/98 backdrop-blur-xl border border-[#6B1B7E]/15 rounded-2xl shadow-xl p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
                   <button
                     onClick={() => {
                       setCurrentView('namaz_salah_guide');
                       setSpiritualDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full text-left p-2.5 rounded-xl bg-purple-50/70 hover:bg-purple-100/80 transition flex items-start gap-2.5 cursor-pointer border border-purple-200/60"
+                    className="w-full text-left p-3 rounded-xl bg-purple-50/70 hover:bg-purple-100/80 transition flex items-start gap-3 cursor-pointer border border-purple-200/60"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-[#E0107F] mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4.5 h-4.5 text-[#E0107F] mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-[#6B1B7E] leading-snug">
+                      <p className="text-xs sm:text-[13px] font-bold text-[#6B1B7E] leading-snug">
                         A Step-by-Step Guide to Daily Prayer (Salah)
                       </p>
                       <p className="text-[10px] text-slate-500">Wudu, 5 daily prayers Rak'at table & Salam Center manual</p>
@@ -271,11 +271,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setSpiritualDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full text-left p-2.5 rounded-xl bg-pink-50/70 hover:bg-pink-100/80 transition flex items-start gap-2.5 cursor-pointer border border-pink-200/60"
+                    className="w-full text-left p-3 rounded-xl bg-pink-50/70 hover:bg-pink-100/80 transition flex items-start gap-3 cursor-pointer border border-pink-200/60"
                   >
-                    <Moon className="w-4 h-4 text-[#6B1B7E] mt-0.5 shrink-0" />
+                    <Moon className="w-4.5 h-4.5 text-[#6B1B7E] mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-[#6B1B7E] leading-snug">
+                      <p className="text-xs sm:text-[13px] font-bold text-[#6B1B7E] leading-snug">
                         How to Pray Tahajjud
                       </p>
                       <p className="text-[10px] text-slate-500">Night vigil window, Rak'at format & Prophetic supplication</p>
@@ -288,11 +288,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setSpiritualDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer"
+                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
                   >
-                    <Clock className="w-4 h-4 text-[#6B1B7E] mt-0.5 shrink-0" />
+                    <Clock className="w-4.5 h-4.5 text-[#6B1B7E] mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Auto Namaz Times & Qibla</p>
+                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">Auto Namaz Times & Qibla</p>
                       <p className="text-[10px] text-slate-500">Live calculation schedule based on location</p>
                     </div>
                   </button>
@@ -303,11 +303,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setSpiritualDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer"
+                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4 text-[#E0107F] mt-0.5 shrink-0" />
+                    <Sparkles className="w-4.5 h-4.5 text-[#E0107F] mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">True Way of Namaz & Roza</p>
+                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">True Way of Namaz & Roza</p>
                       <p className="text-[10px] text-slate-500">Eid, Janazah, Postures & Right/Wrong comparisons</p>
                     </div>
                   </button>
@@ -318,11 +318,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setSpiritualDropdownOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer"
+                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
                   >
-                    <BookMarked className="w-4 h-4 text-[#5B2A9A] mt-0.5 shrink-0" />
+                    <BookMarked className="w-4.5 h-4.5 text-[#5B2A9A] mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900">Authentic Duas Library</p>
+                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">Authentic Duas Library</p>
                       <p className="text-[10px] text-slate-500">Morning, evening & daily Sunnah supplications</p>
                     </div>
                   </button>
@@ -336,9 +336,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setCurrentView('pricing');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 cursor-pointer ${
+              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
                 ['pricing', 'courses'].includes(currentView)
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
+                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
                   : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
               }`}
             >
@@ -351,9 +351,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setCurrentView('contact');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-semibold transition-all duration-150 cursor-pointer ${
+              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
                 currentView === 'contact'
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
+                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
                   : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
               }`}
             >
@@ -361,59 +361,59 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Right Action Controls (Integrated Biosciences Style) */}
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Right Action Controls (Enlarged, prominent, easy to click) */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
 
             {currentUser ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 {currentUser.role === 'admin' && (
                   <button
                     onClick={() => setCurrentView('admin')}
-                    className="p-1.5 text-xs font-bold rounded-full bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/20 hover:bg-purple-100 transition cursor-pointer"
+                    className="p-2.5 text-xs font-bold rounded-full bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/20 hover:bg-purple-100 transition cursor-pointer"
                     title="LMS Admin Database & Portal"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#6B1B7E]" />
+                    <ShieldCheck className="w-4 h-4 text-[#6B1B7E]" />
                   </button>
                 )}
 
                 <button
                   onClick={() => setCurrentView('dashboard')}
-                  className={`px-3 sm:px-4 py-1.5 text-xs font-bold rounded-full border flex items-center gap-1.5 cursor-pointer max-w-[110px] sm:max-w-[140px] truncate transition ${
+                  className={`px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold rounded-full border flex items-center gap-2 cursor-pointer max-w-[130px] sm:max-w-[160px] truncate transition ${
                     currentView === 'dashboard'
                       ? 'bg-[#6B1B7E] text-white border-[#6B1B7E]'
                       : 'bg-purple-50 text-[#6B1B7E] border-[#6B1B7E]/20 hover:bg-purple-100'
                   }`}
                   title={`Student Portal & Hifz Tracker: ${currentUser.name}`}
                 >
-                  <UserIcon className={`w-3.5 h-3.5 shrink-0 ${currentView === 'dashboard' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
+                  <UserIcon className={`w-4 h-4 shrink-0 ${currentView === 'dashboard' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
                   <span className="truncate">{currentUser.name.split(' ')[0]}</span>
                 </button>
 
                 <button
                   onClick={() => setCurrentView('hifz')}
-                  className={`hidden md:inline-flex px-3 py-1.5 text-xs font-bold rounded-full border items-center gap-1 cursor-pointer transition ${
+                  className={`hidden md:inline-flex px-3.5 py-2.5 text-xs sm:text-sm font-bold rounded-full border items-center gap-1.5 cursor-pointer transition ${
                     currentView === 'hifz'
                       ? 'bg-[#E0107F] text-white border-[#E0107F]'
                       : 'bg-pink-50 text-[#E0107F] border-pink-200 hover:bg-pink-100'
                   }`}
                   title="Hifz Memorization Program"
                 >
-                  <Award className="w-3.5 h-3.5 shrink-0" />
+                  <Award className="w-4 h-4 shrink-0" />
                   <span>Hifz</span>
                 </button>
 
                 <button
                   onClick={onLogout}
                   title="Sign Out"
-                  className="hidden sm:inline-flex p-1.5 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 transition cursor-pointer"
+                  className="hidden sm:inline-flex p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="text-xs font-bold text-[#6B1B7E] bg-purple-50 hover:bg-purple-100 border border-[#6B1B7E]/20 px-3.5 sm:px-4 py-1.5 rounded-full transition cursor-pointer"
+                className="text-xs sm:text-sm font-bold text-[#6B1B7E] bg-purple-50 hover:bg-purple-100 border border-[#6B1B7E]/25 px-5 sm:px-6 py-2.5 rounded-full transition shadow-xs cursor-pointer"
               >
                 Sign In
               </button>
@@ -422,32 +422,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Primary Enroll CTA Pill */}
             <button
               onClick={onOpenEnroll}
-              className="hidden sm:flex bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] hover:opacity-95 text-white text-xs font-bold px-4 sm:px-5 py-1.5 rounded-full shadow-sm hover:shadow-md transition items-center gap-1.5 cursor-pointer"
+              className="hidden sm:flex bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] hover:opacity-95 text-white text-xs sm:text-sm font-bold px-5 sm:px-7 py-2.5 rounded-full shadow-md hover:shadow-lg transition items-center gap-2 cursor-pointer active:scale-95"
             >
-              <Sparkles className="w-3.5 h-3.5 text-pink-200 shrink-0" />
+              <Sparkles className="w-4 h-4 text-pink-200 shrink-0" />
               <span>Enroll Now</span>
             </button>
 
             {/* Mobile 3-Bar Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden relative w-9 h-9 flex flex-col items-center justify-center gap-1 p-2 rounded-full hover:bg-purple-50 transition cursor-pointer focus:outline-none shrink-0"
+              className="lg:hidden relative w-11 h-11 flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-full hover:bg-purple-50 transition cursor-pointer focus:outline-none shrink-0 border border-purple-100"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
               <span 
-                className={`h-0.5 w-4.5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+                className={`h-0.5 w-5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
+                  mobileMenuOpen ? 'rotate-45 translate-y-2' : ''
                 }`} 
               />
               <span 
-                className={`h-0.5 w-4.5 bg-[#E0107F] rounded-full transition-all duration-300 ease-in-out ${
+                className={`h-0.5 w-5 bg-[#E0107F] rounded-full transition-all duration-300 ease-in-out ${
                   mobileMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'
                 }`} 
               />
               <span 
-                className={`h-0.5 w-4.5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+                className={`h-0.5 w-5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
+                  mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
                 }`} 
               />
             </button>

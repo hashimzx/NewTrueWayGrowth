@@ -19,6 +19,7 @@ import {
   Globe
 } from 'lucide-react';
 import { soundEngine } from '../utils/audioSynth';
+import { getPrayerAvailabilitySchedule, PrayerAvailabilitySlot } from '../utils/prayerTimes';
 
 interface PrayerTimes {
   fajr: string;
@@ -244,6 +245,16 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
   };
 
   const { schedule, currentPrayer, nextPrayer, countdown } = getPrayerScheduleStatus();
+  const prayerAvailability = getPrayerAvailabilitySchedule(times, currentTime);
+
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    fajr: Sunrise,
+    sunrise: Sun,
+    dhuhr: Sun,
+    asr: Sun,
+    maghrib: Sunset,
+    isha: Moon
+  };
 
   const formatTimeAmPm = (timeStr: string) => {
     const [hStr, mStr] = timeStr.split(':');
@@ -599,67 +610,161 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
               </div>
             </div>
 
-            {/* 6 Daily Prayer Cards Grid */}
+            {/* CURRENTLY AVAILABLE PRAYER WINDOW ALERT BANNER */}
+            {prayerAvailability.currentlyAvailable && (
+              <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-[#5B2A9A] text-white p-5 sm:p-6 rounded-3xl shadow-xl border-2 border-emerald-300/40 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/30 shadow-inner">
+                    <span className="relative flex h-5 w-5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-5 w-5 bg-emerald-400"></span>
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs">
+                        Currently Available
+                      </span>
+                      <span className="text-emerald-100 text-xs font-semibold">
+                        Prayer Window Open
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white">
+                      {prayerAvailability.currentlyAvailable.name} Salah ({prayerAvailability.currentlyAvailable.arabicName})
+                    </h3>
+                    <p className="text-xs sm:text-sm text-emerald-100 font-medium">
+                      Window: <span className="font-bold underline decoration-emerald-300">{prayerAvailability.currentlyAvailable.startTime}</span> until <span className="font-bold underline decoration-emerald-300">{prayerAvailability.currentlyAvailable.endTime}</span> ({locationInfo.city} time)
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-black/30 backdrop-blur-md px-6 py-3.5 rounded-2xl border border-white/20 text-left md:text-right shrink-0">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-200 block">
+                    Time Left To Pray
+                  </span>
+                  <span className="text-2xl sm:text-3xl font-mono font-black text-amber-300 block">
+                    {prayerAvailability.currentlyAvailable.timeRemainingFormatted}
+                  </span>
+                  <span className="text-[11px] text-white/80 font-medium">
+                    until {prayerAvailability.upcomingNext ? prayerAvailability.upcomingNext.name : 'next prayer'} window begins
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* 6 Daily Prayer Cards Grid with Availability Status */}
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h2 className="text-2xl font-extrabold text-purple-950 flex items-center gap-2">
-                  <Clock className="w-6 h-6 text-pink-600" />
-                  <span>Today's 5 Obligatory Namaz & Sunrise Schedule</span>
-                </h2>
-                <span className="text-xs text-slate-500 font-semibold">
-                  Calculation Method: ISNA / Muslim World League Standard
+                <div>
+                  <h2 className="text-2xl font-extrabold text-purple-950 flex items-center gap-2">
+                    <Clock className="w-6 h-6 text-[#E0107F]" />
+                    <span>Today's 5 Obligatory Namaz & Sunrise Schedule</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Live schedule marking which prayer window is currently active, upcoming, or completed today.
+                  </p>
+                </div>
+                <span className="text-xs text-[#6B1B7E] font-bold bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 self-start sm:self-auto">
+                  Calculation Method: ISNA / MWL Standard
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {schedule.map((p) => {
-                  const isNext = p.id === nextPrayer.id;
-                  const isActive = p.id === currentPrayer.id;
-                  const Icon = p.icon;
+                {prayerAvailability.slots.map((p) => {
+                  const isAvailableNow = p.isAvailableNow;
+                  const isUpcoming = p.status === 'upcoming_next';
+                  const isCompleted = p.status === 'completed';
+                  const Icon = iconMap[p.id] || Sun;
 
                   return (
                     <div
                       key={p.id}
-                      className={`rounded-3xl p-5 border transition flex flex-col justify-between space-y-4 relative overflow-hidden ${
-                        isNext
+                      className={`rounded-3xl p-4 sm:p-5 border-2 transition flex flex-col justify-between space-y-4 relative overflow-hidden ${
+                        isAvailableNow
+                          ? 'bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white text-slate-900 border-emerald-500 shadow-xl ring-2 ring-emerald-500/50'
+                          : isUpcoming
                           ? 'bg-gradient-to-br from-[#2e0854] to-[#4a044e] text-white border-pink-500 shadow-xl ring-2 ring-pink-500/40'
-                          : isActive
-                          ? 'bg-purple-100/70 border-purple-300 text-purple-950 shadow-md'
-                          : 'bg-white border-purple-100 text-slate-900 hover:border-purple-300 shadow-xs'
+                          : 'bg-white border-purple-100/80 text-slate-900 hover:border-purple-300 shadow-xs'
                       }`}
                     >
-                      {isNext && (
-                        <span className="absolute top-2 right-2 px-2 py-0.5 bg-pink-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                          Next
+                      {/* Status Badges */}
+                      {isAvailableNow && (
+                        <div className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-0.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                          <span>Available Now</span>
+                        </div>
+                      )}
+
+                      {isUpcoming && (
+                        <span className="absolute top-2 right-2 px-2.5 py-0.5 bg-pink-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-xs">
+                          Upcoming Next
                         </span>
                       )}
 
-                      <div className="space-y-2">
+                      {isCompleted && (
+                        <span className="absolute top-2 right-2 px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold uppercase tracking-wider rounded-full">
+                          Closed
+                        </span>
+                      )}
+
+                      <div className="space-y-2 pt-2 sm:pt-1">
                         <div className="flex items-center justify-between">
                           <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                            isNext ? 'bg-pink-500/20 text-pink-300' : 'bg-purple-50 text-purple-700'
+                            isAvailableNow
+                              ? 'bg-emerald-600 text-white'
+                              : isUpcoming 
+                              ? 'bg-pink-500/20 text-pink-300' 
+                              : 'bg-purple-50 text-purple-700'
                           }`}>
                             <Icon className="w-5 h-5" />
                           </div>
-                          <span className="font-quran text-xl font-bold">
-                            {p.arabic}
+                          <span className={`font-quran text-xl font-bold ${
+                            isUpcoming ? 'text-pink-200' : isAvailableNow ? 'text-emerald-800' : 'text-[#6B1B7E]'
+                          }`}>
+                            {p.arabicName}
                           </span>
                         </div>
 
                         <div>
-                          <h4 className="text-sm font-extrabold">{p.name}</h4>
-                          <p className={`text-[11px] ${isNext ? 'text-purple-200' : 'text-slate-500'}`}>
+                          <h4 className="text-sm font-extrabold flex items-center gap-1.5">
+                            <span>{p.name}</span>
+                          </h4>
+                          <p className={`text-[11px] leading-tight mt-1 ${
+                            isUpcoming ? 'text-purple-200' : isAvailableNow ? 'text-emerald-900 font-semibold' : 'text-slate-500'
+                          }`}>
                             {p.description}
                           </p>
                         </div>
                       </div>
 
-                      <div className="pt-3 border-t border-purple-100/40">
-                        <span className={`text-2xl font-mono font-black ${
-                          isNext ? 'text-amber-300' : 'text-purple-950'
-                        }`}>
-                          {p.time}
-                        </span>
+                      <div className={`pt-3 border-t ${isUpcoming ? 'border-purple-400/30' : 'border-purple-100/70'} space-y-1`}>
+                        <div className="flex items-baseline justify-between">
+                          <span className={`text-xl sm:text-2xl font-mono font-black ${
+                            isAvailableNow 
+                              ? 'text-emerald-700'
+                              : isUpcoming 
+                              ? 'text-amber-300' 
+                              : 'text-purple-950'
+                          }`}>
+                            {p.startTime}
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] leading-tight font-medium">
+                          {isAvailableNow ? (
+                            <span className="text-emerald-700 font-bold block">
+                              Until {p.endTime} ({p.timeRemainingFormatted} left)
+                            </span>
+                          ) : isUpcoming ? (
+                            <span className="text-pink-200 font-bold block">
+                              Starts in {p.timeRemainingFormatted}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 block">
+                              Window: {p.startTime} – {p.endTime}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

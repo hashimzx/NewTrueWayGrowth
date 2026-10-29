@@ -469,44 +469,49 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Audio Resume Bar (when saved session exists) */}
-      <AudioResumeBar onResume={handleResumeAudio} />
+      {/* Non-Quran Page Elements: Dedicated Quran Page shows ONLY Quran & Navbar as requested */}
+      {currentView !== 'quran' && (
+        <>
+          {/* Floating Audio Resume Bar (when saved session exists) */}
+          <AudioResumeBar onResume={handleResumeAudio} />
 
-      {/* Floating Side Bar for Live Local Time, Namaz & Islamic Calendar */}
-      <PrayerTimeSidebar 
-        onOpenFullNamaz={() => {
-          setCurrentView('namaz');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenWorshipGuide={() => {
-          setCurrentView('worship_guide');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      />
+          {/* Floating Side Bar for Live Local Time, Namaz & World Calendar */}
+          <PrayerTimeSidebar 
+            onOpenFullNamaz={() => {
+              setCurrentView('namaz');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenWorshipGuide={() => {
+              setCurrentView('worship_guide');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
 
-      {/* Floating WhatsApp Action Button (ustadleads.com) */}
-      <a
-        href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20want%20to%20learn%20more%20about%20the%20Academy%20and%20Courses"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Chat with Abdul on WhatsApp"
-        className="fixed bottom-6 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white p-3.5 sm:px-4 sm:py-3.5 rounded-full shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition flex items-center gap-2 group cursor-pointer"
-        title="Chat on WhatsApp (+92 306 8959085)"
-      >
-        <MessageCircle className="w-6 h-6 group-hover:scale-110 transition shrink-0" />
-        <span className="hidden sm:inline text-xs font-black tracking-wide pr-1">
-          Chat on WhatsApp
-        </span>
-      </a>
+          {/* Floating WhatsApp Action Button (ustadleads.com) */}
+          <a
+            href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20want%20to%20learn%20more%20about%20the%20Academy%20and%20Courses"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Chat with Abdul on WhatsApp"
+            className="fixed bottom-6 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white p-3.5 sm:px-4 sm:py-3.5 rounded-full shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition flex items-center gap-2 group cursor-pointer"
+            title="Chat on WhatsApp (+92 306 8959085)"
+          >
+            <MessageCircle className="w-6 h-6 group-hover:scale-110 transition shrink-0" />
+            <span className="hidden sm:inline text-xs font-black tracking-wide pr-1">
+              Chat on WhatsApp
+            </span>
+          </a>
 
-      {/* Footer */}
-      <Footer
-        onNavigate={(view) => {
-          setCurrentView(view);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenEnroll={() => setIsEnrollOpen(true)}
-      />
+          {/* Footer */}
+          <Footer
+            onNavigate={(view) => {
+              setCurrentView(view);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onOpenEnroll={() => setIsEnrollOpen(true)}
+          />
+        </>
+      )}
 
       {/* Modals */}
       <AuthModal
