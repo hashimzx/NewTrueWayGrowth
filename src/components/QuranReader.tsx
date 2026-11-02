@@ -36,6 +36,14 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { SURAH_HISTORICAL_BACKGROUNDS, getAyahTafseerAndHistory } from '../utils/quranTafseerData';
+import {
+  calculateTotalPages,
+  getPageAyahRange,
+  DEFAULT_AYAHS_PER_PAGE,
+  saveQuranReadingPosition,
+  loadQuranReadingPosition,
+  QuranReadingSession
+} from '../utils/quranPagination';
 
 interface QuranReaderProps {
   initialSurah?: number;
@@ -46,47 +54,62 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   initialSurah,
   initialSeekTime
 }) => {
-  // Check if user has a previously saved reading position
+  // Check if user has a previously saved reading position (page, surah, ayahs)
   const [resumedBannerInfo, setResumedBannerInfo] = useState<{
     surahNumber: number;
     surahName: string;
     englishName: string;
+    pageNumber: number;
+    totalPages: number;
+    ayahsPerPage: number;
+    startAyah: number;
+    endAyah: number;
     ayahNumber: number;
     ayahIndex: number;
+    lastReadDate?: string;
   } | null>(() => {
-    try {
-      const saved = localStorage.getItem('twq_last_read_quran_position');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.surahNumber >= 1 && parsed.surahNumber <= 114) {
-          const idx = parsed.ayahIndex !== undefined ? parsed.ayahIndex : 0;
-          return {
-            surahNumber: parsed.surahNumber,
-            surahName: parsed.surahName,
-            englishName: parsed.englishName,
-            ayahNumber: parsed.ayahNumber || (idx + 1),
-            ayahIndex: idx
-          };
-        }
-      }
-    } catch {}
+    const saved = loadQuranReadingPosition();
+    if (saved) {
+      return {
+        surahNumber: saved.surahNumber,
+        surahName: saved.surahName,
+        englishName: saved.englishName,
+        pageNumber: saved.pageNumber,
+        totalPages: saved.totalPages,
+        ayahsPerPage: saved.ayahsPerPage,
+        startAyah: saved.startAyah,
+        endAyah: saved.endAyah,
+        ayahNumber: saved.ayahNumber,
+        ayahIndex: saved.ayahIndex,
+        lastReadDate: saved.lastReadDate
+      };
+    }
     return null;
   });
 
   const [selectedSurahNumber, setSelectedSurahNumber] = useState<number>(() => {
     if (initialSurah && initialSurah >= 1 && initialSurah <= 114) return initialSurah;
-    try {
-      const savedRead = localStorage.getItem('twq_last_read_quran_position');
-      if (savedRead) {
-        const parsed = JSON.parse(savedRead);
-        if (parsed.surahNumber >= 1 && parsed.surahNumber <= 114) {
-          return parsed.surahNumber;
-        }
-      }
-    } catch {}
-    const saved = getAudioSession();
+    const saved = loadQuranReadingPosition();
     if (saved && saved.surahNumber >= 1 && saved.surahNumber <= 114) {
       return saved.surahNumber;
+    }
+    const savedAudio = getAudioSession();
+    if (savedAudio && savedAudio.surahNumber >= 1 && savedAudio.surahNumber <= 114) {
+      return savedAudio.surahNumber;
+    }
+    return 1;
+  });
+
+  // Pages of 10-15 Ayat (Default: 15 Ayat per page)
+  const [ayahsPerPage, setAyahsPerPage] = useState<number>(() => {
+    const saved = loadQuranReadingPosition();
+    return saved?.ayahsPerPage || DEFAULT_AYAHS_PER_PAGE;
+  });
+
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const saved = loadQuranReadingPosition();
+    if (saved && (!initialSurah || saved.surahNumber === initialSurah)) {
+      return saved.pageNumber;
     }
     return 1;
   });
@@ -97,18 +120,14 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   });
 
   const [activeAyahIndex, setActiveAyahIndex] = useState<number | null>(() => {
-    try {
-      const savedRead = localStorage.getItem('twq_last_read_quran_position');
-      if (savedRead) {
-        const parsed = JSON.parse(savedRead);
-        if (parsed.ayahIndex !== undefined && parsed.ayahIndex !== null) {
-          return parsed.ayahIndex;
-        }
-      }
-    } catch {}
+    const saved = loadQuranReadingPosition();
+    if (saved && saved.ayahIndex !== undefined) {
+      return saved.ayahIndex;
+    }
     return null;
   });
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [pausedAyahIndex, setPausedAyahIndex] = useState<number | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(initialSeekTime || 0);
   const [duration, setDuration] = useState<number>(0);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
@@ -216,27 +235,46 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     localStorage.setItem('twq_custom_quran_voices', JSON.stringify(customTeacherRecordings));
   }, [customTeacherRecordings]);
 
-  // Reset step assessment when changing Surah
+  // Reset step assessment & sync page when changing Surah
   useEffect(() => {
     setCurrentStepAyahIndex(0);
     setStepUnlocked(false);
     setStudentAssessment(null);
+
+    const saved = loadQuranReadingPosition();
+    if (saved && saved.surahNumber === selectedSurahNumber) {
+      setCurrentPage(saved.pageNumber);
+    } else {
+      setCurrentPage(1);
+    }
   }, [selectedSurahNumber]);
 
-  // Auto-save current reading position (Surah, Ayah) so reopening Quran restores exact position
+  // Auto-save current reading position (Surah, Page, Ayah range) so reopening Quran next day restores exact page
   useEffect(() => {
-    try {
-      const pos = {
-        surahNumber: selectedSurahNumber,
-        surahName: surahMeta.name,
-        englishName: surahMeta.englishName,
-        ayahIndex: activeAyahIndex !== null ? activeAyahIndex : 0,
-        ayahNumber: activeAyahIndex !== null ? activeAyahIndex + 1 : 1,
-        timestamp: Date.now()
-      };
-      localStorage.setItem('twq_last_read_quran_position', JSON.stringify(pos));
-    } catch {}
-  }, [selectedSurahNumber, activeAyahIndex, surahMeta]);
+    const totalAyahs = fullSurahData?.ayahs.length || surahMeta.ayahsCount || 1;
+    const totalPages = calculateTotalPages(totalAyahs, ayahsPerPage);
+    const validPage = Math.max(1, Math.min(currentPage, totalPages));
+    const range = getPageAyahRange(validPage, totalAyahs, ayahsPerPage);
+
+    const activeIdx = activeAyahIndex !== null ? activeAyahIndex : range.startIndex;
+    const activeNum = activeAyahIndex !== null ? activeAyahIndex + 1 : range.startAyah;
+
+    const session: QuranReadingSession = {
+      surahNumber: selectedSurahNumber,
+      surahName: surahMeta.name,
+      englishName: surahMeta.englishName,
+      pageNumber: validPage,
+      totalPages,
+      ayahsPerPage,
+      startAyah: range.startAyah,
+      endAyah: range.endAyah,
+      ayahIndex: activeIdx,
+      ayahNumber: activeNum,
+      timestamp: Date.now(),
+      lastReadDate: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    };
+    saveQuranReadingPosition(session);
+  }, [selectedSurahNumber, currentPage, ayahsPerPage, activeAyahIndex, fullSurahData, surahMeta]);
 
   // Smooth scroll to restored reading position once Ayahs finish loading
   useEffect(() => {
@@ -578,6 +616,17 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
       s.name.includes(q);
   });
 
+  const handlePageChange = (newPage: number) => {
+    const totalAyahs = fullSurahData?.ayahs.length || surahMeta.ayahsCount || 1;
+    const totalPages = calculateTotalPages(totalAyahs, ayahsPerPage);
+    const clamped = Math.max(1, Math.min(newPage, totalPages));
+    setCurrentPage(clamped);
+    const container = document.getElementById('quran-verses-container');
+    if (container) {
+      container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8" id="quran">
       
@@ -594,11 +643,11 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                   Resumed Reading
                 </span>
                 <span className="text-xs text-pink-200 font-semibold">
-                  Continued where you last left off
+                  Continued where you last left off {resumedBannerInfo.lastReadDate ? `· ${resumedBannerInfo.lastReadDate}` : ''}
                 </span>
               </div>
               <p className="text-base sm:text-lg font-black text-white mt-0.5">
-                Surah {resumedBannerInfo.englishName} ({resumedBannerInfo.surahName}) · Ayah {resumedBannerInfo.ayahNumber}
+                Surah {resumedBannerInfo.englishName} ({resumedBannerInfo.surahName}) · Page {resumedBannerInfo.pageNumber} of {resumedBannerInfo.totalPages} (Ayat {resumedBannerInfo.startAyah}–{resumedBannerInfo.endAyah})
               </p>
             </div>
           </div>
@@ -606,12 +655,16 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             <button
               onClick={() => {
-                const el = document.getElementById(`ayah-${resumedBannerInfo.ayahIndex}`);
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (resumedBannerInfo.surahNumber !== selectedSurahNumber) {
+                  setSelectedSurahNumber(resumedBannerInfo.surahNumber);
+                }
+                setCurrentPage(resumedBannerInfo.pageNumber);
+                const el = document.getElementById('quran-verses-container');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
               className="px-4 py-2 bg-white text-[#6B1B7E] hover:bg-purple-50 rounded-xl text-xs font-black transition shadow-sm cursor-pointer"
             >
-              Go to Ayah {resumedBannerInfo.ayahNumber}
+              Open Page {resumedBannerInfo.pageNumber} (Ayat {resumedBannerInfo.startAyah}–{resumedBannerInfo.endAyah})
             </button>
             <button
               onClick={() => setResumedBannerInfo(null)}
@@ -1356,175 +1409,341 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
             })()}
           </div>
 
-          {/* Verses Breakdown (ALL AYAT OF THE SURAH) */}
-          {isLoadingAyahs ? (
-            <div className="bg-white rounded-3xl p-12 text-center space-y-3 border border-purple-100 shadow-xs">
-              <Loader2 className="w-8 h-8 text-[#6B1B7E] animate-spin mx-auto" />
-              <p className="text-sm font-bold text-slate-700">Loading all {surahMeta.ayahsCount} Ayat of Surah {surahMeta.englishName}...</p>
-            </div>
-          ) : fullSurahData && fullSurahData.ayahs.length > 0 ? (
-            <div className="space-y-4">
-              {fullSurahData.ayahs.map((ayah, index) => {
-                const isThisPlaying = isPlaying && activeAyahIndex === index;
-                const isTafseerOpen = expandedTafseerAyah === index;
-                const ayahInsight = getAyahTafseerAndHistory(
-                  selectedSurahNumber,
-                  ayah.numberInSurah,
-                  surahMeta.englishName,
-                  ayah.arabic,
-                  ayah.translation
-                );
+          {/* Verses Breakdown (PAGINATED 10-15 AYAT PER PAGE WITH READING MEMORY) */}
+          <div id="quran-verses-container" className="scroll-mt-6 space-y-6">
+            {isLoadingAyahs ? (
+              <div className="bg-white rounded-3xl p-12 text-center space-y-3 border border-purple-100 shadow-xs">
+                <Loader2 className="w-8 h-8 text-[#6B1B7E] animate-spin mx-auto" />
+                <p className="text-sm font-bold text-slate-700">Loading all {surahMeta.ayahsCount} Ayat of Surah {surahMeta.englishName}...</p>
+              </div>
+            ) : fullSurahData && fullSurahData.ayahs.length > 0 ? (() => {
+              const totalAyahsCount = fullSurahData.ayahs.length;
+              const totalPages = calculateTotalPages(totalAyahsCount, ayahsPerPage);
+              const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
+              const pageRange = getPageAyahRange(safeCurrentPage, totalAyahsCount, ayahsPerPage);
+              const paginatedAyahs = fullSurahData.ayahs.slice(pageRange.startIndex, pageRange.endIndex);
 
-                const arabicClass = {
-                  md: 'text-2xl leading-loose',
-                  lg: 'text-3xl sm:text-4xl leading-[2.2]',
-                  xl: 'text-4xl sm:text-5xl leading-[2.4]'
-                }[fontSize];
-
-                return (
-                  <div
-                    key={ayah.numberInSurah}
-                    className={`rounded-2xl p-6 transition-all duration-300 border ${
-                      isThisPlaying
-                        ? 'bg-purple-50 border-[#6B1B7E] shadow-md ring-2 ring-[#6B1B7E]/20'
-                        : 'bg-white border-purple-100 hover:border-[#6B1B7E]/40 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-purple-100 mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="w-8 h-8 rounded-full bg-purple-100 text-[#6B1B7E] font-bold text-xs flex items-center justify-center">
-                          {ayah.numberInSurah}
-                        </span>
-                        <span className="text-xs text-[#6B1B7E] font-semibold">
-                          Ayah {fullSurahData.number}:{ayah.numberInSurah}
-                        </span>
+              return (
+                <div className="space-y-6">
+                  {/* Top Pagination Control Bar */}
+                  <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 text-[#6B1B7E] flex items-center justify-center font-black text-sm shrink-0 border border-purple-200">
+                        P{safeCurrentPage}
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (isThisPlaying) {
-                              stopAudio();
-                            } else {
-                              playAyah(index);
-                            }
-                          }}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                            isThisPlaying
-                              ? 'bg-red-600 hover:bg-red-700 text-white shadow-xs'
-                              : 'bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200'
-                          }`}
-                          title={isThisPlaying ? 'Stop playing this verse' : 'Play this verse only'}
-                        >
-                          {isThisPlaying ? (
-                            <>
-                              <Square className="w-3.5 h-3.5 fill-current" />
-                              <span>Stop Verse</span>
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-3.5 h-3.5 fill-[#6B1B7E] text-[#6B1B7E]" />
-                              <span>Play Verse</span>
-                            </>
-                          )}
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setCurrentStepAyahIndex(index);
-                            setMode('recite_practice');
-                          }}
-                          className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] rounded-lg text-xs font-bold border border-purple-200 flex items-center gap-1 cursor-pointer"
-                        >
-                          <Mic className="w-3.5 h-3.5 text-[#E0107F]" />
-                          <span>Practice</span>
-                        </button>
-
-                        <button
-                          onClick={() => setExpandedTafseerAyah(isTafseerOpen ? null : index)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
-                            isTafseerOpen
-                              ? 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white border-transparent shadow-xs'
-                              : 'bg-pink-50 hover:bg-pink-100 text-[#E0107F] border-pink-200'
-                          }`}
-                          title="View Meaning, History & Tafseer Summary"
-                        >
-                          <Info className="w-3.5 h-3.5" />
-                          <span>{isTafseerOpen ? 'Hide Meaning & History' : 'Meaning & History'}</span>
-                        </button>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-black text-slate-800">
+                            Page {safeCurrentPage} of {totalPages}
+                          </span>
+                          <span className="text-xs bg-purple-50 text-[#6B1B7E] font-bold px-2.5 py-0.5 rounded-full border border-purple-200">
+                            Ayat {pageRange.startAyah} – {pageRange.endAyah} of {totalAyahsCount}
+                          </span>
+                          <span className="text-[10px] bg-pink-50 text-[#E0107F] font-bold px-2 py-0.5 rounded-full border border-pink-200 hidden sm:inline-block">
+                            Auto Page Memory Active
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          When you leave or return next day, the Quran reopens at this exact page.
+                        </p>
                       </div>
                     </div>
 
-                    <div className="text-right dir-rtl py-2">
-                      <p className={`font-arabic font-quran font-bold text-[#6B1B7E] ${arabicClass}`}>
-                        {ayah.arabic}
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {/* Ayahs per page toggle (10 or 15 Ayat) */}
+                      <div className="flex items-center gap-1 bg-purple-50 p-1 rounded-xl border border-purple-200 text-xs">
+                        <span className="text-[10px] uppercase font-bold text-[#6B1B7E] px-1.5 hidden sm:inline">Per Page:</span>
+                        {[10, 15].map(cnt => (
+                          <button
+                            key={cnt}
+                            onClick={() => {
+                              setAyahsPerPage(cnt);
+                              setCurrentPage(1);
+                            }}
+                            className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-xs ${
+                              ayahsPerPage === cnt
+                                ? 'bg-[#6B1B7E] text-white shadow-xs'
+                                : 'text-slate-600 hover:text-[#6B1B7E]'
+                            }`}
+                          >
+                            {cnt} Ayat
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Pagination navigation buttons */}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handlePageChange(safeCurrentPage - 1)}
+                          disabled={safeCurrentPage <= 1}
+                          className="px-3 py-1.5 rounded-xl border border-purple-200 text-slate-700 hover:bg-purple-50 disabled:opacity-35 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1 cursor-pointer transition shadow-xs"
+                          title="Previous Page"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                          <span className="hidden sm:inline">Prev</span>
+                        </button>
+
+                        {/* Page selector buttons or dropdown */}
+                        {totalPages <= 7 ? (
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                              <button
+                                key={pageNum}
+                                onClick={() => handlePageChange(pageNum)}
+                                className={`w-8 h-8 rounded-xl font-bold text-xs transition cursor-pointer ${
+                                  pageNum === safeCurrentPage
+                                    ? 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white shadow-xs'
+                                    : 'bg-white border border-purple-200 text-slate-700 hover:bg-purple-50'
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-xs">
+                            <select
+                              value={safeCurrentPage}
+                              onChange={(e) => handlePageChange(Number(e.target.value))}
+                              aria-label="Select Quran page"
+                              className="bg-white border border-purple-200 rounded-xl px-2.5 py-1.5 font-bold text-[#6B1B7E] focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]/20 cursor-pointer"
+                            >
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => {
+                                const pRange = getPageAyahRange(pageNum, totalAyahsCount, ayahsPerPage);
+                                return (
+                                  <option key={pageNum} value={pageNum}>
+                                    Page {pageNum} (Ayat {pRange.startAyah}–{pRange.endAyah})
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => handlePageChange(safeCurrentPage + 1)}
+                          disabled={safeCurrentPage >= totalPages}
+                          className="px-3 py-1.5 rounded-xl bg-[#6B1B7E] text-white hover:bg-[#5B2A9A] disabled:opacity-35 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1 cursor-pointer transition shadow-xs"
+                          title="Next Page"
+                        >
+                          <span className="hidden sm:inline">Next</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Verses Cards on this Page */}
+                  <div className="space-y-4">
+                    {paginatedAyahs.map((ayah, pageIndex) => {
+                      const index = pageRange.startIndex + pageIndex;
+                      const isThisPlaying = isPlaying && activeAyahIndex === index;
+                      const isTafseerOpen = expandedTafseerAyah === index;
+                      const ayahInsight = getAyahTafseerAndHistory(
+                        selectedSurahNumber,
+                        ayah.numberInSurah,
+                        surahMeta.englishName,
+                        ayah.arabic,
+                        ayah.translation
+                      );
+
+                      const arabicClass = {
+                        md: 'text-2xl leading-loose',
+                        lg: 'text-3xl sm:text-4xl leading-[2.2]',
+                        xl: 'text-4xl sm:text-5xl leading-[2.4]'
+                      }[fontSize];
+
+                      return (
+                        <div
+                          key={ayah.numberInSurah}
+                          id={`ayah-${index}`}
+                          className={`rounded-2xl p-6 transition-all duration-300 border ${
+                            isThisPlaying
+                              ? 'bg-purple-50 border-[#6B1B7E] shadow-md ring-2 ring-[#6B1B7E]/20'
+                              : 'bg-white border-purple-100 hover:border-[#6B1B7E]/40 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-purple-100 mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="w-8 h-8 rounded-full bg-purple-100 text-[#6B1B7E] font-bold text-xs flex items-center justify-center">
+                                {ayah.numberInSurah}
+                              </span>
+                              <span className="text-xs text-[#6B1B7E] font-semibold">
+                                Ayah {fullSurahData.number}:{ayah.numberInSurah}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  if (isThisPlaying) {
+                                    stopAudio();
+                                  } else {
+                                    playAyah(index);
+                                  }
+                                }}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                                  isThisPlaying
+                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-xs'
+                                    : 'bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200'
+                                }`}
+                                title={isThisPlaying ? 'Stop playing this verse' : 'Play this verse only'}
+                              >
+                                {isThisPlaying ? (
+                                  <>
+                                    <Square className="w-3.5 h-3.5 fill-current" />
+                                    <span>Stop Verse</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="w-3.5 h-3.5 fill-[#6B1B7E] text-[#6B1B7E]" />
+                                    <span>Play Verse</span>
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setCurrentStepAyahIndex(index);
+                                  setMode('recite_practice');
+                                }}
+                                className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] rounded-lg text-xs font-bold border border-purple-200 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Mic className="w-3.5 h-3.5 text-[#E0107F]" />
+                                <span>Practice</span>
+                              </button>
+
+                              <button
+                                onClick={() => setExpandedTafseerAyah(isTafseerOpen ? null : index)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+                                  isTafseerOpen
+                                    ? 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white border-transparent shadow-xs'
+                                    : 'bg-pink-50 hover:bg-pink-100 text-[#E0107F] border-pink-200'
+                                }`}
+                                title="View Meaning, History & Tafseer Summary"
+                              >
+                                <Info className="w-3.5 h-3.5" />
+                                <span>{isTafseerOpen ? 'Hide Meaning & History' : 'Meaning & History'}</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="text-right dir-rtl py-2">
+                            <p className={`font-arabic font-quran font-bold text-[#6B1B7E] ${arabicClass}`}>
+                              {ayah.arabic}
+                            </p>
+                          </div>
+
+                          {showTransliteration && (
+                            <div className="pt-3 text-xs sm:text-sm font-medium text-[#5B2A9A] italic">
+                              "{ayah.transliteration}"
+                            </div>
+                          )}
+
+                          {showTranslation && (
+                            <div className="pt-2 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
+                              {ayah.translation}
+                            </div>
+                          )}
+
+                          {/* Expandable Tafseer, Asbab al-Nuzul & Ayah Summary Drawer */}
+                          {isTafseerOpen && (
+                            <div className="mt-4 pt-4 border-t border-purple-200 bg-gradient-to-br from-purple-50/80 via-white to-pink-50/40 rounded-2xl p-4 sm:p-5 border space-y-3 animate-fadeIn">
+                              <div className="flex items-center justify-between">
+                                <span className="inline-flex items-center gap-1.5 text-xs font-black text-[#6B1B7E] uppercase tracking-wider">
+                                  <BookOpen className="w-4 h-4 text-[#E0107F]" />
+                                  <span>Ayah {ayah.numberInSurah} · Meaning, History & Tafseer</span>
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-medium">
+                                  {ayahInsight.tafseerReference}
+                                </span>
+                              </div>
+
+                              {/* Meaning Breakdown */}
+                              <div className="bg-white p-3 rounded-xl border border-purple-100 space-y-1">
+                                <p className="text-xs font-bold text-[#6B1B7E] flex items-center gap-1">
+                                  <Sparkles className="w-3.5 h-3.5 text-[#E0107F]" />
+                                  <span>Word Meaning & Spiritual Core:</span>
+                                </p>
+                                <p className="text-xs text-slate-700 leading-relaxed">
+                                  {ayahInsight.meaning}
+                                </p>
+                              </div>
+
+                              {/* Revelation History (Asbab al-Nuzul) */}
+                              <div className="bg-white p-3 rounded-xl border border-purple-100 space-y-1">
+                                <p className="text-xs font-bold text-[#5B2A9A] flex items-center gap-1">
+                                  <History className="w-3.5 h-3.5 text-amber-600" />
+                                  <span>Historical Context & Cause of Revelation (Asbab al-Nuzul):</span>
+                                </p>
+                                <p className="text-xs text-slate-700 leading-relaxed">
+                                  {ayahInsight.historicalContext}
+                                </p>
+                              </div>
+
+                              {/* Summary & Practical Action */}
+                              <div className="bg-purple-100/60 p-3 rounded-xl border border-purple-200 space-y-1">
+                                <p className="text-xs font-bold text-[#6B1B7E] flex items-center gap-1">
+                                  <FileText className="w-3.5 h-3.5 text-[#E0107F]" />
+                                  <span>Actionable Summary & Lesson for Reciter:</span>
+                                </p>
+                                <p className="text-xs text-slate-800 leading-relaxed">
+                                  {ayahInsight.summary}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom Pagination Control Bar */}
+                  <div className="bg-gradient-to-r from-purple-50/90 via-white to-pink-50/90 rounded-2xl p-5 sm:p-6 border border-purple-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1 text-center sm:text-left">
+                      <div className="flex items-center gap-2 justify-center sm:justify-start">
+                        <span className="text-xs font-black text-[#6B1B7E] uppercase tracking-wider">
+                          Current Page: {safeCurrentPage} of {totalPages}
+                        </span>
+                        <span className="text-xs text-slate-500 font-medium">
+                          (Ayat {pageRange.startAyah} to {pageRange.endAyah})
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600">
+                        Your page is saved automatically. Closing the browser or returning next day resumes right here.
                       </p>
                     </div>
 
-                    {showTransliteration && (
-                      <div className="pt-3 text-xs sm:text-sm font-medium text-[#5B2A9A] italic">
-                        "{ayah.transliteration}"
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(safeCurrentPage - 1)}
+                        disabled={safeCurrentPage <= 1}
+                        className="px-4 py-2.5 rounded-xl border border-purple-200 text-slate-700 bg-white hover:bg-purple-50 disabled:opacity-35 disabled:cursor-not-allowed font-bold text-xs flex items-center gap-1.5 cursor-pointer transition shadow-xs"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        <span>Previous Page</span>
+                      </button>
 
-                    {showTranslation && (
-                      <div className="pt-2 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                        {ayah.translation}
-                      </div>
-                    )}
-
-                    {/* Expandable Tafseer, Asbab al-Nuzul & Ayah Summary Drawer */}
-                    {isTafseerOpen && (
-                      <div className="mt-4 pt-4 border-t border-purple-200 bg-gradient-to-br from-purple-50/80 via-white to-pink-50/40 rounded-2xl p-4 sm:p-5 border space-y-3 animate-fadeIn">
-                        <div className="flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-black text-[#6B1B7E] uppercase tracking-wider">
-                            <BookOpen className="w-4 h-4 text-[#E0107F]" />
-                            <span>Ayah {ayah.numberInSurah} · Meaning, History & Tafseer</span>
-                          </span>
-                          <span className="text-[10px] text-slate-500 font-medium">
-                            {ayahInsight.tafseerReference}
-                          </span>
+                      {safeCurrentPage < totalPages ? (
+                        <button
+                          onClick={() => handlePageChange(safeCurrentPage + 1)}
+                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white hover:opacity-95 font-black text-xs flex items-center gap-2 cursor-pointer transition shadow-md"
+                        >
+                          <span>Mark Read & Next Page ({Math.min(safeCurrentPage * ayahsPerPage + 1, totalAyahsCount)}–{Math.min((safeCurrentPage + 1) * ayahsPerPage, totalAyahsCount)})</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        <div className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>Surah {surahMeta.englishName} Completed!</span>
                         </div>
-
-                        {/* Meaning Breakdown */}
-                        <div className="bg-white p-3 rounded-xl border border-purple-100 space-y-1">
-                          <p className="text-xs font-bold text-[#6B1B7E] flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5 text-[#E0107F]" />
-                            <span>Word Meaning & Spiritual Core:</span>
-                          </p>
-                          <p className="text-xs text-slate-700 leading-relaxed">
-                            {ayahInsight.meaning}
-                          </p>
-                        </div>
-
-                        {/* Revelation History (Asbab al-Nuzul) */}
-                        <div className="bg-white p-3 rounded-xl border border-purple-100 space-y-1">
-                          <p className="text-xs font-bold text-[#5B2A9A] flex items-center gap-1">
-                            <History className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Historical Context & Cause of Revelation (Asbab al-Nuzul):</span>
-                          </p>
-                          <p className="text-xs text-slate-700 leading-relaxed">
-                            {ayahInsight.historicalContext}
-                          </p>
-                        </div>
-
-                        {/* Summary & Practical Action */}
-                        <div className="bg-purple-100/60 p-3 rounded-xl border border-purple-200 space-y-1">
-                          <p className="text-xs font-bold text-[#6B1B7E] flex items-center gap-1">
-                            <FileText className="w-3.5 h-3.5 text-[#E0107F]" />
-                            <span>Actionable Summary & Lesson for Reciter:</span>
-                          </p>
-                          <p className="text-xs text-slate-800 leading-relaxed">
-                            {ayahInsight.summary}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
-          ) : null}
+                </div>
+              );
+            })() : null}
+          </div>
 
           {/* Previous / Next Surah Quick Navigator */}
           <div className="flex items-center justify-between pt-6 border-t border-purple-100">

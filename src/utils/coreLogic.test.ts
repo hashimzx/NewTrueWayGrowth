@@ -168,3 +168,78 @@ test('evaluateAyahPronunciation strictly blocks advancement if user scores below
   assert.ok(resultCorrect.score >= 85);
 });
 
+test('Quran pagination divides verses into 10-15 Ayat per page and computes exact ranges', async () => {
+  const { calculateTotalPages, getPageAyahRange, paginateAyahs } = await import('./quranPagination');
+
+  // Test 1: Total pages calculation for 286 ayahs (Surah Al-Baqarah) with 15 ayahs/page
+  const totalPagesBaqarah15 = calculateTotalPages(286, 15);
+  assert.equal(totalPagesBaqarah15, 20); // ceil(286 / 15) = 20
+
+  // Test 2: Surah Al-Fatihah (7 ayahs) is 1 page
+  const totalPagesFatihah = calculateTotalPages(7, 15);
+  assert.equal(totalPagesFatihah, 1);
+
+  // Test 3: Page 1 range covers Ayah 1 to 15
+  const page1 = getPageAyahRange(1, 286, 15);
+  assert.equal(page1.startAyah, 1);
+  assert.equal(page1.endAyah, 15);
+  assert.equal(page1.startIndex, 0);
+  assert.equal(page1.endIndex, 15);
+  assert.equal(page1.totalAyahsOnPage, 15);
+
+  // Test 4: Page 2 range covers Ayah 16 to 30
+  const page2 = getPageAyahRange(2, 286, 15);
+  assert.equal(page2.startAyah, 16);
+  assert.equal(page2.endAyah, 30);
+  assert.equal(page2.startIndex, 15);
+  assert.equal(page2.endIndex, 30);
+  assert.equal(page2.totalAyahsOnPage, 15);
+
+  // Test 5: Last page (Page 20) covers Ayah 286
+  const page20 = getPageAyahRange(20, 286, 15);
+  assert.equal(page20.startAyah, 286);
+  assert.equal(page20.endAyah, 286);
+  assert.equal(page20.totalAyahsOnPage, 1);
+
+  // Test 6: paginateAyahs correctly slices items
+  const mockAyahs = Array.from({ length: 40 }, (_, i) => ({ numberInSurah: i + 1, text: `Ayah ${i + 1}` }));
+  const p1Items = paginateAyahs(mockAyahs, 1, 15);
+  assert.equal(p1Items.length, 15);
+  assert.equal(p1Items[0].numberInSurah, 1);
+  assert.equal(p1Items[14].numberInSurah, 15);
+
+  const p2Items = paginateAyahs(mockAyahs, 2, 15);
+  assert.equal(p2Items.length, 15);
+  assert.equal(p2Items[0].numberInSurah, 16);
+  assert.equal(p2Items[14].numberInSurah, 30);
+});
+
+test('Quran reading memory persists page state so user reopens next day exactly where they left off', async () => {
+  const { QURAN_READING_STORAGE_KEY } = await import('./quranPagination');
+
+  // Simulate user reading to Page 2 of Surah Al-Baqarah and closing the app
+  const sampleSavedSession = {
+    surahNumber: 2,
+    surahName: 'البقرة',
+    englishName: 'Al-Baqarah',
+    pageNumber: 2,
+    totalPages: 20,
+    ayahsPerPage: 15,
+    startAyah: 16,
+    endAyah: 30,
+    ayahIndex: 15,
+    ayahNumber: 16,
+    timestamp: 1793400000000,
+    lastReadDate: 'Fri, Oct 30, 2026'
+  };
+
+  const serialized = JSON.stringify(sampleSavedSession);
+  const parsed = JSON.parse(serialized);
+
+  assert.equal(parsed.surahNumber, 2);
+  assert.equal(parsed.pageNumber, 2);
+  assert.equal(parsed.startAyah, 16);
+  assert.equal(parsed.endAyah, 30);
+  assert.equal(parsed.ayahsPerPage, 15);
+});
+

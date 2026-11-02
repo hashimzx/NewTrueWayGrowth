@@ -22,12 +22,14 @@ interface HifzSectionProps {
   onOpenEnroll: (courseName?: string) => void;
   onOpenQaida?: () => void;
   currency?: 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD';
+  showPricing?: boolean;
 }
 
 export const HifzSection: React.FC<HifzSectionProps> = ({ 
   onOpenEnroll, 
   onOpenQaida,
-  currency = 'GBP' 
+  currency = 'GBP',
+  showPricing = true
 }) => {
   // Interactive Calculator State
   const [selectedGoal, setSelectedGoal] = useState<'juz30' | 'selected' | '5juz' | 'full30'>('juz30');
@@ -486,7 +488,8 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
         </div>
 
         {/* Pricing & Tuition Packages for Hifz (with Card & PayPal) */}
-        <div className="space-y-8" id="hifz-pricing">
+        {showPricing && (
+          <div className="space-y-8" id="hifz-pricing">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-100 px-3.5 py-1 rounded-full">
               Transparent Tuition & Online Purchase
@@ -591,6 +594,7 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
             })}
           </div>
         </div>
+        )}
 
       </div>
     </div>
