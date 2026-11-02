@@ -47,11 +47,6 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-900 rounded-full text-xs font-bold border border-purple-200">
-            <Phone className="w-4 h-4 text-purple-600" />
-            <span>24/7 International Student Support</span>
-          </div>
-
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-purple-950">
             Contact True Way Quran & Book Free Trial
           </h2>

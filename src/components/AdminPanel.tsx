@@ -99,21 +99,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     return {
       '2026-10-29': {
         studentId: 'usr-student-1',
-        studentName: 'Hashim Zafar',
+        studentName: 'Ahmed Al-Mansoor',
         sessionType: 'Portal Sign-in & Daily Islamic Study',
         status: 'present',
         time: '09:00 AM'
       },
       '2026-10-28': {
         studentId: 'usr-student-1',
-        studentName: 'Hashim Zafar',
+        studentName: 'Ahmed Al-Mansoor',
         sessionType: 'Madani Qaida Makharij Verification',
         status: 'present',
         time: '09:15 AM'
       },
       '2026-10-27': {
         studentId: 'usr-student-1',
-        studentName: 'Hashim Zafar',
+        studentName: 'Ahmed Al-Mansoor',
         sessionType: '1-on-1 Quran Hifz Review',
         status: 'present',
         time: '10:30 AM'
@@ -136,7 +136,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     return {
       'twq_student_hifz_usr-student-1': {
         studentId: 'usr-student-1',
-        studentName: 'Hashim Zafar',
+        studentName: 'Ahmed Al-Mansoor',
         activeSurah: 'Surah Al-Mulk (67)',
         sabaqAyahRange: 'Ayah 1 to 10',
         sabaqCompletedToday: true,
@@ -275,10 +275,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-100 pb-5">
               <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-[#6B1B7E] text-[10px] font-black uppercase tracking-wider">
-                  <Server className="w-3.5 h-3.5 text-[#E0107F]" />
-                  <span>Real Database System & Records Explorer</span>
-                </div>
                 <h2 className="text-2xl font-black text-slate-900">
                   LMS Student & Admin Database Console
                 </h2>
@@ -445,7 +441,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       {Object.entries(attendanceData).map(([date, rec]: [string, any]) => (
                         <tr key={date} className="hover:bg-purple-50/30">
                           <td className="p-3 font-mono font-bold text-slate-900">{date}</td>
-                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Hashim Zafar'}</td>
+                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Enrolled Student'}</td>
                           <td className="p-3 text-slate-600">{rec.sessionType}</td>
                           <td className="p-3 font-mono text-slate-600">{rec.time}</td>
                           <td className="p-3">
@@ -474,7 +470,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <tbody className="divide-y divide-purple-50">
                       {Object.entries(hifzRecords).map(([key, rec]: [string, any]) => (
                         <tr key={key} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Hashim Zafar'}</td>
+                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Enrolled Student'}</td>
                           <td className="p-3 font-bold text-[#6B1B7E]">{rec.activeSurah}</td>
                           <td className="p-3 text-slate-600">{rec.sabaqAyahRange}</td>
                           <td className="p-3 text-slate-600">{rec.sabqiTarget}</td>
@@ -593,10 +589,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {activeTab === 'teacher_studio' && (
         <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="pb-4 border-b border-purple-100">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-[#6B1B7E] rounded-full text-xs font-bold mb-2">
-              <Mic className="w-3.5 h-3.5 text-[#E0107F]" />
-              <span>Teacher Audio Studio</span>
-            </div>
             <h2 className="text-xl font-black text-slate-900">Record Custom Recitations for Lessons</h2>
             <p className="text-xs text-slate-600 mt-1">
               Record your own voice to replace the synthesized audio. Students will listen to your authentic recitation and practice directly from your recordings.

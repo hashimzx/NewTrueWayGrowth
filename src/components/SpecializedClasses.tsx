@@ -87,11 +87,6 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
         
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-900 rounded-full text-xs font-bold border border-purple-200">
-            <Users className="w-4 h-4 text-purple-600" />
-            <span>Tailored For Every Stage of Life</span>
-          </div>
-
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-purple-950">
             Dedicated Quran Classes for Kids, Adults & Sisters
           </h2>

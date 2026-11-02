@@ -23,11 +23,6 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
             
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold text-pink-300">
-                <BookOpen className="w-4 h-4 text-pink-400" />
-                <span>Dedicated Holy Quran Section · 114 Surahs</span>
-              </div>
-
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
                 Read, Listen & Verify Your{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-200 to-amber-300">

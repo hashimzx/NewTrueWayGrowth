@@ -56,11 +56,6 @@ export const IslamicResources: React.FC = () => {
       
       {/* Header Banner */}
       <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 sm:p-8 text-center space-y-3 relative overflow-hidden shadow-2xl">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-600/10 border border-red-600/30 rounded-full text-xs font-semibold text-red-400">
-          <Compass className="w-3.5 h-3.5 text-red-500" />
-          <span>True Way Growth Islamic Resource Center</span>
-        </div>
-
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
           Comprehensive Islamic Learning
         </h1>

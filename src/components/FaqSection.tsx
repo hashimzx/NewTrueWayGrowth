@@ -53,11 +53,6 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
           {/* Left Column: Heading & Contact Card */}
           <div className="lg:col-span-5 space-y-6">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-900 rounded-full text-xs font-black uppercase tracking-wider">
-                <HelpCircle className="w-3.5 h-3.5 text-pink-600" />
-                <span>Frequently Asked Questions</span>
-              </div>
-
               <h2 className="text-3xl sm:text-4xl font-black text-purple-950 tracking-tight">
                 Still Got Questions? <br className="hidden sm:inline" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 to-pink-600">

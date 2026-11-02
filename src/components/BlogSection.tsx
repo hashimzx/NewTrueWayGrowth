@@ -129,11 +129,6 @@ export const BlogSection: React.FC = () => {
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 text-purple-900 rounded-full text-xs font-bold border border-purple-200">
-            <BookOpen className="w-4 h-4 text-purple-600" />
-            <span>Islamic Insights & Tajweed Guidance</span>
-          </div>
-
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-purple-950">
             True Way Quran Blog & Educational Articles
           </h2>

@@ -131,11 +131,7 @@ export const EnrollModal: React.FC<EnrollModalProps> = ({
         {/* Top Header Bar */}
         <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white px-6 py-5 flex items-center justify-between shrink-0">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-wider border border-white/30">
-              <Sparkles className="w-3 h-3 text-pink-300" />
-              <span>Global Student Admissions · True Way Quran</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-black mt-1">
+            <h2 className="text-xl sm:text-2xl font-black">
               New Student Registration & Secure Card Checkout
             </h2>
             <p className="text-purple-100 text-xs sm:text-sm">

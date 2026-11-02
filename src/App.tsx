@@ -79,32 +79,21 @@ export default function App() {
     return INITIAL_QAIDA_LESSONS;
   });
 
-  // Current logged in student/admin
+  // Current logged in student/admin (opens logged out by default)
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('twq_current_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Clear any old hardcoded Hashim mock session so the website opens cleanly logged out
+        if (parsed && (parsed.id === 'usr-student-1' || parsed.email === 'hashimzafar2k@gmail.com' || parsed.name === 'Hashim Zafar')) {
+          localStorage.removeItem('twq_current_user');
+          return null;
+        }
+        return parsed;
       } catch {}
     }
-    return {
-      id: 'usr-student-1',
-      name: 'Hashim Zafar',
-      email: 'hashimzafar2k@gmail.com',
-      role: 'student',
-      country: 'United Kingdom',
-      timezone: 'Europe/London (GMT/BST)',
-      enrolledCourseIds: ['course-madani-qaida', 'course-tajweed-rules'],
-      progress: {
-        completedLessonIds: ['lesson-1'],
-        masteredWordIds: ['w-1', 'w-2', 'w-3', 'w-4', 'w-5', 'w-8', 'w-201', 'w-202'],
-        averagePronunciationScore: 89,
-        practiceMinutes: 110,
-        streakDays: 6,
-        lastPracticeDate: new Date().toISOString()
-      },
-      bookmarks: ['w-6', 'w-15']
-    };
+    return null;
   });
 
   // Pronunciation attempts log

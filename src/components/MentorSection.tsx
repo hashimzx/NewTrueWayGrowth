@@ -70,11 +70,6 @@ export const MentorSection: React.FC<MentorSectionProps> = ({ onEnroll, onOpenWh
         
         {/* Top Eyebrow Badge */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-full text-xs font-black text-purple-900 uppercase tracking-widest shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-pink-600" />
-            <span>MEET YOUR MENTOR</span>
-          </div>
-
           <h2 className="text-3xl sm:text-5xl font-black text-purple-950 tracking-tight">
             Hi, I&apos;m <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 via-pink-600 to-purple-600">Abdul Basit Saleem</span>.
           </h2>
@@ -216,9 +211,6 @@ export const MentorSection: React.FC<MentorSectionProps> = ({ onEnroll, onOpenWh
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-8">
             <div className="text-center space-y-3">
-              <span className="inline-block px-3.5 py-1 bg-pink-500/30 border border-pink-400/40 rounded-full text-xs font-black uppercase tracking-wider text-pink-200">
-                30 Days Transformation Program
-              </span>
               <h3 className="text-2xl sm:text-4xl font-black text-white">
                 30 Din Me Banain Apni Pehchaan as Professional Online Quran Teacher
               </h3>

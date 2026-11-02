@@ -146,10 +146,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
 
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-semibold text-pink-200">
-              <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-              <span>Certified Standard · Noorani & Madani Qaida System</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
               Interactive Madani Qaida with AI Voice Assessment
             </h1>

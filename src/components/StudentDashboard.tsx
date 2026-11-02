@@ -284,10 +284,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       <div className="bg-gradient-to-br from-purple-50/90 via-white to-pink-50/70 border-2 border-[#6B1B7E]/25 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#6B1B7E]/15 pb-5">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#6B1B7E] text-white text-[10px] font-black uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Student Portal · Hifz-ul-Quran Tracker</span>
-            </div>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900">
               My Quran Memorization (Hifz) — Daily Sabaq, Sabqi & Manzil
             </h2>
@@ -633,10 +629,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         {/* Quick Academy Help & Schedule */}
         <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 border border-[#6B1B7E]/20 rounded-3xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#6B1B7E]/10 text-[#6B1B7E] text-xs font-bold">
-              <Sparkles className="w-3.5 h-3.5 text-[#E0107F]" />
-              <span>Mentorship Access</span>
-            </div>
             <h4 className="text-base font-black text-slate-900">Need Help with Hifz or Pronunciation?</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
               Book a live 1-on-1 Sabaq & Tajweed verification session with your dedicated Hafiz teacher.

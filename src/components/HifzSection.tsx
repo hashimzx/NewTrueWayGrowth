@@ -149,11 +149,6 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100/90 border border-[#6B1B7E]/20 text-[#6B1B7E] text-xs font-black uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-[#E0107F]" />
-            <span>Online Quran Memorization (Hifz) Course</span>
-          </div>
-
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
             Memorize the Holy Quran with{' '}
             <span className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] bg-clip-text text-transparent">
@@ -305,9 +300,6 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
         {/* Interactive Hifz Milestone Calculator */}
         <div className="bg-white rounded-3xl p-6 sm:p-10 border-2 border-[#6B1B7E]/25 shadow-xl space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-100 px-3 py-1 rounded-full">
-              Personalized Plan Generator
-            </span>
             <h3 className="text-2xl sm:text-3xl font-black text-slate-900">
               Calculate Your Hifz Timeline
             </h3>
@@ -491,9 +483,6 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
         {showPricing && (
           <div className="space-y-8" id="hifz-pricing">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-100 px-3.5 py-1 rounded-full">
-              Transparent Tuition & Online Purchase
-            </span>
             <h3 className="text-3xl sm:text-4xl font-black text-slate-900">
               Hifz Program Tuition & Packages
             </h3>

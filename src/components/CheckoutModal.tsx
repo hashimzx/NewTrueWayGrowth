@@ -262,7 +262,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     required={paymentMethod === 'card'}
                     value={cardHolder}
                     onChange={(e) => setCardHolder(e.target.value)}
-                    placeholder="e.g. Hashim Zafar"
+                    placeholder="e.g. Abdullah Khan"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-[#6B1B7E] focus:bg-white"
                   />
                 </div>

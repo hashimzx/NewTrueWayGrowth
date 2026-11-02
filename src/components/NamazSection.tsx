@@ -536,11 +536,6 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
                 
                 {/* Left: Location & Hijri Info */}
                 <div className="lg:col-span-7 space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-pink-300 text-xs font-bold">
-                    <Compass className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '10s' }} />
-                    <span>Auto-Detected Local Time & Namaz Schedule</span>
-                  </div>
-
                   <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
                     Accurate Prayer Times for{' '}
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-200 to-amber-200">
@@ -781,9 +776,6 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
                 className="bg-white rounded-3xl p-6 border border-[#6B1B7E]/20 shadow-sm hover:shadow-md hover:border-[#E0107F] transition cursor-pointer flex flex-col justify-between space-y-4 group"
               >
                 <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-100 px-2.5 py-1 rounded-full">
-                    Complete Prayer Guide
-                  </span>
                   <h3 className="text-base font-black text-slate-900 group-hover:text-[#6B1B7E] transition">
                     A step-by-step guide to performing the daily Islamic prayer (Salah)
                   </h3>
@@ -803,10 +795,7 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
                 className="bg-white rounded-3xl p-6 border border-indigo-200 shadow-sm hover:shadow-md hover:border-[#E0107F] transition cursor-pointer flex flex-col justify-between space-y-4 group"
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">
-                      Night Vigil (Qiyam-ul-Layl)
-                    </span>
+                  <div className="flex items-center justify-end">
                     <span className="text-xs font-mono font-black text-[#6B1B7E]">
                       {formatTimeAmPm(times.tahajjud)}
                     </span>
@@ -831,9 +820,6 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
                   className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 border border-purple-200 shadow-sm flex flex-col justify-between space-y-4 cursor-pointer hover:border-pink-300 transition group"
                 >
                   <div className="space-y-2">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-purple-700 bg-white px-2.5 py-1 rounded-full">
-                      Post-Namaz Remembrance
-                    </span>
                     <h3 className="text-base font-black text-purple-950">
                       Read Daily Masnoon Duas
                     </h3>
@@ -860,11 +846,7 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
             
             {/* Hero Banner for Step-by-Step Salah Guide */}
             <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/20 text-xs font-black uppercase tracking-wider">
-                  <BookOpen className="w-3.5 h-3.5 text-amber-300" />
-                  <span>Complete Daily Salah Manual</span>
-                </div>
+              <div className="flex flex-wrap items-center justify-end gap-4">
 
                 <a
                   href="https://salamcenter.org/wp-content/uploads/2020/09/Prayer-Guide.pdf"
@@ -1061,11 +1043,7 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
             <div className="bg-gradient-to-r from-[#1f0638] via-[#4a044e] to-[#6B1B7E] rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-5 relative overflow-hidden">
               <div className="absolute -top-20 -right-20 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="flex flex-wrap items-center justify-between gap-4 relative z-10">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/20 text-xs font-black uppercase tracking-wider text-amber-300">
-                  <Moon className="w-3.5 h-3.5" />
-                  <span>Qiyam-ul-Layl · Voluntary Night Prayer</span>
-                </div>
+              <div className="flex flex-wrap items-center justify-end gap-4 relative z-10">
 
                 <a
                   href="https://islamic-relief.org/knowledge-base/how-to-pray-tahajjud/"
@@ -1167,10 +1145,7 @@ export const NamazSection: React.FC<NamazSectionProps> = ({
             <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-3xl p-6 sm:p-8 border border-[#6B1B7E]/20 shadow-md space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-100 px-3 py-1 rounded-full">
-                    Sunnah Supplication (Sahih Al-Bukhari 1120)
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900">
                     The Prophet's ﷺ Authentic Tahajjud Dua
                   </h2>
                 </div>

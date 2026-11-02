@@ -142,8 +142,8 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   const handleCheckInToday = () => {
     const newRecord: AttendanceRecord = {
       id: `att-${Date.now()}`,
-      userId: currentUser?.id || 'usr-student-1',
-      userName: currentUser?.name || 'Hashim Zafar',
+      userId: currentUser?.id || 'usr-student',
+      userName: currentUser?.name || 'Enrolled Student',
       courseId: 'course-quran-teacher',
       courseTitle: 'Online Quran Teacher Masterclass',
       date: todayStr,
@@ -217,11 +217,6 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
             <div className="lg:col-span-8 space-y-4">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold text-pink-300">
-                <UserCheck className="w-4 h-4 text-emerald-400" />
-                <span>Class Attendance & Participation Portal</span>
-              </div>
-
               <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
                 Track Your Quran Class{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-pink-300 to-amber-200">
@@ -235,11 +230,11 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
 
               {/* Student Identification */}
               <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-purple-200">
-                <span>Student: <strong className="text-white">{currentUser?.name || 'Hashim Zafar'}</strong></span>
+                <span>Student: <strong className="text-white">{currentUser?.name || 'Guest Student'}</strong></span>
                 <span>·</span>
-                <span>Email: <strong className="text-white">{currentUser?.email || 'hashimzafar2k@gmail.com'}</strong></span>
+                <span>Email: <strong className="text-white">{currentUser?.email || 'Not logged in'}</strong></span>
                 <span>·</span>
-                <span>Role: <strong className="text-amber-300 uppercase">{currentUser?.role || 'Student'}</strong></span>
+                <span>Role: <strong className="text-amber-300 uppercase">{currentUser?.role || 'Guest'}</strong></span>
               </div>
             </div>
 

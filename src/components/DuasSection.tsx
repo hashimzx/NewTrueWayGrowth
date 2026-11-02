@@ -113,11 +113,6 @@ export const DuasSection: React.FC<DuasSectionProps> = ({ onOpenQuran, onOpenQai
           <div className="absolute top-0 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-xs font-bold text-pink-300">
-              <BookMarked className="w-4 h-4 text-pink-400" />
-              <span>Authentic Islamic Duas & Supplications</span>
-            </div>
-
             <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
               Fortress of the Believer:{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-200 to-amber-300">

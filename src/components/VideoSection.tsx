@@ -62,11 +62,6 @@ export const VideoSection: React.FC<VideoSectionProps> = ({ onEnroll, onExploreQ
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-purple-100 border border-purple-200 rounded-full text-xs font-black text-purple-900 uppercase tracking-widest">
-            <Video className="w-3.5 h-3.5 text-pink-600" />
-            <span>ACADEMY VIDEO SHOWCASE</span>
-          </div>
-
           <h2 className="text-3xl sm:text-5xl font-black text-purple-950 tracking-tight">
             See How We Train <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 via-pink-600 to-purple-600">Online Quran Teachers</span> & Students
           </h2>

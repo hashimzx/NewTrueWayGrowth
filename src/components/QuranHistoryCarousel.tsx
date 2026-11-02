@@ -658,11 +658,6 @@ export const QuranHistoryCarousel: React.FC<{ onExploreQuran?: () => void }> = (
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#6B1B7E]/10 border border-[#6B1B7E]/25 text-[#6B1B7E] text-xs font-black uppercase tracking-wider shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-[#E0107F]" />
-            <span>Interactive Historical Timeline · 22 Chronological Milestones</span>
-          </div>
-
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#6B1B7E] tracking-tight">
             History & Preservation of the{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F]">

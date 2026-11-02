@@ -392,6 +392,52 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     setIsPlaying(false);
     setCurrentTime(0);
     setActiveAyahIndex(null);
+    setPausedAyahIndex(null);
+  };
+
+  const pauseAyah = (index: number) => {
+    if (audioRef.current && activeAyahIndex === index) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      setPausedAyahIndex(index);
+    } else {
+      stopAudio();
+    }
+  };
+
+  const resumeAyah = (index: number) => {
+    if (audioRef.current && activeAyahIndex === index && audioRef.current.currentTime > 0) {
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setPausedAyahIndex(null);
+      }).catch(() => {
+        playAyah(index);
+      });
+    } else {
+      playAyah(index);
+    }
+  };
+
+  const replayAyah = (index: number) => {
+    if (!fullSurahData) return;
+    const ayah = fullSurahData.ayahs[index];
+    if (!ayah) return;
+
+    if (audioRef.current && activeAyahIndex === index) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().then(() => {
+        setIsPlaying(true);
+        setPausedAyahIndex(null);
+      }).catch(() => {
+        playAyah(index);
+      });
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      playAyah(index);
+    }
   };
 
   const togglePlayAudio = () => {
@@ -448,15 +494,18 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
       audioRef.current.pause();
     }
     soundEngine.stopVoice();
+    setPausedAyahIndex(null);
 
     const audioUrl = getAyahAudioUrl(ayah, currentReciter, fullSurahData.number);
     if (!audioUrl) {
       soundEngine.speakArabic(ayah.arabic, 0.85);
       setIsPlaying(true);
       setActiveAyahIndex(index);
+      setPausedAyahIndex(null);
       setTimeout(() => {
         setIsPlaying(false);
         setActiveAyahIndex(null);
+        setPausedAyahIndex(null);
       }, 5000);
       return;
     }
@@ -468,26 +517,31 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     audio.onplay = () => {
       setIsPlaying(true);
       setActiveAyahIndex(index);
+      setPausedAyahIndex(null);
     };
 
     // User requirement: "and when 1 verse or ayat plays end dont start with second verse or ayat in quran"
     audio.onended = () => {
       setIsPlaying(false);
       setActiveAyahIndex(null);
+      setPausedAyahIndex(null);
     };
 
     audio.onerror = () => {
       setIsPlaying(false);
       setActiveAyahIndex(null);
+      setPausedAyahIndex(null);
     };
 
     audio.play().catch(() => {
       soundEngine.speakArabic(ayah.arabic, 0.85);
       setIsPlaying(true);
       setActiveAyahIndex(index);
+      setPausedAyahIndex(null);
       setTimeout(() => {
         setIsPlaying(false);
         setActiveAyahIndex(null);
+        setPausedAyahIndex(null);
       }, 5000);
     });
   };
@@ -683,10 +737,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-semibold text-pink-100 border border-white/20">
-              <Sparkles className="w-3.5 h-3.5 text-pink-200" />
-              <span>Full Quran (114 Surahs) · Complete Verses & Classical Tajweed</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
               Holy Quran Reader & Recitation
             </h1>
@@ -835,10 +885,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
         <div className="bg-white border-2 border-[#6B1B7E]/30 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-100">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-[#6B1B7E] rounded-full text-xs font-extrabold mb-1">
-                <Mic className="w-3.5 h-3.5 text-[#E0107F]" />
-                <span>Strict Pronunciation Verification Mode</span>
-              </div>
               <h2 className="text-xl sm:text-2xl font-black text-[#6B1B7E]">
                 Ayah {fullSurahData.ayahs[currentStepAyahIndex]?.numberInSurah} of {fullSurahData.ayahs.length} ({fullSurahData.englishName})
               </h2>
@@ -895,14 +941,54 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                 </p>
               </div>
 
-              <div className="pt-2 flex items-center justify-center gap-3">
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+                {isPlaying && activeAyahIndex === currentStepAyahIndex ? (
+                  <button
+                    onClick={() => pauseAyah(currentStepAyahIndex)}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    title="Pause verse audio"
+                  >
+                    <Pause className="w-3.5 h-3.5 fill-current" />
+                    <span>Pause</span>
+                  </button>
+                ) : !isPlaying && activeAyahIndex === currentStepAyahIndex && pausedAyahIndex === currentStepAyahIndex ? (
+                  <button
+                    onClick={() => resumeAyah(currentStepAyahIndex)}
+                    className="px-4 py-2 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                    title="Resume verse audio"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Resume</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => playAyah(currentStepAyahIndex)}
+                    className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <Volume2 className="w-3.5 h-3.5 text-[#E0107F]" />
+                    <span>Listen to Scholar First</span>
+                  </button>
+                )}
+
                 <button
-                  onClick={() => playAyah(currentStepAyahIndex)}
-                  className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  onClick={() => replayAyah(currentStepAyahIndex)}
+                  className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                  title="Replay this verse from the beginning"
                 >
-                  <Volume2 className="w-3.5 h-3.5 text-[#E0107F]" />
-                  <span>Listen to Scholar First</span>
+                  <RotateCcw className="w-3.5 h-3.5 text-[#6B1B7E]" />
+                  <span>Replay</span>
                 </button>
+
+                {activeAyahIndex === currentStepAyahIndex && (
+                  <button
+                    onClick={stopAudio}
+                    className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                    title="Stop audio"
+                  >
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    <span>Stop</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -1040,10 +1126,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
         <div className="bg-white border-2 border-[#6B1B7E]/30 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-100">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-[#6B1B7E] rounded-full text-xs font-extrabold mb-1">
-                <PlusCircle className="w-3.5 h-3.5 text-[#E0107F]" />
-                <span>Teacher Voice Recording Studio</span>
-              </div>
               <h2 className="text-2xl font-black text-[#6B1B7E]">
                 Record Quran in Your Own Voice
               </h2>
@@ -1359,10 +1441,10 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
           </div>
 
           {/* Surah Header Banner */}
-          <div className="bg-white border-2 border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-sm">
-            <span className="text-xs font-bold text-[#6B1B7E] uppercase tracking-widest bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+          <div className="bg-white border-2 border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 text-center space-y-3 shadow-sm">
+            <p className="text-xs font-bold text-[#6B1B7E] uppercase tracking-widest">
               Surah {surahMeta.number} · {surahMeta.revelationType} Revelation · {surahMeta.ayahsCount} Verses · Juz {surahMeta.juz}
-            </span>
+            </p>
             <h2 className="font-arabic font-quran text-5xl font-bold text-[#6B1B7E] py-1">
               {surahMeta.name}
             </h2>
@@ -1538,6 +1620,8 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                     {paginatedAyahs.map((ayah, pageIndex) => {
                       const index = pageRange.startIndex + pageIndex;
                       const isThisPlaying = isPlaying && activeAyahIndex === index;
+                      const isThisPaused = !isPlaying && activeAyahIndex === index && pausedAyahIndex === index;
+                      const isThisActive = activeAyahIndex === index;
                       const isTafseerOpen = expandedTafseerAyah === index;
                       const ayahInsight = getAyahTafseerAndHistory(
                         selectedSurahNumber,
@@ -1559,7 +1643,9 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                           id={`ayah-${index}`}
                           className={`rounded-2xl p-6 transition-all duration-300 border ${
                             isThisPlaying
-                              ? 'bg-purple-50 border-[#6B1B7E] shadow-md ring-2 ring-[#6B1B7E]/20'
+                              ? 'bg-purple-50/80 border-[#6B1B7E] shadow-md ring-2 ring-[#6B1B7E]/20'
+                              : isThisPaused
+                              ? 'bg-amber-50/70 border-amber-400 shadow-sm ring-1 ring-amber-300'
                               : 'bg-white border-purple-100 hover:border-[#6B1B7E]/40 hover:shadow-sm'
                           }`}
                         >
@@ -1571,36 +1657,75 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                               <span className="text-xs text-[#6B1B7E] font-semibold">
                                 Ayah {fullSurahData.number}:{ayah.numberInSurah}
                               </span>
+                              {isThisPlaying && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-pink-100 text-[#E0107F] animate-pulse">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F]"></span> Playing
+                                </span>
+                              )}
+                              {isThisPaused && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Paused
+                                </span>
+                              )}
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2">
+                              {/* 1. Play / Pause / Resume Controls */}
+                              {isThisPlaying ? (
+                                <button
+                                  onClick={() => pauseAyah(index)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-amber-600 hover:bg-amber-700 text-white shadow-xs"
+                                  title="Pause playing this verse"
+                                  aria-label={`Pause Ayah ${ayah.numberInSurah}`}
+                                >
+                                  <Pause className="w-3.5 h-3.5 fill-current" />
+                                  <span>Pause</span>
+                                </button>
+                              ) : isThisPaused ? (
+                                <button
+                                  onClick={() => resumeAyah(index)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] hover:opacity-95 text-white shadow-xs"
+                                  title="Resume playing this verse from paused point"
+                                  aria-label={`Resume Ayah ${ayah.numberInSurah}`}
+                                >
+                                  <Play className="w-3.5 h-3.5 fill-current" />
+                                  <span>Resume</span>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => playAyah(index)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200"
+                                  title="Play this verse"
+                                  aria-label={`Play Ayah ${ayah.numberInSurah}`}
+                                >
+                                  <Play className="w-3.5 h-3.5 fill-[#6B1B7E] text-[#6B1B7E]" />
+                                  <span>Play</span>
+                                </button>
+                              )}
+
+                              {/* 2. Replay Control (Available on every verse) */}
                               <button
-                                onClick={() => {
-                                  if (isThisPlaying) {
-                                    stopAudio();
-                                  } else {
-                                    playAyah(index);
-                                  }
-                                }}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                                  isThisPlaying
-                                    ? 'bg-red-600 hover:bg-red-700 text-white shadow-xs'
-                                    : 'bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200'
-                                }`}
-                                title={isThisPlaying ? 'Stop playing this verse' : 'Play this verse only'}
+                                onClick={() => replayAyah(index)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200 hover:border-[#6B1B7E]/40"
+                                title="Replay this verse from the beginning"
+                                aria-label={`Replay Ayah ${ayah.numberInSurah}`}
                               >
-                                {isThisPlaying ? (
-                                  <>
-                                    <Square className="w-3.5 h-3.5 fill-current" />
-                                    <span>Stop Verse</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="w-3.5 h-3.5 fill-[#6B1B7E] text-[#6B1B7E]" />
-                                    <span>Play Verse</span>
-                                  </>
-                                )}
+                                <RotateCcw className="w-3.5 h-3.5 text-[#6B1B7E]" />
+                                <span>Replay</span>
                               </button>
+
+                              {/* 3. Stop button when this verse is currently playing or paused */}
+                              {isThisActive && (
+                                <button
+                                  onClick={stopAudio}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer bg-red-50 hover:bg-red-100 text-red-600 border border-red-200"
+                                  title="Stop playing this verse"
+                                  aria-label={`Stop Ayah ${ayah.numberInSurah}`}
+                                >
+                                  <Square className="w-3.5 h-3.5 fill-current" />
+                                  <span>Stop</span>
+                                </button>
+                              )}
 
                               <button
                                 onClick={() => {

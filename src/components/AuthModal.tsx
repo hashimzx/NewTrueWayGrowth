@@ -45,10 +45,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
+    const fallbackName = email ? email.split('@')[0].replace(/[._-]/g, ' ') : 'Student';
+    const capitalizedName = fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
+
     const newUser: User = {
       id: `usr-${Date.now()}`,
-      name: mode === 'register' ? (name || 'New Student') : (email.includes('admin') ? 'TWQ Director' : 'Hashim Zafar'),
-      email: email || (mode === 'register' ? 'student@truewayquran.com' : 'hashimzafar2k@gmail.com'),
+      name: mode === 'register' ? (name || 'New Student') : (email.includes('admin') ? 'TWQ Director' : capitalizedName),
+      email: email || (mode === 'register' ? 'student@truewayquran.com' : 'student@truewayquran.com'),
       role: email.toLowerCase().includes('admin') ? 'admin' : 'student',
       country: country,
       timezone: 'Europe/London (GMT)',
@@ -71,8 +74,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const loginAsDemoStudent = () => {
     const studentUser: User = {
       id: 'demo-student-1',
-      name: 'Hashim Zafar',
-      email: 'hashimzafar2k@gmail.com',
+      name: 'Enrolled Student',
+      email: 'student@truewayquran.com',
       role: 'student',
       country: 'United Kingdom',
       timezone: 'Europe/London (GMT)',
@@ -244,7 +247,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Hashim Zafar"
+                      placeholder="e.g. Abdullah Khan"
                       className="w-full pl-9 pr-3 py-2.5 bg-purple-50/50 border border-purple-200 rounded-xl text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
                     />
                   </div>

@@ -164,11 +164,6 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({
       
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 border border-[#6B1B7E]/20 rounded-full text-xs font-bold text-[#6B1B7E]">
-          <GraduationCap className="w-4 h-4 text-[#E0107F]" />
-          <span>Transparent International Tuition & Packages</span>
-        </div>
-
         <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-[#6B1B7E]">
           Course Tuition & Hifz Memorization Packages
         </h2>

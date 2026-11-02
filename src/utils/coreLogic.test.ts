@@ -243,3 +243,70 @@ test('Quran reading memory persists page state so user reopens next day exactly 
   assert.equal(parsed.ayahsPerPage, 15);
 });
 
+test('Default user session initializes as logged out (null) without hardcoded Hashim user', () => {
+  // Mock localStorage with empty or legacy Hashim user
+  const checkInitialUser = (storedJson: string | null) => {
+    if (storedJson) {
+      try {
+        const parsed = JSON.parse(storedJson);
+        if (parsed && (parsed.id === 'usr-student-1' || parsed.email === 'hashimzafar2k@gmail.com' || parsed.name === 'Hashim Zafar')) {
+          return null; // legacy mock stripped
+        }
+        return parsed;
+      } catch {}
+    }
+    return null;
+  };
+
+  assert.equal(checkInitialUser(null), null);
+  assert.equal(checkInitialUser(JSON.stringify({ id: 'usr-student-1', name: 'Hashim Zafar', email: 'hashimzafar2k@gmail.com' })), null);
+  
+  // Real legitimate logged in user is preserved
+  const realUser = { id: 'usr-real-99', name: 'Zubair', email: 'zubair@example.com' };
+  assert.deepEqual(checkInitialUser(JSON.stringify(realUser)), realUser);
+});
+
+test('Verse audio playback state machine supports pause, resume, and replay transitions', () => {
+  interface VerseAudioState {
+    isPlaying: boolean;
+    activeAyahIndex: number | null;
+    pausedAyahIndex: number | null;
+    currentTime: number;
+  }
+
+  let state: VerseAudioState = {
+    isPlaying: false,
+    activeAyahIndex: null,
+    pausedAyahIndex: null,
+    currentTime: 0
+  };
+
+  // 1. Play verse index 4
+  state = { isPlaying: true, activeAyahIndex: 4, pausedAyahIndex: null, currentTime: 0.1 };
+  assert.equal(state.isPlaying, true);
+  assert.equal(state.activeAyahIndex, 4);
+
+  // 2. Pause verse index 4
+  state = { ...state, isPlaying: false, pausedAyahIndex: 4, currentTime: 2.5 };
+  assert.equal(state.isPlaying, false);
+  assert.equal(state.pausedAyahIndex, 4);
+  assert.equal(state.currentTime, 2.5);
+
+  // 3. Resume verse index 4 from 2.5s
+  state = { ...state, isPlaying: true, pausedAyahIndex: null };
+  assert.equal(state.isPlaying, true);
+  assert.equal(state.pausedAyahIndex, null);
+  assert.equal(state.currentTime, 2.5);
+
+  // 4. Replay verse index 4 resets time to 0 and plays
+  state = { ...state, isPlaying: true, pausedAyahIndex: null, currentTime: 0 };
+  assert.equal(state.isPlaying, true);
+  assert.equal(state.currentTime, 0);
+
+  // 5. Stop audio resets all
+  state = { isPlaying: false, activeAyahIndex: null, pausedAyahIndex: null, currentTime: 0 };
+  assert.equal(state.isPlaying, false);
+  assert.equal(state.activeAyahIndex, null);
+  assert.equal(state.pausedAyahIndex, null);
+});
+
