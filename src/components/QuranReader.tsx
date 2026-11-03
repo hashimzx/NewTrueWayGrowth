@@ -276,18 +276,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     saveQuranReadingPosition(session);
   }, [selectedSurahNumber, currentPage, ayahsPerPage, activeAyahIndex, fullSurahData, surahMeta]);
 
-  // Smooth scroll to restored reading position once Ayahs finish loading
-  useEffect(() => {
-    if (!isLoadingAyahs && fullSurahData && activeAyahIndex !== null && activeAyahIndex > 0) {
-      const timer = setTimeout(() => {
-        const el = document.getElementById(`ayah-${activeAyahIndex}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoadingAyahs, fullSurahData, activeAyahIndex]);
 
   // Handle initial seek time if provided
   useEffect(() => {

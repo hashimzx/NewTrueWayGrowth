@@ -622,13 +622,27 @@ export const QuranHistoryCarousel: React.FC<{ onExploreQuran?: () => void }> = (
     return () => clearInterval(timer);
   }, [isAutoPlaying, currentIndex]);
 
-  // Center active thumbnail in timeline on slide change
+  const isInitialMount = useRef(true);
+
+  // Center active thumbnail in timeline on slide change without scrolling the page window
   useEffect(() => {
-    if (timelineScrollRef.current) {
-      const activeEl = timelineScrollRef.current.querySelector(`[data-slide-index="${currentIndex}"]`) as HTMLElement;
-      if (activeEl) {
-        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
+    // Prevent any scrolling on initial mount so website stays at top
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    const container = timelineScrollRef.current;
+    if (!container) return;
+
+    const activeEl = container.querySelector(`[data-slide-index="${currentIndex}"]`) as HTMLElement;
+    if (activeEl) {
+      // Calculate target horizontal scroll position strictly inside the container
+      const targetLeft = activeEl.offsetLeft - (container.clientWidth / 2) + (activeEl.clientWidth / 2);
+      container.scrollTo({
+        left: Math.max(0, targetLeft),
+        behavior: 'smooth'
+      });
     }
   }, [currentIndex]);
 

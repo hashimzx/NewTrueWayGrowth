@@ -48,6 +48,16 @@ export default function App() {
     return 'home';
   });
 
+  // Guarantee page opens at top and disable automatic scroll restoration on load
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo(0, 0);
+    }
+  }, []);
+
   // Keep URL search query in sync with currentView
   useEffect(() => {
     try {
