@@ -19,6 +19,7 @@ import { FaqSection } from './components/FaqSection';
 import { ContactSection } from './components/ContactSection';
 import { TrialModal } from './components/TrialModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { PrayerTimeSidebar } from './components/PrayerTimeSidebar';
 import { StudentDashboard } from './components/StudentDashboard';
 import { TeacherDashboard } from './components/TeacherDashboard';
 import { AdminPanel } from './components/AdminPanel';
@@ -318,6 +319,18 @@ export default function App() {
       <Footer
         onNavigate={handleNavigate}
         onOpenTrialModal={() => handleOpenTrialModal()}
+      />
+
+      {/* Floating Worldwide Student Namaz, Live Clock & Prayer Calling Sidebar */}
+      <PrayerTimeSidebar
+        onOpenFullNamaz={() => {
+          setCurrentView('namaz');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenWorshipGuide={() => {
+          setCurrentView('namaz');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       {/* Floating WhatsApp Button */}

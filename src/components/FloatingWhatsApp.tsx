@@ -11,7 +11,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleClick = () => {
-    const text = encodeURIComponent('Hello TrueWayGrowth, I would like to discuss digital marketing services for my business.');
+    const text = encodeURIComponent('Assalam-o-Alaikum, I would like to inquire about Quran classes at True Way Quran Academy.');
     window.open(`https://wa.me/${phoneNumber}?text=${text}`, '_blank');
   };
 
@@ -39,7 +39,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({
           onClick={handleClick}
           onMouseEnter={() => setShowTooltip(true)}
           className="relative w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white flex items-center justify-center shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 cursor-pointer"
-          aria-label="Chat with TrueWayGrowth on WhatsApp"
+          aria-label="Chat with True Way Quran Academy on WhatsApp"
         >
           <MessageCircle className="w-7 h-7" />
         </button>

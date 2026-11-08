@@ -148,13 +148,27 @@ export function calculateQibla(lat: number, lng: number): number {
 }
 
 /**
+ * Calculates exact timezone offset in decimal hours for an IANA timezone
+ */
+export function getTimezoneOffsetHours(timezone: string, date: Date = new Date()): number {
+  try {
+    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+    return (tzDate.getTime() - utcDate.getTime()) / (3600 * 1000);
+  } catch {
+    return -date.getTimezoneOffset() / 60;
+  }
+}
+
+/**
  * Astronomical Solar Prayer Times Calculation
  */
 export function computePrayerTimes(
   date: Date = new Date(),
   lat: number = 51.5074,
   lng: number = -0.1278,
-  isHanafiAsr: boolean = true
+  isHanafiAsr: boolean = true,
+  timezone?: string
 ): {
   fajr: Date;
   sunrise: Date;
@@ -199,33 +213,34 @@ export function computePrayerTimes(
   const eqt = (q / 15 - RA) * 60;
 
   // Solar Noon (Dhuhr)
-  // Timezone offset of target date in hours
-  const tzOffset = -date.getTimezoneOffset() / 60;
+  // Timezone offset of target country/date in hours
+  const tzOffset = timezone ? getTimezoneOffsetHours(timezone, date) : -date.getTimezoneOffset() / 60;
   const noonHour = 12 + tzOffset - lng / 15 - eqt / 60;
 
-  // Sun hour angle helper for given depression angle
-  const hourAngle = (angle: number): number => {
+  // Sun hour angle helper for given solar altitude (positive = above horizon, negative = below horizon)
+  const hourAngleForAltitude = (altDeg: number): number => {
     const cosHA =
-      (-Math.sin(degToRad(angle)) - Math.sin(degToRad(lat)) * Math.sin(degToRad(dec))) /
+      (Math.sin(degToRad(altDeg)) - Math.sin(degToRad(lat)) * Math.sin(degToRad(dec))) /
       (Math.cos(degToRad(lat)) * Math.cos(degToRad(dec)));
-    if (cosHA > 1) return 0;
-    if (cosHA < -1) return 180;
+    if (cosHA >= 1) return 0;
+    if (cosHA <= -1) return 180;
     return radToDeg(Math.acos(cosHA));
   };
 
-  // Asr hour angle (shadow ratio: Hanafi = 2, Shafi'i = 1)
+  // Asr hour angle: solar altitude where shadow length equals (shadowFactor + noonShadow)
+  // shadowFactor: Hanafi = 2, Shafi'i = 1
   const shadowFactor = isHanafiAsr ? 2 : 1;
-  const asrAngle = radToDeg(
+  const asrAltitude = radToDeg(
     Math.atan(1 / (shadowFactor + Math.tan(degToRad(Math.abs(lat - dec)))))
   );
-  const asrHA = hourAngle(90 - asrAngle);
+  const asrHA = hourAngleForAltitude(asrAltitude);
 
-  // Fajr depression angle: 18 degrees (MWL/Karachi standard)
-  const fajrHA = hourAngle(18);
-  // Sunrise/Sunset: 0.833 degrees refraction
-  const sunHA = hourAngle(0.833);
-  // Isha depression angle: 17.5 degrees
-  const ishaHA = hourAngle(17.5);
+  // Fajr depression angle: 18 degrees below horizon (-18)
+  const fajrHA = hourAngleForAltitude(-18);
+  // Sunrise/Sunset: 0.833 degrees refraction below horizon (-0.833)
+  const sunHA = hourAngleForAltitude(-0.833);
+  // Isha depression angle: 17.5 degrees below horizon (-17.5)
+  const ishaHA = hourAngleForAltitude(-17.5);
 
   const hoursToDate = (hours: number): Date => {
     const res = new Date(date);
@@ -286,11 +301,12 @@ export function formatLiveClock(d: Date = new Date(), timezone?: string): string
 export function getEstimatedHijriDate(date: Date = new Date()): string {
   try {
     // Standard Islamic Umm al-Qura Intl format
-    return new Intl.DateTimeFormat('en-TN-u-ca-islamic-umalqura', {
+    const formatted = new Intl.DateTimeFormat('en-TN-u-ca-islamic-umalqura', {
       day: 'numeric',
       month: 'long',
       year: 'numeric'
-    }).format(date) + ' AH';
+    }).format(date);
+    return formatted.includes('AH') ? formatted : `${formatted} AH`;
   } catch {
     return '15 Shawwal 1447 AH';
   }
@@ -395,14 +411,28 @@ export function getPrayerAvailabilitySchedule(
     maghrib: string;
     isha: string;
   },
-  now: Date = new Date()
+  now: Date = new Date(),
+  timezone?: string
 ): PrayerAvailabilityScheduleResult {
   const toMins = (t: string) => {
     const parts = (t || '00:00').split(':').map(Number);
     return (parts[0] || 0) * 60 + (parts[1] || 0);
   };
 
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  let nowMinutes = now.getHours() * 60 + now.getMinutes();
+  if (timezone) {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour12: false,
+        hour: 'numeric',
+        minute: 'numeric'
+      }).formatToParts(now);
+      const h = parseInt(parts.find(p => p.type === 'hour')?.value || '0', 10) % 24;
+      const m = parseInt(parts.find(p => p.type === 'minute')?.value || '0', 10);
+      nowMinutes = h * 60 + m;
+    } catch {}
+  }
 
   const fajrM = toMins(times.fajr);
   const sunriseM = toMins(times.sunrise);
@@ -567,7 +597,7 @@ export function getPrayerAvailabilitySchedule(
   const upcomingNext = slots[upcomingIndex] || null;
 
   const activeSummary = currentlyAvailable
-    ? `${currentlyAvailable.name} Salah is AVAILABLE NOW (${currentlyAvailable.startTime} – ${currentlyAvailable.endTime}) · ${currentlyAvailable.timeRemainingFormatted} remaining in prayer window`
+    ? `${currentlyAvailable.name} Salah is ONGOING NOW (${currentlyAvailable.startTime} – ${currentlyAvailable.endTime}) · ${currentlyAvailable.timeRemainingFormatted} remaining in prayer window`
     : 'Waiting for next prayer time';
 
   return {

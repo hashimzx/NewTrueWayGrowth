@@ -43,17 +43,6 @@ export const Hero: React.FC<HeroProps> = ({
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-8">
         
-        {/* Islamic Academy Trust Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-[#6B1B7E]/20 shadow-xs text-xs font-bold text-[#6B1B7E]">
-          <span className="w-2 h-2 rounded-full bg-[#E0107F] animate-pulse" />
-          <span>True Way Quran · Premier International Online Quran Academy</span>
-          <span className="hidden sm:inline text-slate-300">|</span>
-          <span className="hidden sm:inline-flex items-center gap-1 text-emerald-700">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Al-Azhar & Wifaq Certified Tutors</span>
-          </span>
-        </div>
-
         {/* Main Required Headline */}
         <div className="space-y-4">
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-[#6B1B7E] leading-[1.14]">

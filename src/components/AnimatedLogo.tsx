@@ -50,23 +50,14 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
       aria-label="True Way Quran Logo"
     >
       <div
-        className={`relative flex items-center justify-center rounded-2xl transition-all duration-500 transform group-hover:scale-[1.03] ${
+        className={`relative flex items-center justify-center rounded-xl transition-all duration-300 transform group-hover:scale-[1.02] ${
           size === 'xs'
-            ? 'bg-white p-0.5 sm:p-1 shadow-xs border border-[#6E1373]/15'
+            ? 'bg-white p-0.5 sm:p-1 shadow-2xs border border-[#6E1373]/15'
             : lightBg
-            ? 'bg-white p-1 sm:p-1.5 shadow-xs border border-[#6E1373]/15 hover:border-[#C72F8A]/40 hover:shadow-md'
-            : 'bg-white p-1.5 sm:p-2 shadow-lg border border-[#6E1373]/25 hover:border-[#C72F8A]/50 hover:shadow-xl'
+            ? 'bg-white p-1 sm:p-1.5 shadow-xs border border-[#6E1373]/15 hover:border-[#6E1373]/35 hover:shadow-sm'
+            : 'bg-white p-1.5 sm:p-2 shadow-sm border border-[#6E1373]/25 hover:border-[#6E1373]/40 hover:shadow-md'
         }`}
       >
-        {/* Animated Plum-to-Magenta Halo Aura behind logo */}
-        <div
-          className={`absolute -inset-1.5 rounded-2xl transition-opacity duration-700 pointer-events-none blur-md bg-gradient-to-r from-[#561F79] via-[#851C82] to-[#C72F8A] ${
-            isHovered ? 'opacity-50 animate-logo-aura' : 'opacity-25'
-          }`}
-        />
-
-        {/* Ambient Pulsing Glow Underneath */}
-        <div className="absolute inset-0 rounded-2xl bg-white shadow-xs z-0" />
 
         {/* Logo Container with Subtle Floating Breathing Animation */}
         <div className="relative z-10 overflow-hidden rounded-xl flex items-center justify-center animate-logo-float">
@@ -88,14 +79,6 @@ export const AnimatedLogo: React.FC<AnimatedLogoProps> = ({
             />
           </div>
         </div>
-
-        {/* Micro Sparkle Indicator for Active Digital Academy */}
-        <span 
-          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#C72F8A] border-2 border-white shadow-xs animate-ping pointer-events-none" 
-        />
-        <span 
-          className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#C72F8A] border-2 border-white shadow-xs pointer-events-none" 
-        />
       </div>
     </div>
   );
