@@ -1,338 +1,465 @@
 import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
 import { 
-  Send
+  MessageCircle, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Clock, 
+  ShieldCheck, 
+  Send, 
+  CheckCircle2, 
+  Sparkles,
+  BookOpen,
+  Calendar,
+  UserCheck
 } from 'lucide-react';
+import { TrialBookingRequest } from '../types/academy';
+import { getStoredTrialBookings, saveTrialBookings, DEFAULT_QURAN_COURSES } from '../utils/academyDatabase';
 
 interface ContactSectionProps {
-  initialTrack?: 'kids' | 'adults' | 'female' | null;
+  onSuccessSubmit?: (booking: TrialBookingRequest) => void;
 }
 
-export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    course: 'noorani-qaida',
-    studentType: initialTrack || 'kids',
-    tutorGender: initialTrack === 'female' ? 'female' : 'any',
-    timezone: 'Europe/London (GMT/BST)',
-    message: ''
-  });
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
+export const ContactSection: React.FC<ContactSectionProps> = ({ onSuccessSubmit }) => {
+  const [studentName, setStudentName] = useState('');
+  const [studentAge, setStudentAge] = useState('8');
+  const [parentName, setParentName] = useState('');
+  const [parentEmail, setParentEmail] = useState('');
+  const [parentPhone, setParentPhone] = useState('');
+  const [courseId, setCourseId] = useState('course-madani-qaida');
+  const [preferredTeacherGender, setPreferredTeacherGender] = useState<'any' | 'male' | 'female'>('any');
+  const [preferredTimeSlot, setPreferredTimeSlot] = useState('05:00 PM - 06:00 PM (After School)');
+  const [timezone, setTimezone] = useState('Europe/London (UK GMT)');
+  const [notes, setNotes] = useState('');
+  
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    confetti({
-      particleCount: 80,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#7c3aed', '#9333ea', '#c084fc', '#f59e0b']
-    });
+    setErrorMessage('');
+
+    if (!studentName.trim() || !parentEmail.trim() || !parentPhone.trim()) {
+      setErrorMessage('Please fill in student name, parent email, and WhatsApp phone number.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const selectedCourse = DEFAULT_QURAN_COURSES.find(c => c.id === courseId);
+    const courseTitle = selectedCourse ? selectedCourse.title : 'Quran Course';
+
+    const newBooking: TrialBookingRequest = {
+      id: `trial-${Date.now()}`,
+      studentName: studentName.trim(),
+      studentAge: parseInt(studentAge, 10) || 8,
+      parentName: parentName.trim() || studentName.trim(),
+      parentEmail: parentEmail.trim(),
+      parentPhone: parentPhone.trim(),
+      courseId,
+      courseTitle,
+      preferredTeacherGender,
+      preferredDays: ['Monday', 'Wednesday', 'Friday'],
+      preferredTimeSlot,
+      timezone,
+      notes: notes.trim(),
+      status: 'new',
+      createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+    };
+
+    const currentBookings = getStoredTrialBookings();
+    saveTrialBookings([newBooking, ...currentBookings]);
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitted(true);
+      if (onSuccessSubmit) {
+        onSuccessSubmit(newBooking);
+      }
+    }, 400);
+  };
+
+  const handleReset = () => {
+    setStudentName('');
+    setParentName('');
+    setParentEmail('');
+    setParentPhone('');
+    setNotes('');
+    setSubmitted(false);
   };
 
   return (
-    <section className="py-16 bg-[#faf8ff] border-t border-purple-100" id="contact">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <section id="contact" className="py-16 lg:py-24 bg-gradient-to-b from-[#faf8ff] via-white to-purple-50/40 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-purple-950">
-            Contact True Way Quran & Book Free Trial
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[#6B1B7E] text-xs font-bold border border-purple-200">
+            <Calendar className="w-3.5 h-3.5 text-[#E0107F]" />
+            <span>Admissions & Free Trial Booking</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+            Book a Free 3-Day Trial Class
           </h2>
-
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            Have questions about our online Quran courses or tutor availability? Fill out the quick form below or contact our global academic offices via WhatsApp or phone.
+          <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
+            Experience our 1-on-1 teaching quality with zero financial commitment. Fill out the form below or message our admissions director on WhatsApp.
           </p>
         </div>
 
-        {/* Global Contact Numbers Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
-              United Kingdom & Global
+        {/* 4 Direct Contact Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          
+          <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+              <MessageCircle className="w-5 h-5" />
             </div>
-            <p className="text-base font-extrabold text-slate-900">+44 808 5310 303</p>
-            <span className="text-[11px] text-slate-500">Toll-Free International</span>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Direct WhatsApp</span>
+              <a 
+                href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20want%20to%20book%20a%20free%20trial%20class."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-slate-900 text-sm hover:text-emerald-700 block transition"
+              >
+                +92 306 8959085
+              </a>
+              <span className="text-[11px] text-emerald-600 font-medium">Instant 24/7 Response</span>
+            </div>
           </div>
 
-          <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
-              United States & Canada
+          <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#6B1B7E] flex items-center justify-center shrink-0">
+              <Phone className="w-5 h-5" />
             </div>
-            <p className="text-base font-extrabold text-slate-900">+1 (318) 931 0931</p>
-            <span className="text-[11px] text-slate-500">Direct North America Line</span>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">United Kingdom</span>
+              <a 
+                href="tel:+448085310303" 
+                className="font-bold text-slate-900 text-sm hover:text-[#6B1B7E] block transition"
+              >
+                +44 808 5310 303
+              </a>
+              <span className="text-[11px] text-slate-500">Toll-Free UK & Europe</span>
+            </div>
           </div>
 
-          <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold uppercase tracking-wider">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>UstadLeads WhatsApp</span>
+          <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#5B2A9A] flex items-center justify-center shrink-0">
+              <Phone className="w-5 h-5" />
             </div>
-            <p className="text-base font-extrabold text-slate-900">+92 306 8959085</p>
-            <span className="text-[11px] text-emerald-600 font-semibold">Instant Response (Abdul Basit)</span>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">North America</span>
+              <a 
+                href="tel:+13189310931" 
+                className="font-bold text-slate-900 text-sm hover:text-[#6B1B7E] block transition"
+              >
+                +1 (318) 931 0931
+              </a>
+              <span className="text-[11px] text-slate-500">Direct USA & Canada</span>
+            </div>
           </div>
 
-          <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
-              Official Email
+          <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-pink-50 text-[#E0107F] flex items-center justify-center shrink-0">
+              <Mail className="w-5 h-5" />
             </div>
-            <p className="text-base font-extrabold text-slate-900 truncate">support@ustadleads.com</p>
-            <span className="text-[11px] text-slate-500">Admissions & Inquiries</span>
+            <div className="space-y-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Official Email</span>
+              <a 
+                href="mailto:support@ustadleads.com" 
+                className="font-bold text-slate-900 text-sm hover:text-[#E0107F] block transition truncate"
+              >
+                support@ustadleads.com
+              </a>
+              <span className="text-[11px] text-slate-500">Admissions & Support</span>
+            </div>
           </div>
+
         </div>
 
-        {/* Main Grid: Form + Office/WhatsApp Info */}
+        {/* 2-Column: Free Trial Form & Info Column */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          {/* Left Form: Book 3-Day Free Trial */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-purple-100 shadow-xl space-y-6">
-            <div className="border-b border-purple-100 pb-4">
-              <h3 className="text-2xl font-black text-purple-950">
-                Book Your 3-Day Free Trial Class
-              </h3>
-              <p className="text-xs text-slate-600 mt-1">
-                Fill this form to reserve your free sessions. We never share your contact details.
-              </p>
-            </div>
-
-            {isSubmitted ? (
-              <div className="py-12 text-center space-y-4">
-                <div className="w-20 h-20 bg-purple-50 border border-purple-200 rounded-3xl flex items-center justify-center mx-auto shadow-sm p-3">
-                  <img
-                    src="/assets/aistudio/true_way_logo_trimmed.png"
-                    alt="True Way Quran"
-                    className="w-full h-full object-contain"
-                  />
+          {/* Main Booking Form */}
+          <div className="lg:col-span-8 bg-white p-7 sm:p-10 rounded-3xl border border-purple-100 shadow-xl shadow-purple-900/5">
+            {submitted ? (
+              <div className="text-center py-10 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h4 className="text-2xl font-black text-purple-950">Free Trial Request Received!</h4>
-                <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  JazakAllah Khair! Our academic coordinator will contact you via WhatsApp or Email at <strong>{formData.phone || formData.email}</strong> within 2 hours to confirm your tutor schedule.
+                <h3 className="text-2xl font-black text-slate-900">
+                  Trial Class Request Received!
+                </h3>
+                <p className="text-slate-600 text-sm max-w-md mx-auto">
+                  JazakAllah Khair! Mentor Abdul Basit Saleem or our admissions team will message you via WhatsApp within <strong>2 hours</strong> to confirm your teacher and schedule your first 1-on-1 session.
                 </p>
-                <button
-                  onClick={() => setIsSubmitted(false)}
-                  className="px-6 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold"
-                >
-                  Book for Another Student
-                </button>
+                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a
+                    href={`https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20just%20submitted%20a%20free%20trial%20class%20request%20for%20${encodeURIComponent(studentName)}.`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center gap-2"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Open WhatsApp Chat Now</span>
+                  </a>
+                  <button
+                    onClick={handleReset}
+                    className="px-6 py-3 bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] font-bold text-xs rounded-xl transition"
+                  >
+                    Book Another Child
+                  </button>
+                </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                    Request Your Free Trial Class
+                  </h3>
+                  <p className="text-slate-500 text-xs sm:text-sm mt-1">
+                    Select your course, child's age, and preferred schedule. No credit card required.
+                  </p>
+                </div>
+
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">
+                    {errorMessage}
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Parent / Student Full Name *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Student Full Name *
                     </label>
                     <input
                       type="text"
                       required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g. Brother Ahmad / Sister Fatima"
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={studentName}
+                      onChange={e => setStudentName(e.target.value)}
+                      placeholder="e.g. Rayan Farooq"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Email Address *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Student Age
+                    </label>
+                    <select
+                      value={studentAge}
+                      onChange={e => setStudentAge(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden bg-white"
+                    >
+                      <option value="4">4 Years Old (Early Phonics)</option>
+                      <option value="5">5 Years Old</option>
+                      <option value="6">6 Years Old</option>
+                      <option value="7">7 Years Old</option>
+                      <option value="8">8 Years Old</option>
+                      <option value="9">9 Years Old</option>
+                      <option value="10">10 Years Old</option>
+                      <option value="11">11 Years Old</option>
+                      <option value="12">12 Years Old</option>
+                      <option value="14">13-16 Years Old (Youth)</option>
+                      <option value="25">Adult (18+)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Parent / Guardian Email *
                     </label>
                     <input
                       type="email"
                       required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="you@example.com"
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={parentEmail}
+                      onChange={e => setParentEmail(e.target.value)}
+                      placeholder="parent@example.com"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Phone / WhatsApp Number (with Country Code) *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      WhatsApp / Phone (with Country Code) *
                     </label>
                     <input
-                      type="text"
+                      type="tel"
                       required
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+44 7911 123456"
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={parentPhone}
+                      onChange={e => setParentPhone(e.target.value)}
+                      placeholder="+44 7911 123456 or +1 312 555 0192"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden"
                     />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Course Needed *
+                    </label>
+                    <select
+                      value={courseId}
+                      onChange={e => setCourseId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden bg-white"
+                    >
+                      {DEFAULT_QURAN_COURSES.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Select Course *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Preferred Teacher Gender
                     </label>
                     <select
-                      value={formData.course}
-                      onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={preferredTeacherGender}
+                      onChange={e => setPreferredTeacherGender(e.target.value as any)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden bg-white"
                     >
-                      <option value="noorani-qaida">Noorani & Madani Qaida</option>
-                      <option value="quran-tajweed">Quran Reading with Tajweed</option>
-                      <option value="quran-hifz">Quran Memorization (Hifz)</option>
-                      <option value="translation-tafseer">Quran Translation & Tafseer</option>
-                      <option value="islamic-studies">Islamic Studies for Kids</option>
-                      <option value="arabic-language">Quranic Arabic Language</option>
+                      <option value="any">Any Qualified Teacher (Fastest Match)</option>
+                      <option value="female">Female Teacher (For Sisters / Young Kids)</option>
+                      <option value="male">Male Teacher (Qari / Hafiz)</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Student Category *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Timezone & Country
                     </label>
                     <select
-                      value={formData.studentType}
-                      onChange={(e) => setFormData({ ...formData, studentType: e.target.value as any })}
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={timezone}
+                      onChange={e => setTimezone(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden bg-white"
                     >
-                      <option value="kids">Child (Ages 4 - 15)</option>
-                      <option value="female">Sister / Female Student</option>
-                      <option value="adults">Brother / Adult</option>
+                      <option value="Europe/London (UK GMT)">United Kingdom / Europe (GMT/BST)</option>
+                      <option value="America/New_York (US EST)">USA / Canada (Eastern Time)</option>
+                      <option value="America/Chicago (US CST)">USA / Canada (Central Time)</option>
+                      <option value="America/Los_Angeles (US PST)">USA / Canada (Pacific Time)</option>
+                      <option value="Asia/Dubai (UAE GST)">UAE / Gulf Countries (GST)</option>
+                      <option value="Australia/Sydney (AEST)">Australia / New Zealand (AEST)</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-800 block mb-1">
-                      Teacher Gender Preference *
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Preferred Time Slot
                     </label>
                     <select
-                      value={formData.tutorGender}
-                      onChange={(e) => setFormData({ ...formData, tutorGender: e.target.value })}
-                      className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      value={preferredTimeSlot}
+                      onChange={e => setPreferredTimeSlot(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden bg-white"
                     >
-                      <option value="female">Female Teacher (Exclusively)</option>
-                      <option value="male">Male Teacher</option>
-                      <option value="any">No Preference (First Available)</option>
+                      <option value="04:00 PM - 05:00 PM (After School)">04:00 PM – 05:00 PM (After School)</option>
+                      <option value="05:00 PM - 06:00 PM (Evening)">05:00 PM – 06:00 PM (Evening)</option>
+                      <option value="06:00 PM - 07:00 PM (Evening)">06:00 PM – 07:00 PM (Evening)</option>
+                      <option value="07:00 PM - 08:30 PM (Night)">07:00 PM – 08:30 PM (Night)</option>
+                      <option value="Weekend Mornings (Sat/Sun)">Weekend Mornings (Sat/Sun)</option>
+                      <option value="Weekend Afternoons (Sat/Sun)">Weekend Afternoons (Sat/Sun)</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-800 block mb-1">
-                    Your Timezone & Preferred Days/Hours
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.timezone}
-                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    placeholder="e.g. London GMT, weekdays after 5:00 PM"
-                    className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-800 block mb-1">
-                    Special Notes or Prior Experience
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Student Current Level or Notes (Optional)
                   </label>
                   <textarea
                     rows={3}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Tell us about the student's current Quran level, age, or any specific goals..."
-                    className="w-full bg-purple-50/50 border border-purple-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder="Tell us if your child is a complete beginner, knows Arabic letters, or has already read certain Surahs..."
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:border-[#6B1B7E] focus:outline-hidden"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-black rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] hover:from-[#5B2A9A] hover:to-[#6B1B7E] text-white font-black text-sm rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Submit & Claim 3-Day Free Trial</span>
+                  <span>{isSubmitting ? 'Submitting Request...' : 'Book 3-Day Free Trial Class'}</span>
                 </button>
 
-                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 pt-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                  <span>100% Free · No Obligation · Instant WhatsApp Confirmation</span>
-                </div>
+                <p className="text-center text-[11px] text-slate-400">
+                  🔒 100% Free · No Payment Required · Verified Al-Azhar & Wifaq Teachers
+                </p>
               </form>
             )}
           </div>
 
-          {/* Right Column: Direct WhatsApp & FAQ */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Right Column: Information & Guarantee */}
+          <div className="lg:col-span-4 space-y-6">
             
-            {/* WhatsApp Box */}
-            <div className="bg-gradient-to-br from-emerald-600 to-teal-800 text-white rounded-3xl p-7 shadow-lg space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full">
-                  Fastest Response
-                </span>
-                <span className="w-3 h-3 rounded-full bg-emerald-300 animate-ping" />
-              </div>
-
-              <h4 className="text-2xl font-black">Chat Directly on WhatsApp</h4>
-              <p className="text-xs text-emerald-50 leading-relaxed">
-                Want to book instantly or ask a quick question? Message our admissions director on WhatsApp right now. We typically reply in under 5 minutes.
+            <div className="p-6 bg-gradient-to-br from-[#6B1B7E] to-[#5B2A9A] rounded-3xl text-white shadow-lg space-y-4">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-bold text-purple-200">
+                Direct Admissions Desk
+              </span>
+              <h4 className="text-xl font-bold text-white leading-tight">
+                Chat Directly with Mentor Abdul Basit Saleem
+              </h4>
+              <p className="text-xs text-purple-100 leading-relaxed">
+                Prefer quick messaging instead of forms? Speak with our academy director directly on WhatsApp to choose your days and schedule.
               </p>
-
               <a
-                href="https://wa.me/923068959085?text=Assalam-o-Alaikum,%20Abdul%20Basit,%20I%20am%20interested%20in%20online%20Quran%20classes%20and%20the%20Online%20Quran%20Teacher%20Course."
+                href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20want%20to%20enroll%20my%20child%20at%20True%20Way%20Quran."
                 target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-white text-emerald-800 font-black rounded-xl text-xs hover:bg-emerald-50 transition shadow cursor-pointer"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
               >
+                <MessageCircle className="w-4 h-4" />
                 <span>Open WhatsApp (+92 306 8959085)</span>
               </a>
             </div>
 
-            {/* Admissions Advisory & Support Information (No Bank Details) */}
-            <div className="bg-white rounded-3xl p-6 border border-purple-100 shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-purple-100 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src="/assets/aistudio/true_way_logo_trimmed.png"
-                    alt="True Way Quran"
-                    className="h-8 w-auto object-contain"
-                  />
-                  <div>
-                    <h4 className="text-sm font-black text-purple-950">
-                      Admissions Advisory Desk
-                    </h4>
-                    <p className="text-[10px] text-purple-600 font-semibold">True Way Quran Academy</p>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">
-                  Available 24/7
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Need guidance choosing the right course or scheduling private 1-on-1 sessions for yourself or your children? Our dedicated academic counselors are here to help.
-              </p>
-
-              <div className="space-y-3">
-                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <p className="font-bold text-purple-950 text-xs">Flexible Global Timings</p>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Classes running 24/7 across UK, USA, Canada, Australia and Gulf timezones.</p>
-                </div>
-
-                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <p className="font-bold text-purple-950 text-xs">Certified Male & Female Faculty</p>
-                  <p className="text-slate-500 text-[11px] mt-0.5">Alim & Alimah certified teachers specialized in kids, adult beginners, and advanced Tajweed.</p>
-                </div>
-
-                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <p className="font-bold text-purple-950 text-xs">100% Free 3-Day Evaluation</p>
-                  <p className="text-slate-500 text-[11px] mt-0.5">No credit card required. Experience interactive private lessons before any commitment.</p>
-                </div>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-600 border border-slate-200">
-                <strong>Academic Office:</strong> UstadLeads & True Way Quran Academy · UK & Pakistan Student Desks.
-              </div>
+            <div className="p-6 bg-white rounded-3xl border border-purple-100 shadow-xs space-y-4">
+              <h4 className="font-bold text-slate-900 text-sm">
+                What Happens in the Free Trial?
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-600">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>15-minute gentle reading diagnostic with a certified scholar</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Experience the live digital screen sharing and classroom tools</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Get feedback on Makharij, Tajweed, and recommended pace</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>Confirm whether you prefer to continue with the assigned teacher</span>
+                </li>
+              </ul>
             </div>
+
+            <div className="p-5 bg-purple-50/60 rounded-2xl border border-purple-100 text-xs text-slate-600 space-y-2">
+              <span className="font-bold text-slate-900 block text-xs">
+                Academy Operating Headquarters:
+              </span>
+              <p>
+                True Way Quran Academy · UK, USA & Pakistan Educational Operations Desk.
+              </p>
+            </div>
+
           </div>
+
         </div>
+
       </div>
     </section>
   );

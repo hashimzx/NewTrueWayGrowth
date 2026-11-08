@@ -4,36 +4,30 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { User, QaidaLesson, Course, SubscriptionTier, PronunciationAttempt } from './types';
+import { User, QaidaLesson } from './types';
 import { INITIAL_QAIDA_LESSONS } from './data/qaidaData';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
-import { MentorSection } from './components/MentorSection';
-import { VideoSection } from './components/VideoSection';
+import { AboutSection } from './components/AboutSection';
+import { QuranCoursesSection } from './components/QuranCoursesSection';
+import { WhyChooseUs } from './components/WhyChooseUs';
+import { TeachersSection } from './components/TeachersSection';
+import { HowItWorks } from './components/HowItWorks';
+import { LearningProcessSection } from './components/LearningProcessSection';
+import { TestimonialsSection } from './components/TestimonialsSection';
 import { FaqSection } from './components/FaqSection';
-import { QuranReader } from './components/QuranReader';
-import { QuranGatewayCard } from './components/QuranGatewayCard';
-import { SpecializedClasses } from './components/SpecializedClasses';
-import { ServicesSection } from './components/ServicesSection';
 import { ContactSection } from './components/ContactSection';
-import { BlogSection } from './components/BlogSection';
-import { QaidaViewer } from './components/QaidaViewer';
-import { CoursesSection } from './components/CoursesSection';
+import { TrialModal } from './components/TrialModal';
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { StudentDashboard } from './components/StudentDashboard';
+import { TeacherDashboard } from './components/TeacherDashboard';
 import { AdminPanel } from './components/AdminPanel';
-import { CheckoutModal } from './components/CheckoutModal';
 import { AuthModal } from './components/AuthModal';
-import { EnrollModal } from './components/EnrollModal';
+import { QuranReader } from './components/QuranReader';
+import { QaidaViewer } from './components/QaidaViewer';
 import { NamazSection } from './components/NamazSection';
 import { DuasSection } from './components/DuasSection';
-import { AttendanceTracker } from './components/AttendanceTracker';
-import { QuranHistoryCarousel } from './components/QuranHistoryCarousel';
-import { AudioResumeBar } from './components/AudioResumeBar';
-import { PrayerTimeSidebar } from './components/PrayerTimeSidebar';
-import { WorshipGuideSection } from './components/WorshipGuideSection';
-import { HifzSection } from './components/HifzSection';
 import { Footer } from './components/Footer';
-import { MessageCircle } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<string>(() => {
@@ -73,12 +67,15 @@ export default function App() {
     } catch {}
   }, [currentView]);
 
-  const [currency, setCurrency] = useState<'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD'>('GBP');
-  const [timezone, setTimezone] = useState<string>('Europe/London');
-  const [selectedTrackForTrial, setSelectedTrackForTrial] = useState<'kids' | 'adults' | 'female' | null>(null);
-  const [audioResumeSession, setAudioResumeSession] = useState<{ surahNumber: number; seekTime: number } | null>(null);
+  const [currency, setCurrency] = useState<'USD' | 'GBP'>('USD');
+  const [selectedCourseForTrial, setSelectedCourseForTrial] = useState<string | undefined>(undefined);
 
-  // Lessons state with custom teacher recordings capability
+  // Modals state
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register' | 'admin_login'>('login');
+  const [isTrialModalOpen, setIsTrialModalOpen] = useState(false);
+
+  // Lessons state for Madani Qaida
   const [lessons, setLessons] = useState<QaidaLesson[]>(() => {
     const saved = localStorage.getItem('twq_qaida_lessons');
     if (saved) {
@@ -89,129 +86,76 @@ export default function App() {
     return INITIAL_QAIDA_LESSONS;
   });
 
-  // Current logged in student/admin (opens logged out by default)
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('twq_current_user');
+  // Logged in user session
+  const [currentUser, setCurrentUser] = useState<any | null>(() => {
+    const saved = localStorage.getItem('twq_current_user_v2');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // Clear any old hardcoded Hashim mock session so the website opens cleanly logged out
-        if (parsed && (parsed.id === 'usr-student-1' || parsed.email === 'hashimzafar2k@gmail.com' || parsed.name === 'Hashim Zafar')) {
-          localStorage.removeItem('twq_current_user');
-          return null;
-        }
-        return parsed;
+        return JSON.parse(saved);
       } catch {}
     }
     return null;
   });
 
-  // Pronunciation attempts log
-  const [pronunciationAttempts, setPronunciationAttempts] = useState<PronunciationAttempt[]>([
-    {
-      id: 'att-1',
-      wordId: 'w-1',
-      arabic: 'ا',
-      transliteration: 'Alif',
-      spokenText: 'alif',
-      score: 96,
-      passed: true,
-      makhrajFeedback: 'Flawless glottal release from the mouth cavity.',
-      tajweedNotes: ['Light letter properly observed.'],
-      timestamp: 'Today at 09:15 AM'
-    },
-    {
-      id: 'att-2',
-      wordId: 'w-2',
-      arabic: 'ب',
-      transliteration: 'Baa',
-      spokenText: 'baa',
-      score: 94,
-      passed: true,
-      makhrajFeedback: 'Accurate lip closure on inner moist lips.',
-      tajweedNotes: ['Clear pronunciation.'],
-      timestamp: 'Today at 09:20 AM'
-    }
-  ]);
-
-  // Modals state
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isEnrollOpen, setIsEnrollOpen] = useState(false);
-  const [enrollDefaultCourse, setEnrollDefaultCourse] = useState<string>('Quran Hifz (Memorization) Program');
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [selectedCheckoutItem, setSelectedCheckoutItem] = useState<Course | SubscriptionTier | null>(null);
-
-  const handleOpenEnroll = (courseName?: string) => {
-    if (courseName) {
-      setEnrollDefaultCourse(courseName);
-    }
-    setIsEnrollOpen(true);
-  };
-
-  // Sync state to local storage
   useEffect(() => {
     if (currentUser) {
-      localStorage.setItem('twq_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('twq_current_user_v2', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('twq_current_user_v2');
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    localStorage.setItem('twq_qaida_lessons', JSON.stringify(lessons));
-  }, [lessons]);
-
-  // Handle successful student pronunciation assessment
-  const handleRecordSuccess = (attempt: PronunciationAttempt) => {
-    setPronunciationAttempts(prev => [attempt, ...prev]);
-
-    if (currentUser) {
-      const alreadyMastered = currentUser.progress.masteredWordIds.includes(attempt.wordId);
-      const newMastered = alreadyMastered
-        ? currentUser.progress.masteredWordIds
-        : [...currentUser.progress.masteredWordIds, attempt.wordId];
-
-      setCurrentUser({
-        ...currentUser,
-        progress: {
-          ...currentUser.progress,
-          masteredWordIds: newMastered,
-          practiceMinutes: currentUser.progress.practiceMinutes + 2,
-          lastPracticeDate: new Date().toISOString()
-        }
-      });
+  const handleLogin = (user: any) => {
+    setCurrentUser(user);
+    if (user.role === 'admin') {
+      setCurrentView('admin');
+    } else if (user.role === 'instructor') {
+      setCurrentView('teacher');
+    } else {
+      setCurrentView('student');
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleToggleBookmark = (wordId: string) => {
-    if (!currentUser) return;
-    const isBookmarked = currentUser.bookmarks.includes(wordId);
-    const newBookmarks = isBookmarked
-      ? currentUser.bookmarks.filter(id => id !== wordId)
-      : [...currentUser.bookmarks, wordId];
-
-    setCurrentUser({
-      ...currentUser,
-      bookmarks: newBookmarks
-    });
-  };
-
-  const handleEnrollCourse = (course: Course) => {
-    setSelectedCheckoutItem(course);
-    setIsEnrollOpen(true);
-  };
-
-  const handleSubscribe = (tier: SubscriptionTier) => {
-    setSelectedCheckoutItem(tier);
-    setIsCheckoutOpen(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    if (!currentUser || !selectedCheckoutItem) return;
-    if ('level' in selectedCheckoutItem) {
-      setCurrentUser({
-        ...currentUser,
-        enrolledCourseIds: [...currentUser.enrolledCourseIds, selectedCheckoutItem.id]
-      });
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('twq_current_user_v2');
+    if (currentView === 'admin' || currentView === 'student' || currentView === 'teacher') {
+      setCurrentView('home');
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenTrialModal = (courseId?: string) => {
+    setSelectedCourseForTrial(courseId);
+    setIsTrialModalOpen(true);
+  };
+
+  const handleOpenAuth = (mode: 'login' | 'register' | 'admin_login' = 'login') => {
+    setAuthInitialMode(mode);
+    setIsAuthOpen(true);
+  };
+
+  // Safe navigation with role protection
+  const handleNavigate = (view: string) => {
+    if (view === 'admin') {
+      if (!currentUser || currentUser.role !== 'admin') {
+        handleOpenAuth('admin_login');
+        return;
+      }
+    } else if (view === 'teacher') {
+      if (!currentUser || (currentUser.role !== 'instructor' && currentUser.role !== 'admin')) {
+        handleOpenAuth('login');
+        return;
+      }
+    } else if (view === 'student') {
+      if (!currentUser) {
+        handleOpenAuth('login');
+        return;
+      }
+    }
+    setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSaveTeacherVoice = (lessonId: string, wordId: string, audioBase64: string) => {
@@ -223,7 +167,7 @@ export default function App() {
           if (w.id !== wordId) return w;
           return {
             ...w,
-            teacherCustomVoiceUrl: audioBase64
+            teacherVoiceUrl: audioBase64
           };
         })
       };
@@ -231,367 +175,169 @@ export default function App() {
     setLessons(updatedLessons);
   };
 
-  const handleOpenTrial = (track?: 'kids' | 'adults' | 'female') => {
-    if (track) setSelectedTrackForTrial(track);
-    setCurrentView('contact');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleResumeAudio = (session: { surahNumber: number; currentTime: number }) => {
-    setAudioResumeSession({
-      surahNumber: session.surahNumber,
-      seekTime: session.currentTime
-    });
-    setCurrentView('quran');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <div className="min-h-screen bg-[#faf8ff] text-slate-900 font-sans flex flex-col selection:bg-[#6B1B7E] selection:text-white">
       
-      {/* Navigation */}
+      {/* Navigation Header */}
       <Navbar
         currentView={currentView}
-        setCurrentView={(view) => {
-          setCurrentView(view);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        setCurrentView={handleNavigate}
         currentUser={currentUser}
-        onOpenAuth={() => setIsAuthOpen(true)}
-        onOpenEnroll={() => handleOpenEnroll()}
-        onLogout={() => setCurrentUser(null)}
+        onOpenAuth={() => handleOpenAuth('login')}
+        onOpenTrialModal={() => handleOpenTrialModal()}
+        onLogout={handleLogout}
         currency={currency}
         setCurrency={setCurrency}
-        timezone={timezone}
-        setTimezone={setTimezone}
       />
 
-      {/* Main Page Content */}
+      {/* Main View Router */}
       <main className="flex-1">
+        
+        {/* HOMEPAGE: True Way Quran – Online Quran Academy */}
         {currentView === 'home' && (
           <div className="space-y-0">
-            {/* Front Design like ustadleads.com */}
+            {/* 1. Hero Section */}
             <Hero
-              onStartQaida={() => setCurrentView('qaida')}
-              onExploreCourses={() => setCurrentView('courses')}
-              onOpenQuranReader={() => {
-                setCurrentView('quran');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+              onEnrollNow={() => handleOpenTrialModal()}
+              onBookFreeTrial={() => handleOpenTrialModal()}
+              onExploreCourses={() => {
+                const el = document.getElementById('courses');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              onOpenEnroll={() => handleOpenEnroll()}
+              onOpenQuranReader={() => setCurrentView('quran')}
+              onOpenWhatsApp={() => window.open('https://wa.me/923068959085?text=Assalam-o-Alaikum%20True%20Way%20Quran%2C%20I%20would%20like%20to%20book%20a%20free%20trial%20class.', '_blank')}
             />
 
-            {/* Specialized Classes for Kids, Sisters & Adults */}
-            <SpecializedClasses
-              onBookTrial={(cat) => handleOpenTrial(cat)}
-              onExploreQaida={() => setCurrentView('qaida')}
+            {/* 2. About Us Section */}
+            <AboutSection
+              onBookFreeTrial={() => handleOpenTrialModal()}
+              onExploreCourses={() => {
+                const el = document.getElementById('courses');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
             />
 
-            {/* Quran Memorization (Hifz) Program with Sabaq/Sabqi/Manzil (Tuition & Packages removed from home page per request) */}
-            <HifzSection
-              onOpenEnroll={handleOpenEnroll}
-              onOpenQaida={() => setCurrentView('qaida')}
+            {/* 3. Our 5 Quran Courses Section */}
+            <QuranCoursesSection
               currency={currency}
-              showPricing={false}
+              onSelectCourse={(course) => handleOpenTrialModal(course.id)}
+              onBookFreeTrial={(courseId) => handleOpenTrialModal(courseId)}
             />
 
-            {/* History of the Holy Quran Carousel (Requested Feature) */}
-            <QuranHistoryCarousel
-              onExploreQuran={() => {
-                setCurrentView('quran');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
+            {/* 4. Why Choose Us Section */}
+            <WhyChooseUs
+              onBookFreeTrial={() => handleOpenTrialModal()}
             />
 
-            {/* Contact & Free Trial Section with UstadLeads info */}
-            <ContactSection initialTrack={selectedTrackForTrial} />
-          </div>
-        )}
-
-        {currentView === 'hifz' && (
-          <HifzSection
-            onOpenEnroll={handleOpenEnroll}
-            onOpenQaida={() => setCurrentView('qaida')}
-            currency={currency}
-          />
-        )}
-
-        {currentView === 'history' && (
-          <QuranHistoryCarousel
-            onExploreQuran={() => {
-              setCurrentView('quran');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {currentView === 'mentor' && (
-          <div className="space-y-0">
-            <MentorSection
-              onEnroll={() => setIsEnrollOpen(true)}
+            {/* 6. How It Works Section */}
+            <HowItWorks
+              onBookFreeTrial={() => handleOpenTrialModal()}
             />
-            <VideoSection
-              onEnroll={() => setIsEnrollOpen(true)}
-              onExploreQuran={() => setCurrentView('quran')}
+
+            {/* 7. Learning Process & Virtual Classroom */}
+            <LearningProcessSection />
+
+            {/* 8. Genuine Testimonials Section */}
+            <TestimonialsSection
+              onBookFreeTrial={() => handleOpenTrialModal()}
             />
+
+            {/* 9. FAQs Section */}
             <FaqSection
-              onOpenEnroll={() => setIsEnrollOpen(true)}
+              onOpenEnroll={() => handleOpenTrialModal()}
+              onOpenWhatsApp={() => window.open('https://wa.me/923068959085', '_blank')}
+            />
+
+            {/* 10. Contact Us & Free Trial Booking Form */}
+            <ContactSection
+              onSuccessSubmit={() => {}}
             />
           </div>
         )}
 
-        {currentView === 'quran' && (
-          <QuranReader
-            initialSurah={audioResumeSession?.surahNumber}
-            initialSeekTime={audioResumeSession?.seekTime}
+        {/* STUDENT & PARENT DASHBOARD */}
+        {currentView === 'student' && currentUser && (
+          <StudentDashboard
+            user={currentUser}
+            onLogout={handleLogout}
+            onNavigateToQuran={() => setCurrentView('quran')}
+            onNavigateToQaida={() => setCurrentView('qaida')}
+            onOpenWhatsApp={() => window.open('https://wa.me/923068959085', '_blank')}
           />
         )}
 
+        {/* TEACHER DASHBOARD */}
+        {currentView === 'teacher' && currentUser && (currentUser.role === 'instructor' || currentUser.role === 'admin') && (
+          <TeacherDashboard
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onNavigateHome={() => setCurrentView('home')}
+            onOpenQuranReader={() => setCurrentView('quran')}
+          />
+        )}
+
+        {/* ADMIN DASHBOARD */}
+        {currentView === 'admin' && currentUser && currentUser.role === 'admin' && (
+          <AdminPanel
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onNavigateHome={() => setCurrentView('home')}
+            onOpenQuranReader={() => setCurrentView('quran')}
+          />
+        )}
+
+        {/* QURAN READER (114 Surahs, pagination, audio pause/resume/replay, last-read memory) */}
+        {currentView === 'quran' && (
+          <QuranReader />
+        )}
+
+        {/* MADANI QAIDA VIEWER */}
         {currentView === 'qaida' && (
           <QaidaViewer
             lessons={lessons}
             currentUser={currentUser}
-            onRecordSuccess={handleRecordSuccess}
-            onToggleBookmark={handleToggleBookmark}
+            onRecordSuccess={() => {}}
+            onToggleBookmark={() => {}}
             onSaveTeacherVoice={handleSaveTeacherVoice}
           />
         )}
 
-        {(currentView === 'courses' || currentView === 'pricing') && (
-          <div className="space-y-0">
-            <CoursesSection
-              currency={currency}
-              onEnrollCourse={handleEnrollCourse}
-              onSubscribe={handleSubscribe}
-            />
-            <MentorSection
-              onEnroll={() => setIsEnrollOpen(true)}
-            />
-          </div>
+        {/* NAMAZ & PRAYER SCHEDULE */}
+        {currentView === 'namaz' && (
+          <NamazSection />
         )}
 
-        {(currentView === 'namaz' || currentView === 'namaz_salah_guide' || currentView === 'namaz_tahajjud') && (
-          <NamazSection
-            initialSubSection={
-              currentView === 'namaz_salah_guide'
-                ? 'salah_guide'
-                : currentView === 'namaz_tahajjud'
-                ? 'tahajjud'
-                : 'times'
-            }
-            onOpenDuas={() => {
-              setCurrentView('duas');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
+        {/* DAILY DUAS & ISLAMIC PRACTICES */}
         {currentView === 'duas' && (
-          <DuasSection
-            onOpenQuran={() => {
-              setCurrentView('quran');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenQaida={() => {
-              setCurrentView('qaida');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
+          <DuasSection />
         )}
 
-        {currentView === 'worship' && (
-          <WorshipGuideSection
-            onOpenFullQuran={() => {
-              setCurrentView('quran');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenDuas={() => {
-              setCurrentView('duas');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenSalahGuide={() => {
-              setCurrentView('namaz_salah_guide');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenTahajjud={() => {
-              setCurrentView('namaz_tahajjud');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {currentView === 'attendance' && (
-          <AttendanceTracker
-            currentUser={currentUser}
-            onOpenSchedule={() => handleOpenTrial()}
-            onNavigateToCourse={() => {
-              setCurrentView('courses');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {currentView === 'faqs' && (
-          <div className="py-8">
-            <FaqSection
-              onOpenEnroll={() => setIsEnrollOpen(true)}
-            />
-          </div>
-        )}
-
-        {currentView === 'contact' && (
-          <ContactSection initialTrack={selectedTrackForTrial} />
-        )}
-
-        {currentView === 'dashboard' && currentUser && (
-          <StudentDashboard
-            user={currentUser}
-            onNavigateToQaida={() => setCurrentView('qaida')}
-            onOpenSchedule={() => handleOpenTrial()}
-            onNavigateToAttendance={() => {
-              setCurrentView('attendance');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onNavigateToHifz={() => {
-              setCurrentView('hifz');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onNavigateToQuran={() => {
-              setCurrentView('quran');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            attemptsHistory={pronunciationAttempts}
-          />
-        )}
-
-        {currentView === 'worship_guide' && (
-          <WorshipGuideSection
-            onOpenFullQuran={() => {
-              setCurrentView('quran');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenDuas={() => {
-              setCurrentView('duas');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenSalahGuide={() => {
-              setCurrentView('namaz_salah_guide');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenTahajjud={() => {
-              setCurrentView('namaz_tahajjud');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {currentView === 'admin' && (
-          <AdminPanel
-            lessons={lessons}
-            onUpdateLessons={setLessons}
-            students={currentUser ? [currentUser] : []}
-            attempts={pronunciationAttempts}
-            onSaveTeacherVoice={handleSaveTeacherVoice}
-          />
-        )}
       </main>
 
-      {/* Non-Quran Page Elements: Dedicated Quran Page shows ONLY Quran & Navbar as requested */}
-      {currentView !== 'quran' && (
-        <>
-          {/* Floating Audio Resume Bar (when saved session exists) */}
-          <AudioResumeBar onResume={handleResumeAudio} />
+      {/* Footer */}
+      <Footer
+        onNavigate={handleNavigate}
+        onOpenTrialModal={() => handleOpenTrialModal()}
+      />
 
-          {/* Floating Side Bar for Live Local Time, Namaz & World Calendar */}
-          <PrayerTimeSidebar 
-            onOpenFullNamaz={() => {
-              setCurrentView('namaz');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenWorshipGuide={() => {
-              setCurrentView('worship_guide');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          />
+      {/* Floating WhatsApp Button */}
+      <FloatingWhatsApp phoneNumber="923068959085" />
 
-          {/* Floating WhatsApp Action Button (ustadleads.com) */}
-          <a
-            href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20want%20to%20learn%20more%20about%20the%20Academy%20and%20Courses"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Chat with Abdul on WhatsApp"
-            className="fixed bottom-6 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white p-3.5 sm:px-4 sm:py-3.5 rounded-full shadow-2xl shadow-emerald-500/40 hover:shadow-emerald-500/60 transition flex items-center gap-2 group cursor-pointer"
-            title="Chat on WhatsApp (+92 306 8959085)"
-          >
-            <MessageCircle className="w-6 h-6 group-hover:scale-110 transition shrink-0" />
-            <span className="hidden sm:inline text-xs font-black tracking-wide pr-1">
-              Chat on WhatsApp
-            </span>
-          </a>
+      {/* Free Trial Class Booking Modal */}
+      <TrialModal
+        isOpen={isTrialModalOpen}
+        onClose={() => setIsTrialModalOpen(false)}
+        defaultCourseId={selectedCourseForTrial}
+      />
 
-          {/* Footer */}
-          <Footer
-            onNavigate={(view) => {
-              setCurrentView(view);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onOpenEnroll={() => setIsEnrollOpen(true)}
-          />
-        </>
-      )}
-
-      {/* Modals */}
+      {/* Student, Teacher & Admin Authentication Modal */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
-        onLogin={(user) => {
-          // Automatically record daily student attendance
-          try {
-            const todayKey = new Date().toISOString().split('T')[0];
-            const stored = JSON.parse(localStorage.getItem('twq_student_attendance') || '{}');
-            stored[todayKey] = {
-              status: 'present',
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              studentId: user.id,
-              studentName: user.name,
-              sessionType: 'Portal Sign-in & Daily Islamic Study'
-            };
-            localStorage.setItem('twq_student_attendance', JSON.stringify(stored));
-          } catch {}
-
-          setCurrentUser({
-            ...user,
-            progress: {
-              ...user.progress,
-              streakDays: (user.progress?.streakDays || 6) + 1,
-              lastPracticeDate: new Date().toISOString()
-            }
-          });
-
-          if (user.role === 'admin') {
-            setCurrentView('admin');
-          } else {
-            setCurrentView('dashboard');
-          }
-        }}
+        onLogin={handleLogin}
+        initialMode={authInitialMode}
       />
 
-      <EnrollModal
-        isOpen={isEnrollOpen}
-        onClose={() => setIsEnrollOpen(false)}
-        currency={currency}
-        defaultCourse={enrollDefaultCourse}
-      />
-
-      <CheckoutModal
-        item={selectedCheckoutItem}
-        currency={currency}
-        currentUser={currentUser}
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        onPaymentSuccess={handlePaymentSuccess}
-        onNavigateToQaida={() => setCurrentView('qaida')}
-      />
     </div>
   );
 }

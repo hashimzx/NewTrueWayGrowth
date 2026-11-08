@@ -160,7 +160,7 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
           <div className="flex items-center gap-4">
             <div className="w-16 h-14 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-md shrink-0">
               <img
-                src="/assets/aistudio/true_way_logo_trimmed.png"
+                src="/assets/aistudio/image_9a2a600b_trimmed.png"
                 alt="True Way Quran"
                 className="w-full h-full object-contain"
               />

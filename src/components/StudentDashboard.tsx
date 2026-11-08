@@ -1,647 +1,944 @@
 import React, { useState, useEffect } from 'react';
-import { User, PronunciationAttempt } from '../types';
-import { COURSES_DATA } from '../data/coursesData';
-import { INITIAL_QAIDA_LESSONS } from '../data/qaidaData';
 import { 
-  IslamicTask, 
-  loadTodayTasks, 
-  saveTodayTasks, 
-  calculateTaskCompletion, 
-  getTodayDateKey,
-  generateDailyTasks
-} from '../utils/dailyTasks';
-import { 
-  Award, 
-  Flame, 
-  Clock, 
-  CheckCircle2, 
+  User as UserIcon, 
+  Settings, 
   BookOpen, 
-  Mic, 
-  Calendar, 
-  Sparkles, 
-  Globe, 
-  UserCheck,
-  CheckSquare,
-  Square,
-  RefreshCw,
-  HeartHandshake,
-  BookMarked,
-  Plus,
-  ArrowRight
+  FileText, 
+  CheckCircle2, 
+  Bell, 
+  CreditCard, 
+  HelpCircle, 
+  Lock, 
+  LogOut, 
+  Download, 
+  Video, 
+  Clock, 
+  ArrowRight,
+  MessageCircle,
+  Eye, 
+  EyeOff, 
+  Sparkles,
+  Calendar,
+  Award,
+  ShieldCheck,
+  Star,
+  Users
 } from 'lucide-react';
-
-interface HifzProgressState {
-  activeSurah: string;
-  sabaqAyahRange: string;
-  sabaqCompletedToday: boolean;
-  sabqiTarget: string;
-  sabqiCompletedToday: boolean;
-  manzilJuz: string;
-  manzilCompletedToday: boolean;
-  memorizedSurahsCount: number;
-  memorizedAyahsCount: number;
-  lastUpdatedDate: string;
-}
-
-const POPULAR_HIFZ_SURAHS = [
-  'Surah Al-Mulk (67) — 30 Ayahs',
-  'Surah Yaseen (36) — 83 Ayahs',
-  'Surah Ar-Rahman (55) — 78 Ayahs',
-  'Surah Al-Waqi’ah (56) — 96 Ayahs',
-  'Surah Al-Kahf (18) — 110 Ayahs',
-  'Surah An-Naba (78) — 40 Ayahs',
-  'Surah An-Nazi’at (79) — 46 Ayahs',
-  'Surah Abasa (80) — 42 Ayahs',
-  'Surah Al-A’la (87) — 19 Ayahs',
-  'Surah Ad-Duha (93) — 11 Ayahs',
-  'Surah Ash-Sharh (94) — 8 Ayahs',
-  'Surah Al-Baqarah (2) — 286 Ayahs',
-  'Surah Ali ‘Imran (3) — 200 Ayahs'
-];
+import { 
+  AcademyUser, 
+  ClassScheduleItem, 
+  DailyLessonLog, 
+  StudentAttendanceLog, 
+  AcademyInvoice, 
+  AcademyAnnouncement 
+} from '../types/academy';
+import { 
+  getStoredAcademyUsers, 
+  saveAcademyUsers, 
+  getStoredClassSchedules, 
+  getStoredDailyLessons, 
+  getStoredAttendanceLogs, 
+  getStoredInvoices, 
+  getStoredAnnouncements,
+  DEFAULT_QURAN_COURSES,
+  DEFAULT_TEACHERS
+} from '../utils/academyDatabase';
 
 interface StudentDashboardProps {
-  user: User;
-  onNavigateToQaida: (lessonId?: string) => void;
-  onOpenSchedule: () => void;
-  attemptsHistory: PronunciationAttempt[];
-  onNavigateToAttendance?: () => void;
-  onNavigateToHifz?: () => void;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    country: string;
+    timezone: string;
+  };
+  onLogout: () => void;
   onNavigateToQuran?: () => void;
+  onNavigateToQaida?: () => void;
+  onOpenWhatsApp?: () => void;
 }
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   user,
+  onLogout,
+  onNavigateToQuran,
   onNavigateToQaida,
-  onOpenSchedule,
-  onNavigateToAttendance,
-  onNavigateToHifz,
-  onNavigateToQuran
+  onOpenWhatsApp
 }) => {
-  // Enrolled courses data
-  const enrolledCourses = COURSES_DATA.filter(c => user.enrolledCourseIds.includes(c.id));
+  const [activeTab, setActiveTab] = useState<'overview' | 'timetable' | 'lessons' | 'attendance' | 'invoices' | 'profile' | 'support'>('overview');
 
-  // Total words across qaida
-  const totalQaidaWords = INITIAL_QAIDA_LESSONS.reduce((acc, l) => acc + l.words.length, 0);
-  const wordsMastered = user.progress.masteredWordIds.length;
-  const overallProgressPercent = Math.min(100, Math.round((wordsMastered / totalQaidaWords) * 100));
-
-  // Daily Islamic Tasks state
-  const [dailyTasks, setDailyTasks] = useState<IslamicTask[]>(() => loadTodayTasks());
-  const todayKey = getTodayDateKey();
-
-  // Student Hifz (Quran Memorization) Tracker State
-  const hifzStorageKey = `twq_student_hifz_${user.id}`;
-  const [hifzState, setHifzState] = useState<HifzProgressState>(() => {
-    try {
-      const saved = localStorage.getItem(hifzStorageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved) as HifzProgressState;
-        // Reset daily checkboxes if date changed
-        if (parsed.lastUpdatedDate !== todayKey) {
-          return {
-            ...parsed,
-            sabaqCompletedToday: false,
-            sabqiCompletedToday: false,
-            manzilCompletedToday: false,
-            lastUpdatedDate: todayKey
-          };
-        }
-        return parsed;
-      }
-    } catch {}
-    return {
-      activeSurah: 'Surah Al-Mulk (67) — 30 Ayahs',
-      sabaqAyahRange: 'Ayah 1 to 10',
-      sabaqCompletedToday: true,
-      sabqiTarget: 'Juz 30 (Surah An-Naba to An-Nas)',
-      sabqiCompletedToday: true,
-      manzilJuz: 'Juz 30 (Amma Para)',
-      manzilCompletedToday: false,
-      memorizedSurahsCount: 16,
-      memorizedAyahsCount: 245,
-      lastUpdatedDate: todayKey
+  const [dbUser, setDbUser] = useState<AcademyUser>(() => {
+    const all = getStoredAcademyUsers();
+    return all.find(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase()) || {
+      id: user.id || 'usr-student-1',
+      name: user.name || 'Hashim Zafar',
+      email: user.email || 'student@truewayquran.com',
+      role: 'student',
+      phone: '+44 7911 123456',
+      country: user.country || 'United Kingdom',
+      timezone: user.timezone || 'Europe/London (GMT)',
+      status: 'active',
+      emailVerified: true,
+      createdAt: '2026-09-10',
+      studentAge: 11,
+      parentName: 'Zafar Iqbal',
+      parentPhone: '+44 7911 123456',
+      enrolledCourseIds: ['course-quran-tajweed', 'course-quran-hifz'],
+      assignedTeacherId: 'teacher-bilal',
+      assignedTeacherName: 'Qari Muhammad Bilal Al-Azhari',
+      monthlyFee: 65,
+      currency: 'GBP'
     };
   });
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(hifzStorageKey, JSON.stringify(hifzState));
-    } catch {}
-  }, [hifzState, hifzStorageKey]);
+  const [schedules, setSchedules] = useState<ClassScheduleItem[]>([]);
+  const [dailyLessons, setDailyLessons] = useState<DailyLessonLog[]>([]);
+  const [attendanceLogs, setAttendanceLogs] = useState<StudentAttendanceLog[]>([]);
+  const [invoices, setInvoices] = useState<AcademyInvoice[]>([]);
+  const [announcements, setAnnouncements] = useState<AcademyAnnouncement[]>([]);
+
+  // Profile Edit State
+  const [editName, setEditName] = useState(dbUser.name);
+  const [editPhone, setEditPhone] = useState(dbUser.phone || '');
+  const [editParentName, setEditParentName] = useState(dbUser.parentName || '');
+  const [editAge, setEditAge] = useState(String(dbUser.studentAge || 10));
+  const [editCountry, setEditCountry] = useState(dbUser.country);
+  const [profileSavedMsg, setProfileSavedMsg] = useState(false);
+
+  // Password Change State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState<{ text: string; isError: boolean } | null>(null);
 
   useEffect(() => {
-    saveTodayTasks(dailyTasks, todayKey);
-  }, [dailyTasks, todayKey]);
+    setSchedules(getStoredClassSchedules());
+    setDailyLessons(getStoredDailyLessons());
+    setAttendanceLogs(getStoredAttendanceLogs());
+    setInvoices(getStoredInvoices());
+    setAnnouncements(getStoredAnnouncements());
+  }, []);
 
-  const toggleTask = (taskId: string) => {
-    setDailyTasks(prev => 
-      prev.map(task => 
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const enrolledCourses = DEFAULT_QURAN_COURSES.filter(c => 
+    dbUser.enrolledCourseIds?.includes(c.id) || c.id === 'course-quran-tajweed'
+  );
+
+  const assignedTeacher = DEFAULT_TEACHERS.find(t => 
+    t.id === dbUser.assignedTeacherId
+  ) || DEFAULT_TEACHERS[0];
+
+  const upcomingClass = schedules[0] || {
+    id: 'sch-next',
+    studentId: dbUser.id,
+    studentName: dbUser.name,
+    teacherId: assignedTeacher.id,
+    teacherName: assignedTeacher.name,
+    courseId: enrolledCourses[0]?.id || 'course-quran-tajweed',
+    courseTitle: enrolledCourses[0]?.title || 'Quran with Tajweed',
+    dayOfWeek: 'Monday' as const,
+    timeSlot: '05:00 PM',
+    durationMinutes: 30,
+    meetingUrl: 'https://meet.google.com/trueway-quran-live',
+    meetingPlatform: 'Google Meet' as const,
+    status: 'upcoming' as const
   };
 
-  const handleRefreshTasks = () => {
-    const fresh = generateDailyTasks(`${todayKey}-${Date.now()}`);
-    setDailyTasks(fresh);
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated: AcademyUser = {
+      ...dbUser,
+      name: editName.trim(),
+      phone: editPhone.trim(),
+      parentName: editParentName.trim(),
+      studentAge: parseInt(editAge, 10) || dbUser.studentAge,
+      country: editCountry.trim()
+    };
+    setDbUser(updated);
+
+    const all = getStoredAcademyUsers();
+    const idx = all.findIndex(u => u.id === updated.id);
+    if (idx !== -1) {
+      all[idx] = updated;
+      saveAcademyUsers(all);
+    }
+
+    setProfileSavedMsg(true);
+    setTimeout(() => setProfileSavedMsg(false), 3000);
   };
 
-  const handleLogNewMemorizedAyahs = () => {
-    setHifzState(prev => ({
-      ...prev,
-      memorizedAyahsCount: prev.memorizedAyahsCount + 5,
-      sabaqCompletedToday: true
-    }));
+  const handleUpdatePassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordMsg(null);
+
+    if (newPassword.length < 6) {
+      setPasswordMsg({ text: 'New password must be at least 6 characters.', isError: true });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg({ text: 'New passwords do not match.', isError: true });
+      return;
+    }
+
+    setPasswordMsg({ text: 'Password successfully updated!', isError: false });
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setTimeout(() => setPasswordMsg(null), 3500);
   };
 
-  const { completedCount, total: totalTasks, percentage: taskPercentage } = calculateTaskCompletion(dailyTasks);
-  const hifzPillarsDone = [hifzState.sabaqCompletedToday, hifzState.sabqiCompletedToday, hifzState.manzilCompletedToday].filter(Boolean).length;
+  const downloadReceipt = (inv: AcademyInvoice) => {
+    const content = `TRUE WAY QURAN ACADEMY - OFFICIAL RECEIPT
+Invoice No: ${inv.invoiceNumber}
+Date: ${inv.date}
+Student Name: ${dbUser.name}
+Parent Name: ${dbUser.parentName || dbUser.name}
+Course: ${inv.courseTitle}
+Billing Period: ${inv.billingPeriod}
+Amount Paid: ${inv.currency === 'GBP' ? '£' : '$'}${inv.amount}
+Status: ${inv.status.toUpperCase()}
+Payment Method: Verified International Online Payment
+
+Thank you for trusting True Way Quran Academy!
+Support WhatsApp: +92 306 8959085
+Email: support@ustadleads.com
+Headquarters: True Way Quran, United Kingdom & International Desks
+`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${inv.invoiceNumber}_receipt.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       
-      {/* Student Greeting & Profile Banner in Brand Decent Colors */}
-      <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/40 flex items-center justify-center text-white font-black text-2xl shadow-lg backdrop-blur-md">
-              {user.name.charAt(0)}
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#2e1065] text-white py-8 border-b border-purple-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-purple-200">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Student & Parent Portal</span>
+              <span className="text-white/40">·</span>
+              <span>Student ID: {dbUser.id}</span>
             </div>
-
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-                  As-salamu alaykum, {user.name}
-                </h1>
-                <span className="text-[10px] bg-white/20 text-pink-100 border border-white/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                  {user.role}
-                </span>
-              </div>
-              <p className="text-xs text-purple-100 flex items-center gap-2">
-                <Globe className="w-3.5 h-3.5 text-pink-200" />
-                <span>{user.country} · Timezone: {user.timezone}</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {onNavigateToHifz && (
-              <button
-                onClick={onNavigateToHifz}
-                className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-purple-950 rounded-xl text-xs font-black transition flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-[#6B1B7E]" />
-                <span>Hifz Program & Classes</span>
-              </button>
-            )}
-
-            {onNavigateToAttendance && (
-              <button
-                onClick={onNavigateToAttendance}
-                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <UserCheck className="w-4 h-4 text-emerald-100" />
-                <span>Daily Attendance (96%)</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => onNavigateToQaida()}
-              className="px-4 py-2.5 bg-white text-[#6B1B7E] hover:bg-purple-50 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-[#E0107F]" />
-              <span>Resume Qaida</span>
-            </button>
-
-            <button
-              onClick={onOpenSchedule}
-              className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer"
-            >
-              <Calendar className="w-4 h-4 text-pink-200" />
-              <span>Book 1-on-1 Class</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Metrics Row in Decent Light Theme */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 shadow-xs space-y-1 hover:border-[#6B1B7E]/30 transition">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>Hifz Memorized</span>
-            <BookMarked className="w-4 h-4 text-[#E0107F]" />
-          </div>
-          <span className="text-3xl font-black text-[#6B1B7E]">{hifzState.memorizedSurahsCount}</span>
-          <span className="text-[11px] text-slate-500 block">{hifzState.memorizedAyahsCount} Ayahs Retained</span>
-        </div>
-
-        <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 shadow-xs space-y-1 hover:border-[#6B1B7E]/30 transition">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>Qaida Mastery</span>
-            <Award className="w-4 h-4 text-emerald-600" />
-          </div>
-          <span className="text-3xl font-black text-[#6B1B7E]">{overallProgressPercent}%</span>
-          <span className="text-[11px] text-slate-500 block">{wordsMastered} / {totalQaidaWords} words cleared</span>
-        </div>
-
-        <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 shadow-xs space-y-1 hover:border-[#6B1B7E]/30 transition">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>Pronunciation Avg.</span>
-            <Mic className="w-4 h-4 text-[#E0107F]" />
-          </div>
-          <span className="text-3xl font-black text-[#6B1B7E]">
-            {user.progress.averagePronunciationScore || 88}%
-          </span>
-          <span className="text-[11px] text-slate-500 block">AI Verified Voice Accuracy</span>
-        </div>
-
-        <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 shadow-xs space-y-1 hover:border-[#6B1B7E]/30 transition">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>Daily Streak</span>
-            <Flame className="w-4 h-4 text-amber-500" />
-          </div>
-          <span className="text-3xl font-black text-[#6B1B7E]">
-            {user.progress.streakDays} Days
-          </span>
-          <span className="text-[11px] text-slate-500 block">Consistency is blessed</span>
-        </div>
-
-        <div className="col-span-2 sm:col-span-1 bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 shadow-xs space-y-1 hover:border-[#6B1B7E]/30 transition">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-bold">
-            <span>Practice Time</span>
-            <Clock className="w-4 h-4 text-purple-600" />
-          </div>
-          <span className="text-3xl font-black text-[#6B1B7E]">
-            {user.progress.practiceMinutes}m
-          </span>
-          <span className="text-[11px] text-slate-500 block">Minutes in recitation</span>
-        </div>
-      </div>
-
-      {/* ======================================================================= */}
-      {/* STUDENT PORTAL HIFZ (QURAN MEMORIZATION) TRACKER & PRACTICE HUB         */}
-      {/* ======================================================================= */}
-      <div className="bg-gradient-to-br from-purple-50/90 via-white to-pink-50/70 border-2 border-[#6B1B7E]/25 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#6B1B7E]/15 pb-5">
-          <div className="space-y-1.5">
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
-              My Quran Memorization (Hifz) — Daily Sabaq, Sabqi & Manzil
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Track your daily 3-pillar Hifz routine, log newly memorized verses, and review with your certified Hafiz mentor.
+            <h1 className="text-2xl sm:text-3xl font-black text-white">
+              Welcome back, {dbUser.name}!
+            </h1>
+            <p className="text-xs sm:text-sm text-purple-200">
+              Access your daily Sabaq lessons, class timetable, join live Google Meet classes, and view teacher evaluation feedback.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={handleLogNewMemorizedAyahs}
-              className="px-4 py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] text-xs font-black flex items-center gap-1.5 transition cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-[#E0107F]" />
-              <span>+5 Ayahs Memorized</span>
-            </button>
-
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
             {onNavigateToQuran && (
               <button
                 onClick={onNavigateToQuran}
-                className="px-4 py-2.5 rounded-xl bg-white hover:bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/20 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
               >
-                <BookOpen className="w-4 h-4 text-[#E0107F]" />
-                <span>Open Full Mushaf</span>
+                <BookOpen className="w-4 h-4" />
+                <span>Full Quran Reader</span>
               </button>
             )}
 
-            {onNavigateToHifz && (
+            {onNavigateToQaida && (
               <button
-                onClick={onNavigateToHifz}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white text-xs font-black flex items-center gap-1.5 shadow-sm hover:opacity-95 transition cursor-pointer"
+                onClick={onNavigateToQaida}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition cursor-pointer"
               >
-                <span>Full Hifz Curriculum</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                Madani Qaida
               </button>
             )}
-          </div>
-        </div>
 
-        {/* Active Surah & 3-Pillar Daily Check-Off Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          
-          {/* Pillar 1: SABAQ (New Lesson) */}
-          <div className={`p-5 rounded-2xl border transition space-y-4 ${
-            hifzState.sabaqCompletedToday
-              ? 'bg-emerald-50/70 border-emerald-300 shadow-xs'
-              : 'bg-white border-purple-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#6B1B7E] text-white">
-                1. Sabaq (New Memorization)
-              </span>
-              <button
-                onClick={() => setHifzState(prev => ({ ...prev, sabaqCompletedToday: !prev.sabaqCompletedToday }))}
-                className={`text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition ${
-                  hifzState.sabaqCompletedToday
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-purple-100 text-[#6B1B7E] hover:bg-purple-200'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{hifzState.sabaqCompletedToday ? 'Completed' : 'Mark Done'}</span>
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                  Active Hifz Surah
-                </label>
-                <select
-                  value={hifzState.activeSurah}
-                  onChange={(e) => setHifzState(prev => ({ ...prev, activeSurah: e.target.value }))}
-                  className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#6B1B7E]"
-                >
-                  {POPULAR_HIFZ_SURAHS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                  Today's Target Ayah Range
-                </label>
-                <input
-                  type="text"
-                  value={hifzState.sabaqAyahRange}
-                  onChange={(e) => setHifzState(prev => ({ ...prev, sabaqAyahRange: e.target.value }))}
-                  className="w-full rounded-xl border border-purple-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#6B1B7E]"
-                  placeholder="e.g. Ayah 1 to 10"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Pillar 2: SABQI (Recent Revision) */}
-          <div className={`p-5 rounded-2xl border transition space-y-4 ${
-            hifzState.sabqiCompletedToday
-              ? 'bg-emerald-50/70 border-emerald-300 shadow-xs'
-              : 'bg-white border-purple-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#5B2A9A] text-white">
-                2. Sabqi (Recent 5–7 Pages)
-              </span>
-              <button
-                onClick={() => setHifzState(prev => ({ ...prev, sabqiCompletedToday: !prev.sabqiCompletedToday }))}
-                className={`text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition ${
-                  hifzState.sabqiCompletedToday
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-purple-100 text-[#6B1B7E] hover:bg-purple-200'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{hifzState.sabqiCompletedToday ? 'Completed' : 'Mark Done'}</span>
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                  Recent Portion for Fluency Review
-                </label>
-                <input
-                  type="text"
-                  value={hifzState.sabqiTarget}
-                  onChange={(e) => setHifzState(prev => ({ ...prev, sabqiTarget: e.target.value }))}
-                  className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#6B1B7E]"
-                />
-              </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                Recite your recently memorized verses from memory before starting new Sabaq so retention stays 100% solid.
-              </p>
-            </div>
-          </div>
-
-          {/* Pillar 3: MANZIL (Old Juz Revision) */}
-          <div className={`p-5 rounded-2xl border transition space-y-4 ${
-            hifzState.manzilCompletedToday
-              ? 'bg-emerald-50/70 border-emerald-300 shadow-xs'
-              : 'bg-white border-purple-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#E0107F] text-white">
-                3. Manzil (Old Juz Cycle)
-              </span>
-              <button
-                onClick={() => setHifzState(prev => ({ ...prev, manzilCompletedToday: !prev.manzilCompletedToday }))}
-                className={`text-xs font-black px-2.5 py-1 rounded-lg flex items-center gap-1 cursor-pointer transition ${
-                  hifzState.manzilCompletedToday
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-purple-100 text-[#6B1B7E] hover:bg-purple-200'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{hifzState.manzilCompletedToday ? 'Completed' : 'Mark Done'}</span>
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              <div>
-                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                  Assigned Daily Manzil Juz
-                </label>
-                <select
-                  value={hifzState.manzilJuz}
-                  onChange={(e) => setHifzState(prev => ({ ...prev, manzilJuz: e.target.value }))}
-                  className="w-full rounded-xl border border-purple-200 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:outline-none focus:border-[#6B1B7E]"
-                >
-                  <option value="Juz 30 (Amma Para)">Juz 30 (Amma Para)</option>
-                  <option value="Juz 29 (Tabarakalladhi)">Juz 29 (Tabarakalladhi)</option>
-                  <option value="Juz 28 (Qad Sami' Allah)">Juz 28 (Qad Sami' Allah)</option>
-                  <option value="Juz 1 (Alif Lam Meem)">Juz 1 (Alif Lam Meem)</option>
-                  <option value="Juz 2 (Sayaqool)">Juz 2 (Sayaqool)</option>
-                  <option value="Selected Surahs Cycle">Selected Surahs Cycle</option>
-                </select>
-              </div>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                Daily rotational revision of older memorized Juz ensures lifelong preservation without forgetting.
-              </p>
-            </div>
-          </div>
-
-        </div>
-
-        {/* Hifz Daily Completion Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-purple-100 text-xs">
-          <div className="flex items-center gap-2 font-bold text-[#6B1B7E]">
-            <span>Today's 3-Pillar Hifz Status:</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-[#6B1B7E] font-black">
-              {hifzPillarsDone} / 3 Pillars Completed
-            </span>
-          </div>
-          <span className="text-slate-500 font-medium">
-            Total Memorized: <strong className="text-slate-900">{hifzState.memorizedSurahsCount} Surahs ({hifzState.memorizedAyahsCount} Ayahs)</strong>
-          </span>
-        </div>
-      </div>
-
-      {/* Daily Islamic Tasks Widget */}
-      <div className="bg-white border-2 border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#6B1B7E]/10 pb-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-[#6B1B7E]/10 text-[#6B1B7E]">
-                <HeartHandshake className="w-5 h-5 text-[#E0107F]" />
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-[#6B1B7E]">
-                Daily Islamic Tasks & Good Deeds
-              </h2>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Personal spiritual accountability for today ({todayKey}). Check off each Sunnah action as you complete it.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
             <button
-              onClick={handleRefreshTasks}
-              className="px-3 py-1.5 rounded-xl border border-[#6B1B7E]/20 hover:border-[#6B1B7E]/40 text-[#6B1B7E] text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-              title="Get a new set of random daily tasks"
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-[#E0107F]" />
-              <span>Shuffle Tasks</span>
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Log Out</span>
             </button>
-
-            <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-purple-50 text-[#6B1B7E] border border-purple-200">
-              {completedCount} / {totalTasks} Completed ({taskPercentage}%)
-            </span>
           </div>
-        </div>
-
-        {/* Completion Progress Bar */}
-        <div className="space-y-1.5">
-          <div className="w-full h-3 bg-purple-100 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] transition-all duration-500 rounded-full"
-              style={{ width: `${taskPercentage}%` }}
-            />
-          </div>
-          {taskPercentage === 100 && (
-            <p className="text-xs text-emerald-700 font-bold flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>MashaAllah! You have completed all daily Islamic tasks for today. May Allah accept your devotion!</span>
-            </p>
-          )}
-        </div>
-
-        {/* Tasks List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {dailyTasks.map((task) => (
-            <div
-              key={task.id}
-              onClick={() => toggleTask(task.id)}
-              className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 select-none ${
-                task.completed
-                  ? 'bg-purple-50/70 border-[#6B1B7E]/30 shadow-2xs'
-                  : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-[#6B1B7E]/30'
-              }`}
-            >
-              <button
-                type="button"
-                className="mt-0.5 text-lg shrink-0 cursor-pointer"
-                aria-label={`Mark ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
-              >
-                {task.completed ? (
-                  <CheckSquare className="w-5 h-5 text-[#6B1B7E]" />
-                ) : (
-                  <Square className="w-5 h-5 text-slate-400 hover:text-[#6B1B7E]" />
-                )}
-              </button>
-
-              <div className="space-y-1 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className={`text-xs sm:text-sm font-bold ${task.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>
-                    {task.title}
-                  </p>
-                  {task.arabic && (
-                    <span className="text-xs font-serif text-[#6B1B7E] font-bold shrink-0" dir="rtl">
-                      {task.arabic}
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  {task.rewardNote}
-                </p>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* Enrolled Courses & Quick Navigation */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         
-        {/* Enrolled Courses */}
-        <div className="lg:col-span-2 bg-white border border-[#6B1B7E]/15 rounded-3xl p-6 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-[#6B1B7E]">Your Active Curriculum</h3>
-            <span className="text-xs text-slate-500">{enrolledCourses.length + 1} Courses Active</span>
-          </div>
-
-          <div className="space-y-3">
-            {/* Hifz Program Active Card in Student Portal */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 border border-[#E0107F]/30 flex items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="text-sm font-black text-[#6B1B7E]">Quran Memorization (Hifz) Program</h4>
-                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#E0107F] text-white">
-                    Sabaq · Sabqi · Manzil
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600">Active Surah: {hifzState.activeSurah} ({hifzState.sabaqAyahRange})</p>
-              </div>
-              {onNavigateToHifz && (
-                <button
-                  onClick={onNavigateToHifz}
-                  className="px-3.5 py-1.5 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] hover:opacity-95 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer shrink-0"
-                >
-                  Open Hifz Class
-                </button>
-              )}
-            </div>
-
-            {enrolledCourses.map((c) => (
-              <div key={c.id} className="p-4 rounded-2xl bg-purple-50/40 border border-purple-100 flex items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-slate-900">{c.title}</h4>
-                  <p className="text-xs text-slate-500">{c.level} · {c.duration}</p>
-                </div>
-                <button
-                  onClick={() => onNavigateToQaida()}
-                  className="px-3.5 py-1.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer shrink-0"
-                >
-                  Enter Class
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Quick Academy Help & Schedule */}
-        <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 border border-[#6B1B7E]/20 rounded-3xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
-          <div className="space-y-3">
-            <h4 className="text-base font-black text-slate-900">Need Help with Hifz or Pronunciation?</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Book a live 1-on-1 Sabaq & Tajweed verification session with your dedicated Hafiz teacher.
-            </p>
-          </div>
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4 mb-8">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'overview'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Overview & Next Class</span>
+          </button>
 
           <button
-            onClick={onOpenSchedule}
-            className="w-full py-2.5 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white text-xs font-black rounded-xl shadow-md transition cursor-pointer"
+            onClick={() => setActiveTab('timetable')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'timetable'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
           >
-            Schedule Free 1-on-1 Review
+            <Calendar className="w-4 h-4" />
+            <span>Class Timetable ({schedules.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('lessons')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'lessons'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Daily Lesson & Homework ({dailyLessons.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'attendance'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Attendance Record</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('invoices')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'invoices'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4" />
+            <span>Fee & Invoices ({invoices.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'profile'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <UserIcon className="w-4 h-4" />
+            <span>Student Profile & Password</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('support')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'support'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>Support & Help Desk</span>
           </button>
         </div>
+
+        {/* Tab 1: Overview & Next Class */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            
+            {/* Top 4 KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Assigned Teacher</span>
+                <span className="block text-base font-black text-slate-900 truncate">
+                  {assignedTeacher.name}
+                </span>
+                <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Ijazah Certified Scholar</span>
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Enrolled Courses</span>
+                <span className="block text-2xl font-black text-[#6B1B7E]">
+                  {enrolledCourses.length} Courses
+                </span>
+                <span className="text-[11px] text-slate-500 truncate block">
+                  {enrolledCourses.map(c => c.title).join(', ')}
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Attendance Rate</span>
+                <span className="block text-2xl font-black text-emerald-600">
+                  100% Present
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {attendanceLogs.length} Sessions Logged
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Average Tajweed Score</span>
+                <span className="block text-2xl font-black text-[#E0107F]">
+                  92% Excellence
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Makharij & Fluency Rated
+                </span>
+              </div>
+            </div>
+
+            {/* Upcoming Live Class Banner with Direct Meeting Launch */}
+            <div className="p-7 rounded-3xl bg-gradient-to-r from-[#6B1B7E] to-[#5B2A9A] text-white shadow-xl shadow-purple-900/10 flex flex-col md:flex-row items-center justify-between gap-6 border border-purple-400/20">
+              <div className="space-y-2 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-emerald-300">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Next Live Class: {upcomingClass.dayOfWeek} at {upcomingClass.timeSlot}</span>
+                </div>
+                <h3 className="text-2xl font-black text-white">
+                  {upcomingClass.courseTitle}
+                </h3>
+                <p className="text-xs sm:text-sm text-purple-200">
+                  Teacher: <strong>{upcomingClass.teacherName}</strong> · Duration: {upcomingClass.durationMinutes} mins · 1-on-1 Private Room
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+                <a
+                  href={upcomingClass.meetingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2"
+                >
+                  <Video className="w-4 h-4" />
+                  <span>Join Online Class ({upcomingClass.meetingPlatform})</span>
+                </a>
+
+                {onOpenWhatsApp && (
+                  <button
+                    onClick={onOpenWhatsApp}
+                    className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition flex items-center gap-1.5"
+                  >
+                    <MessageCircle className="w-4 h-4 text-emerald-300" />
+                    <span>Message Teacher</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* 2-Column: Latest Daily Lesson & Notifications */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              
+              {/* Latest Daily Lesson Log */}
+              <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="font-black text-slate-900 text-lg">
+                      Latest Lesson Progress
+                    </h3>
+                    <p className="text-xs text-slate-400">Recorded by {assignedTeacher.name}</p>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 font-bold text-xs">
+                    {dailyLessons[0]?.date || 'Recent'}
+                  </span>
+                </div>
+
+                {dailyLessons[0] ? (
+                  <div className="space-y-4 text-xs">
+                    <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-2">
+                      <span className="block text-slate-500 font-semibold uppercase text-[10px]">
+                        Today's Sabaq (New Lesson):
+                      </span>
+                      <p className="text-sm font-bold text-slate-900">
+                        {dailyLessons[0].sabaqTitle}
+                      </p>
+                      <div className="flex flex-wrap gap-3 pt-1 text-[11px]">
+                        <span>Tajweed: <strong>{dailyLessons[0].tajweedScore}%</strong></span>
+                        <span>·</span>
+                        <span>Makharij: <strong>{dailyLessons[0].makharijScore}%</strong></span>
+                        <span>·</span>
+                        <span>Fluency: <strong>{dailyLessons[0].fluencyScore}%</strong></span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <span className="block text-[10px] text-slate-400 uppercase font-bold">Sabqi (Recent Revision)</span>
+                        <p className="font-semibold text-slate-800 text-xs mt-1">{dailyLessons[0].sabqiRevision}</p>
+                      </div>
+
+                      <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+                        <span className="block text-[10px] text-slate-400 uppercase font-bold">Manzil (Permanent Review)</span>
+                        <p className="font-semibold text-slate-800 text-xs mt-1">{dailyLessons[0].manzilRevision}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200/60 space-y-1">
+                      <span className="block text-[10px] uppercase font-bold text-amber-800">Assigned Homework:</span>
+                      <p className="text-slate-700 text-xs">{dailyLessons[0].homework}</p>
+                    </div>
+
+                    <div className="p-4 bg-purple-50/30 rounded-2xl border border-purple-100 space-y-1">
+                      <span className="block text-[10px] uppercase font-bold text-[#6B1B7E]">Teacher Feedback to Parents:</span>
+                      <p className="text-slate-700 text-xs italic">"{dailyLessons[0].teacherFeedback}"</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 py-4">No daily lessons logged yet.</p>
+                )}
+              </div>
+
+              {/* Academy Announcements & Notices */}
+              <div className="lg:col-span-5 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="font-black text-slate-900 text-lg">
+                    Announcements
+                  </h3>
+                  <span className="text-xs text-purple-600 font-bold">Live Notices</span>
+                </div>
+
+                <div className="space-y-3">
+                  {announcements.map((ann) => (
+                    <div key={ann.id} className="p-4 rounded-2xl bg-purple-50/40 border border-purple-100 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-slate-900 text-xs">{ann.title}</h4>
+                        <span className="text-[10px] text-slate-400">{ann.date}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">{ann.message}</p>
+                      <span className="block text-[10px] text-[#6B1B7E] font-semibold pt-1">
+                        From: {ann.senderName}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* Tab 2: Timetable */}
+        {activeTab === 'timetable' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Weekly Class Timetable
+              </h3>
+              <p className="text-xs text-slate-500">
+                Your weekly schedule with live meeting links. To change timings, please message our support desk.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {schedules.map((sch) => (
+                <div key={sch.id} className="p-5 rounded-2xl border border-purple-100 bg-purple-50/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 rounded-md bg-[#6B1B7E] text-white text-[10px] font-bold">
+                      {sch.dayOfWeek}
+                    </span>
+                    <span className="text-xs font-bold text-slate-700">{sch.timeSlot}</span>
+                  </div>
+
+                  <h4 className="font-bold text-slate-900 text-sm">{sch.courseTitle}</h4>
+                  <p className="text-xs text-slate-500">Teacher: {sch.teacherName}</p>
+
+                  <a
+                    href={sch.meetingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Join Class Room</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Daily Lessons & Homework */}
+        {activeTab === 'lessons' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Daily Quran Lesson History & Homework
+              </h3>
+              <p className="text-xs text-slate-500">
+                Complete record of daily Sabaq (new verses), Sabqi revision, and teacher feedback.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {dailyLessons.map((les) => (
+                <div key={les.id} className="p-5 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                    <div>
+                      <span className="font-black text-slate-900 text-sm">{les.sabaqTitle}</span>
+                      <span className="text-xs text-slate-400 block">{les.date} · Evaluator: {les.teacherName}</span>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+                      Status: {les.sabaqStatus.toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3 bg-white rounded-xl border border-slate-100">
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Sabqi (Recent)</span>
+                      <p className="font-semibold text-slate-800 mt-0.5">{les.sabqiRevision}</p>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-slate-100">
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Manzil (Cumulative)</span>
+                      <p className="font-semibold text-slate-800 mt-0.5">{les.manzilRevision}</p>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-xl border border-slate-100">
+                      <span className="block text-[10px] text-slate-400 uppercase font-bold">Scores</span>
+                      <p className="font-semibold text-purple-900 mt-0.5">
+                        Tajweed: {les.tajweedScore}% · Makharij: {les.makharijScore}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {les.homework && (
+                    <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-slate-700">
+                      <strong className="text-amber-800">Homework:</strong> {les.homework}
+                    </div>
+                  )}
+
+                  {les.teacherFeedback && (
+                    <p className="text-xs text-slate-600 italic">
+                      <strong>Teacher Feedback:</strong> "{les.teacherFeedback}"
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Attendance Log */}
+        {activeTab === 'attendance' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Attendance & Session Log
+              </h3>
+              <p className="text-xs text-slate-500">
+                Complete log of live sessions attended with topics covered.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Course</th>
+                    <th className="py-3 px-4">Topic Covered</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Duration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {attendanceLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/80">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800">
+                        {log.date} at {log.time}
+                      </td>
+                      <td className="py-3.5 px-4 text-[#6B1B7E] font-medium">
+                        {log.courseTitle}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700">
+                        {log.sessionTopic}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                          {log.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500">
+                        {log.durationMinutes} mins
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: Invoices & Fee Status */}
+        {activeTab === 'invoices' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Tuition Fee History & Receipts
+              </h3>
+              <p className="text-xs text-slate-500">
+                Download official receipts for your monthly academy tuition payments.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {invoices.map((inv) => (
+                <div key={inv.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-4">
+                  <div>
+                    <span className="font-bold text-slate-900 text-sm block">
+                      {inv.invoiceNumber} · {inv.billingPeriod}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      {inv.courseTitle} · Date: {inv.date}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <span className="font-black text-slate-900 text-base">
+                      {inv.currency === 'GBP' ? '£' : '$'}{inv.amount}
+                    </span>
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-[11px] rounded-full">
+                      PAID
+                    </span>
+                    <button
+                      onClick={() => downloadReceipt(inv)}
+                      className="px-3 py-1.5 bg-white border border-slate-300 hover:border-[#6B1B7E] text-[#6B1B7E] font-bold text-xs rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Receipt</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Profile & Password */}
+        {activeTab === 'profile' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            {/* Edit Profile */}
+            <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+              <h3 className="text-xl font-black text-slate-900">
+                Personal & Parent Information
+              </h3>
+
+              {profileSavedMsg && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Profile details updated successfully!</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Student Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Student Age
+                    </label>
+                    <input
+                      type="number"
+                      value={editAge}
+                      onChange={e => setEditAge(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      value={editCountry}
+                      onChange={e => setEditCountry(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Parent / Guardian Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editParentName}
+                    onChange={e => setEditParentName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Parent Phone / WhatsApp
+                  </label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={e => setEditPhone(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                >
+                  Save Profile Changes
+                </button>
+              </form>
+            </div>
+
+            {/* Change Password */}
+            <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-5">
+              <h3 className="text-xl font-black text-slate-900">
+                Change Password
+              </h3>
+
+              {passwordMsg && (
+                <div className={`p-3 rounded-xl text-xs font-bold ${
+                  passwordMsg.isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                }`}>
+                  {passwordMsg.text}
+                </div>
+              )}
+
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter new password"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                >
+                  Update Password
+                </button>
+              </form>
+            </div>
+
+          </div>
+        )}
+
+        {/* Tab 7: Support Desk */}
+        {activeTab === 'support' && (
+          <div className="max-w-2xl bg-white p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Academy Support & Student Help Desk
+              </h3>
+              <p className="text-xs text-slate-500">
+                Need to reschedule a session, discuss your child's progress, or change your course?
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Direct WhatsApp Support</h4>
+                  <p className="text-xs text-slate-600">Mentor Abdul Basit Saleem (Available 24/7)</p>
+                </div>
+                <a
+                  href="https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20am%20a%20student%20at%20True%20Way%20Quran."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>+92 306 8959085</span>
+                </a>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-slate-900 text-sm">Official Email</h4>
+                  <p className="text-xs text-slate-600">Admissions & Parent Inquiries</p>
+                </div>
+                <a
+                  href="mailto:support@ustadleads.com"
+                  className="px-4 py-2 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition"
+                >
+                  support@ustadleads.com
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 

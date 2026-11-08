@@ -1,790 +1,1021 @@
-import React, { useState } from 'react';
-import { QaidaLesson, User, PronunciationAttempt } from '../types';
-import { StudentVoiceRecorder } from '../utils/speechEvaluator';
+import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, 
   Users, 
+  UserPlus, 
+  ShieldCheck, 
+  Mail, 
+  Phone, 
+  Trash2, 
+  Edit, 
+  CheckCircle2, 
+  AlertCircle, 
+  Search, 
+  Calendar, 
+  Video, 
   BookOpen, 
-  Mic, 
   DollarSign, 
-  Check, 
-  Play, 
-  Square, 
-  Volume2, 
-  Save, 
-  Sparkles,
-  Database,
-  Download,
-  Search,
-  Server,
-  FileText,
+  FileText, 
+  Star, 
+  Bell, 
+  LogOut, 
+  ArrowRight, 
+  MessageCircle, 
+  Plus,
   Clock,
-  Layers,
-  Award,
-  ExternalLink,
-  RefreshCw
+  Sparkles
 } from 'lucide-react';
+import { 
+  AcademyUser, 
+  TrialBookingRequest, 
+  ClassScheduleItem, 
+  StudentAttendanceLog, 
+  DailyLessonLog, 
+  AcademyAnnouncement,
+  AcademyTeacher
+} from '../types/academy';
+import { 
+  getStoredAcademyUsers, 
+  saveAcademyUsers, 
+  getStoredTrialBookings, 
+  saveTrialBookings, 
+  getStoredClassSchedules, 
+  saveClassSchedules,
+  getStoredAttendanceLogs,
+  getStoredDailyLessons,
+  getStoredAnnouncements,
+  saveAnnouncements,
+  DEFAULT_QURAN_COURSES,
+  DEFAULT_TEACHERS
+} from '../utils/academyDatabase';
 
 interface AdminPanelProps {
-  lessons: QaidaLesson[];
-  onUpdateLessons: (updated: QaidaLesson[]) => void;
-  students: User[];
-  attempts: PronunciationAttempt[];
-  onSaveTeacherVoice: (lessonId: string, wordId: string, audioUrl: string) => void;
+  currentUser: any;
+  onLogout: () => void;
+  onNavigateHome: () => void;
+  onOpenQuranReader?: () => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
-  lessons,
-  onUpdateLessons,
-  students,
-  attempts,
-  onSaveTeacherVoice
+  currentUser,
+  onLogout,
+  onNavigateHome,
+  onOpenQuranReader
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'database' | 'lessons' | 'teacher_studio' | 'students' | 'assessments'>('overview');
-  
-  // Teacher studio state
-  const [selectedStudioLessonId, setSelectedStudioLessonId] = useState<string>(lessons[0]?.id || 'lesson-1');
-  const [selectedStudioWordId, setSelectedStudioWordId] = useState<string>(lessons[0]?.words[0]?.id || 'w-1');
-  const [isRecordingTeacher, setIsRecordingTeacher] = useState(false);
-  const [teacherRecordedUrl, setTeacherRecordedUrl] = useState<string | null>(null);
-  const [teacherRecorder] = useState<StudentVoiceRecorder>(new StudentVoiceRecorder());
-  const [teacherAudioSaved, setTeacherAudioSaved] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'trials' | 'students' | 'teachers' | 'schedules' | 'attendance' | 'broadcast'>('overview');
 
-  // Database Explorer state
-  const [selectedCollection, setSelectedCollection] = useState<'students' | 'attendance' | 'hifz' | 'lessons' | 'assessments'>('students');
-  const [databaseSearch, setDatabaseSearch] = useState('');
+  const [users, setUsers] = useState<AcademyUser[]>([]);
+  const [trials, setTrials] = useState<TrialBookingRequest[]>([]);
+  const [schedules, setSchedules] = useState<ClassScheduleItem[]>([]);
+  const [attendance, setAttendance] = useState<StudentAttendanceLog[]>([]);
+  const [dailyLessons, setDailyLessons] = useState<DailyLessonLog[]>([]);
+  const [announcements, setAnnouncements] = useState<AcademyAnnouncement[]>([]);
 
-  const selectedLesson = lessons.find(l => l.id === selectedStudioLessonId) || lessons[0];
-  const selectedWord = selectedLesson?.words.find(w => w.id === selectedStudioWordId) || selectedLesson?.words[0];
+  // Search & Filter
+  const [searchQuery, setSearchQuery] = useState('');
+  const [trialFilter, setTrialFilter] = useState<'all' | 'new' | 'contacted' | 'scheduled' | 'enrolled'>('all');
 
-  const handleStartTeacherRecord = async () => {
-    setTeacherAudioSaved(false);
-    const ok = await teacherRecorder.start();
-    if (ok) {
-      setIsRecordingTeacher(true);
-    }
+  // New Student Modal / Form
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentParent, setNewStudentParent] = useState('');
+  const [newStudentPhone, setNewStudentPhone] = useState('');
+  const [newStudentAge, setNewStudentAge] = useState('8');
+  const [newStudentCourse, setNewStudentCourse] = useState('course-madani-qaida');
+  const [newStudentTeacher, setNewStudentTeacher] = useState('teacher-bilal');
+
+  // New Schedule Modal / Form
+  const [showAddSchedule, setShowAddSchedule] = useState(false);
+  const [schedStudentId, setSchedStudentId] = useState('');
+  const [schedTeacherId, setSchedTeacherId] = useState('teacher-bilal');
+  const [schedDay, setSchedDay] = useState<any>('Monday');
+  const [schedTime, setSchedTime] = useState('05:00 PM');
+  const [schedUrl, setSchedUrl] = useState('https://meet.google.com/trueway-quran-live');
+
+  // Broadcast state
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMsg, setBroadcastMsg] = useState('');
+  const [broadcastSavedNotice, setBroadcastSavedNotice] = useState(false);
+
+  useEffect(() => {
+    setUsers(getStoredAcademyUsers());
+    setTrials(getStoredTrialBookings());
+    setSchedules(getStoredClassSchedules());
+    setAttendance(getStoredAttendanceLogs());
+    setDailyLessons(getStoredDailyLessons());
+    setAnnouncements(getStoredAnnouncements());
+  }, []);
+
+  const studentsList = users.filter(u => u.role === 'student');
+  const instructorsList = users.filter(u => u.role === 'instructor');
+
+  const handleUpdateTrialStatus = (id: string, newStatus: any) => {
+    const updated = trials.map(t => t.id === id ? { ...t, status: newStatus } : t);
+    setTrials(updated);
+    saveTrialBookings(updated);
   };
 
-  const handleStopTeacherRecord = async () => {
-    setIsRecordingTeacher(false);
-    const url = await teacherRecorder.stop();
-    if (url) {
-      setTeacherRecordedUrl(url);
-    }
-  };
-
-  const handleSaveTeacherRecitation = () => {
-    if (!teacherRecordedUrl || !selectedWord) return;
-    onSaveTeacherVoice(selectedStudioLessonId, selectedWord.id, teacherRecordedUrl);
-    setTeacherAudioSaved(true);
-    setTimeout(() => setTeacherAudioSaved(false), 3000);
-  };
-
-  const handleUpdateThreshold = (lessonId: string, score: number) => {
-    const updated = lessons.map(l => {
-      if (l.id === lessonId) {
-        return { ...l, passingScore: score };
+  const handleToggleUserStatus = (id: string) => {
+    const updated = users.map(u => {
+      if (u.id === id) {
+        return { ...u, status: u.status === 'active' ? 'inactive' : 'active' as any };
       }
-      return l;
+      return u;
     });
-    onUpdateLessons(updated);
+    setUsers(updated);
+    saveAcademyUsers(updated);
   };
 
-  // Get live attendance data from localStorage
-  const getStoredAttendance = () => {
-    try {
-      const stored = localStorage.getItem('twq_student_attendance');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return {
-      '2026-10-29': {
-        studentId: 'usr-student-1',
-        studentName: 'Ahmed Al-Mansoor',
-        sessionType: 'Portal Sign-in & Daily Islamic Study',
-        status: 'present',
-        time: '09:00 AM'
-      },
-      '2026-10-28': {
-        studentId: 'usr-student-1',
-        studentName: 'Ahmed Al-Mansoor',
-        sessionType: 'Madani Qaida Makharij Verification',
-        status: 'present',
-        time: '09:15 AM'
-      },
-      '2026-10-27': {
-        studentId: 'usr-student-1',
-        studentName: 'Ahmed Al-Mansoor',
-        sessionType: '1-on-1 Quran Hifz Review',
-        status: 'present',
-        time: '10:30 AM'
-      }
-    };
+  const handleDeleteUser = (id: string) => {
+    if (confirm('Are you sure you want to remove this user from the academy database?')) {
+      const updated = users.filter(u => u.id !== id);
+      setUsers(updated);
+      saveAcademyUsers(updated);
+    }
   };
 
-  // Get live Hifz progress from localStorage
-  const getStoredHifzRecords = () => {
-    try {
-      const records: Record<string, any> = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('twq_student_hifz_')) {
-          records[key] = JSON.parse(localStorage.getItem(key) || '{}');
-        }
-      }
-      if (Object.keys(records).length > 0) return records;
-    } catch {}
-    return {
-      'twq_student_hifz_usr-student-1': {
-        studentId: 'usr-student-1',
-        studentName: 'Ahmed Al-Mansoor',
-        activeSurah: 'Surah Al-Mulk (67)',
-        sabaqAyahRange: 'Ayah 1 to 10',
-        sabaqCompletedToday: true,
-        sabqiTarget: 'Juz 30 (Surah An-Naba to An-Nas)',
-        manzilJuz: 'Juz 30 (Amma Para)',
-        memorizedSurahsCount: 16,
-        memorizedAyahsCount: 245
-      }
-    };
-  };
+  const handleCreateStudent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStudentName.trim() || !newStudentEmail.trim()) return;
 
-  const attendanceData = getStoredAttendance();
-  const hifzRecords = getStoredHifzRecords();
+    const teacherObj = DEFAULT_TEACHERS.find(t => t.id === newStudentTeacher);
 
-  // Export full LMS database snapshot to downloadable JSON
-  const handleExportDatabase = () => {
-    const databaseDump = {
-      academyName: 'True Way Quran',
-      exportedAt: new Date().toISOString(),
-      schemaVersion: '2.4.0',
-      databaseType: 'Unified LMS Multi-Collection Store',
-      collections: {
-        users: students,
-        curriculum_lessons: lessons,
-        attendance_logs: attendanceData,
-        hifz_memorization_records: hifzRecords,
-        pronunciation_assessment_logs: attempts
-      }
+    const newUser: AcademyUser = {
+      id: `usr-student-${Date.now()}`,
+      name: newStudentName.trim(),
+      email: newStudentEmail.trim(),
+      passwordHash: 'student123',
+      role: 'student',
+      phone: newStudentPhone.trim(),
+      country: 'United Kingdom',
+      timezone: 'Europe/London (GMT)',
+      status: 'active',
+      emailVerified: true,
+      createdAt: new Date().toISOString().split('T')[0],
+      studentAge: parseInt(newStudentAge, 10) || 8,
+      parentName: newStudentParent.trim() || newStudentName.trim(),
+      parentPhone: newStudentPhone.trim(),
+      enrolledCourseIds: [newStudentCourse],
+      assignedTeacherId: newStudentTeacher,
+      assignedTeacherName: teacherObj ? teacherObj.name : 'Qari Muhammad Bilal Al-Azhari',
+      monthlyFee: 50,
+      currency: 'GBP'
     };
 
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(databaseDump, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `truewayquran_lms_database_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    const updated = [newUser, ...users];
+    setUsers(updated);
+    saveAcademyUsers(updated);
+
+    setShowAddStudent(false);
+    setNewStudentName('');
+    setNewStudentEmail('');
+    setNewStudentParent('');
+    setNewStudentPhone('');
   };
+
+  const handleCreateSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    const student = users.find(u => u.id === schedStudentId) || studentsList[0];
+    const teacher = DEFAULT_TEACHERS.find(t => t.id === schedTeacherId) || DEFAULT_TEACHERS[0];
+    if (!student) return;
+
+    const newSch: ClassScheduleItem = {
+      id: `sch-${Date.now()}`,
+      studentId: student.id,
+      studentName: student.name,
+      teacherId: teacher.id,
+      teacherName: teacher.name,
+      courseId: (student.enrolledCourseIds && student.enrolledCourseIds[0]) || 'course-quran-tajweed',
+      courseTitle: 'Quran Reading & Tajweed',
+      dayOfWeek: schedDay,
+      timeSlot: schedTime,
+      durationMinutes: 30,
+      meetingUrl: schedUrl.trim() || 'https://meet.google.com/trueway-quran-live',
+      meetingPlatform: 'Google Meet',
+      status: 'upcoming'
+    };
+
+    const updated = [newSch, ...schedules];
+    setSchedules(updated);
+    saveClassSchedules(updated);
+    setShowAddSchedule(false);
+  };
+
+  const handlePostBroadcast = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!broadcastTitle.trim() || !broadcastMsg.trim()) return;
+
+    const newAnn: AcademyAnnouncement = {
+      id: `ann-${Date.now()}`,
+      title: broadcastTitle.trim(),
+      message: broadcastMsg.trim(),
+      targetRole: 'all',
+      date: new Date().toISOString().split('T')[0],
+      senderName: 'Academy Super Admin'
+    };
+
+    const updated = [newAnn, ...announcements];
+    setAnnouncements(updated);
+    saveAnnouncements(updated);
+
+    setBroadcastTitle('');
+    setBroadcastMsg('');
+    setBroadcastSavedNotice(true);
+    setTimeout(() => setBroadcastSavedNotice(false), 3000);
+  };
+
+  const filteredTrials = trials.filter(t => {
+    if (trialFilter !== 'all' && t.status !== trialFilter) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        t.studentName.toLowerCase().includes(q) ||
+        t.parentName.toLowerCase().includes(q) ||
+        t.parentEmail.toLowerCase().includes(q) ||
+        t.parentPhone.includes(q)
+      );
+    }
+    return true;
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       
-      {/* Admin Header with True Way Quran Brand Palette */}
-      <div className="bg-gradient-to-r from-[#200538] via-[#350a4e] to-[#4e0743] border border-[#6B1B7E]/40 rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xl text-white">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-[#E0107F] shadow-lg shrink-0">
-            <ShieldCheck className="w-8 h-8" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-white">True Way Quran LMS Administration</h1>
-              <span className="text-[10px] bg-[#E0107F] text-white font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                Director Level
-              </span>
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#2e1065] text-white py-8 border-b border-purple-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="space-y-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold text-purple-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>True Way Quran Super Admin</span>
+              <span className="text-white/40">·</span>
+              <span>Central Management Console</span>
             </div>
-            <p className="text-xs text-purple-200 mt-1 max-w-2xl">
-              Complete LMS database inspection, student enrollment roster, custom teacher recording studio, attendance tracking, and pronunciation audits.
+            <h1 className="text-2xl sm:text-3xl font-black text-white">
+              Academy Executive Dashboard
+            </h1>
+            <p className="text-xs sm:text-sm text-purple-200">
+              Manage student registrations, teacher assignments, class schedules, lead triage, and academy reports.
             </p>
           </div>
-        </div>
 
-        {/* Tab switchers in formal styling */}
-        <div className="flex items-center gap-1.5 bg-black/30 p-1.5 rounded-2xl border border-white/10 flex-wrap">
-          {[
-            { id: 'overview', label: 'Overview', icon: DollarSign },
-            { id: 'database', label: 'LMS Database System', icon: Database },
-            { id: 'students', label: 'Student Roster', icon: Users },
-            { id: 'lessons', label: 'Lessons & Thresholds', icon: BookOpen },
-            { id: 'teacher_studio', label: 'Teacher Studio', icon: Mic },
-            { id: 'assessments', label: 'Voice Audits', icon: Sparkles }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
+          <div className="flex items-center gap-3">
+            {onOpenQuranReader && (
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  active 
-                    ? 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white shadow-md' 
-                    : 'text-purple-200 hover:text-white hover:bg-white/10'
-                }`}
+                onClick={onOpenQuranReader}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition cursor-pointer flex items-center gap-1.5"
               >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
+                <BookOpen className="w-4 h-4 text-emerald-300" />
+                <span>Quran Reader</span>
               </button>
-            );
-          })}
+            )}
+
+            <button
+              onClick={onNavigateHome}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition cursor-pointer"
+            >
+              Public Site
+            </button>
+
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white font-bold text-xs rounded-xl transition cursor-pointer flex items-center gap-1"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Tab 1: Overview Dashboard */}
-      {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 space-y-1 shadow-xs">
-              <span className="text-xs text-slate-500 block font-bold">Total Registered Students</span>
-              <span className="text-3xl font-black text-[#6B1B7E]">{students.length + 184}</span>
-              <span className="text-[11px] text-emerald-600 font-bold block">+12 this week from US, UK & CA</span>
-            </div>
-            <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 space-y-1 shadow-xs">
-              <span className="text-xs text-slate-500 block font-bold">Active Subscriptions</span>
-              <span className="text-3xl font-black text-[#E0107F]">128</span>
-              <span className="text-[11px] text-slate-500 block">Monthly & Quarterly</span>
-            </div>
-            <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 space-y-1 shadow-xs">
-              <span className="text-xs text-slate-500 block font-bold">Monthly Gross Volume</span>
-              <span className="text-3xl font-black text-[#6B1B7E]">$6,480</span>
-              <span className="text-[11px] text-emerald-600 font-bold block">+24% vs last cycle</span>
-            </div>
-            <div className="bg-white border border-[#6B1B7E]/15 rounded-2xl p-5 space-y-1 shadow-xs">
-              <span className="text-xs text-slate-500 block font-bold">Average Pronunciation Score</span>
-              <span className="text-3xl font-black text-[#6B1B7E]">84.2%</span>
-              <span className="text-[11px] text-slate-500 block">Across 1,420 audio evaluations</span>
-            </div>
-          </div>
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        {/* Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-4 mb-8">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'overview'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Overview & KPIs</span>
+          </button>
 
-          {/* Quick Notice */}
-          <div className="bg-white border border-[#6B1B7E]/20 rounded-2xl p-6 text-xs text-slate-700 space-y-2 shadow-xs">
-            <h3 className="text-sm font-bold text-[#6B1B7E] flex items-center gap-2">
-              <Database className="w-4 h-4 text-[#E0107F]" />
-              <span>Real Database & Deployment Architecture</span>
-            </h3>
-            <p className="leading-relaxed">
-              To check and inspect all live student profiles, attendance records, Hifz milestones, and teacher voice evaluations, open the <strong>LMS Database System</strong> tab above. You can view raw records, monitor collection sizes, and export the complete production database in JSON format.
-            </p>
-          </div>
+          <button
+            onClick={() => setActiveTab('trials')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'trials'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            <span>Trial Requests ({trials.filter(t => t.status === 'new').length} New)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('students')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'students'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Students ({studentsList.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('teachers')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'teachers'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Teachers ({DEFAULT_TEACHERS.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('schedules')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'schedules'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Class Timetables & Links ({schedules.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('attendance')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'attendance'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Attendance & Progress</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('broadcast')}
+            className={`px-4 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2 ${
+              activeTab === 'broadcast'
+                ? 'bg-[#6B1B7E] text-white shadow-sm'
+                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            <span>Send Announcements</span>
+          </button>
         </div>
-      )}
 
-      {/* Tab 2: LMS Real Database & System Explorer (Requested Feature) */}
-      {activeTab === 'database' && (
-        <div className="space-y-6">
-          
-          {/* Database System Header & Live Engine Status */}
-          <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-100 pb-5">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black text-slate-900">
-                  LMS Student & Admin Database Console
-                </h2>
-                <p className="text-xs text-slate-600">
-                  Inspect the persistent data store for student accounts, attendance logs, course enrollments, and audio recitations.
+        {/* Tab 1: Overview & KPIs */}
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Total Registered Students</span>
+                <span className="block text-3xl font-black text-[#6B1B7E]">
+                  {studentsList.length}
+                </span>
+                <span className="text-[11px] text-emerald-600 font-bold">
+                  {studentsList.filter(s => s.status === 'active').length} Active · 0 Inactive
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">New Free Trial Leads</span>
+                <span className="block text-3xl font-black text-[#E0107F]">
+                  {trials.filter(t => t.status === 'new').length}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  {trials.length} Total Applications
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Certified Instructors</span>
+                <span className="block text-3xl font-black text-[#6B1B7E]">
+                  {DEFAULT_TEACHERS.length}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Male & Female Scholars
+                </span>
+              </div>
+
+              <div className="p-5 bg-white rounded-2xl border border-purple-100 shadow-xs space-y-1">
+                <span className="text-xs font-semibold text-slate-400">Quran Courses</span>
+                <span className="block text-3xl font-black text-emerald-600">
+                  {DEFAULT_QURAN_COURSES.length}
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Madani Qaida, Tajweed, Hifz, Tafseer
+                </span>
+              </div>
+            </div>
+
+            {/* Recent Trial Submissions */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-black text-slate-900 text-lg">
+                  Recent Free Trial Requests
+                </h3>
+                <button
+                  onClick={() => setActiveTab('trials')}
+                  className="text-xs font-bold text-[#6B1B7E] hover:underline cursor-pointer"
+                >
+                  View All ({trials.length}) →
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {trials.slice(0, 3).map(tr => (
+                  <div key={tr.id} className="p-4 rounded-2xl bg-purple-50/40 border border-purple-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm">
+                        {tr.studentName} ({tr.studentAge} yrs)
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Parent: {tr.parentName} · {tr.parentPhone} · Course: <strong>{tr.courseTitle}</strong>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        tr.status === 'new' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {tr.status.toUpperCase()}
+                      </span>
+                      <a
+                        href={`https://wa.me/${tr.parentPhone.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum%20${encodeURIComponent(tr.parentName)}%2C%20this%20is%20Abdul%20Basit%20from%20True%20Way%20Quran%20regarding%20the%20free%20trial%20class%20for%20${encodeURIComponent(tr.studentName)}.`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition"
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: Free Trial Requests & Lead Management */}
+        {activeTab === 'trials' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900">
+                  Free Trial Class Applications ({filteredTrials.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage incoming trial leads, assign teachers, and communicate with parents via WhatsApp.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={handleExportDatabase}
-                  className="px-4 py-2.5 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] hover:opacity-95 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Export Database (JSON)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Architecture Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-500 block">Database Engine</span>
-                <span className="text-sm font-black text-[#6B1B7E] block">Unified State Engine</span>
-                <span className="text-[11px] text-slate-500 block">Browser Storage + Firestore Schema</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-500 block">Connection Health</span>
-                <span className="text-sm font-black text-emerald-600 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Online & Synchronized</span>
-                </span>
-                <span className="text-[11px] text-slate-500 block">Latency: &lt; 5ms</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-500 block">Registered Collections</span>
-                <span className="text-sm font-black text-[#6B1B7E] block">5 Active Collections</span>
-                <span className="text-[11px] text-slate-500 block">Users, Attendance, Hifz, Lessons, Audio</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100 space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-500 block">Deployment Readiness</span>
-                <span className="text-sm font-black text-[#E0107F] block">100% Production Ready</span>
-                <span className="text-[11px] text-slate-500 block">Zero schema conflicts</span>
-              </div>
-            </div>
-
-            {/* Production Deployment Guidance Card */}
-            <div className="bg-gradient-to-r from-purple-50 via-white to-pink-50 border border-purple-200 rounded-2xl p-5 space-y-3">
+              {/* Filters */}
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#E0107F]" />
-                <h3 className="text-sm font-bold text-slate-900">
-                  Where to Check the Real Database When Deploying to Production:
-                </h3>
+                {(['all', 'new', 'scheduled', 'enrolled'] as const).map(flt => (
+                  <button
+                    key={flt}
+                    onClick={() => setTrialFilter(flt)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
+                      trialFilter === flt ? 'bg-[#6B1B7E] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {flt}
+                  </button>
+                ))}
               </div>
-              <ul className="text-xs text-slate-600 space-y-2 leading-relaxed">
-                <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#6B1B7E] text-white text-[10px] font-bold inline-flex items-center justify-center shrink-0 mt-0.5">1</span>
-                  <div>
-                    <strong>Within the Live Web Applet (Immediate Access):</strong> All student records, daily attendance check-ins, custom teacher voice recordings, and Hifz milestones are persistently stored and inspectable right here in this <strong>Admin Database Console</strong> or in your browser developer tools (<code>F12</code> &gt; <code>Application</code> &gt; <code>Local Storage</code>).
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#6B1B7E] text-white text-[10px] font-bold inline-flex items-center justify-center shrink-0 mt-0.5">2</span>
-                  <div>
-                    <strong>For Multi-Device Cloud Production Deployment:</strong> When you deploy to production servers for international students across multiple devices, the applet seamlessly connects to <strong>Firebase Firestore</strong> or <strong>Google Cloud SQL (PostgreSQL)</strong>.
-                  </div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-[#E0107F] text-white text-[10px] font-bold inline-flex items-center justify-center shrink-0 mt-0.5">3</span>
-                  <div>
-                    <strong>Cloud Console Direct URL:</strong> In Firebase, you inspect the live production collections directly in the <strong>Firebase Console &gt; Firestore Database</strong> (under <code>users</code>, <code>attendance</code>, <code>enrollments</code>, and <code>hifz_records</code>).
-                  </div>
-                </li>
-              </ul>
             </div>
 
-            {/* Collection Switcher & Live Table Viewer */}
-            <div className="space-y-4 pt-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-1.5 bg-purple-50 p-1 rounded-xl border border-purple-100 flex-wrap">
-                  {[
-                    { id: 'students', label: `Students (${students.length})` },
-                    { id: 'attendance', label: `Attendance Logs (${Object.keys(attendanceData).length})` },
-                    { id: 'hifz', label: `Hifz Records (${Object.keys(hifzRecords).length})` },
-                    { id: 'lessons', label: `Qaida Lessons (${lessons.length})` },
-                    { id: 'assessments', label: `Voice Audits (${attempts.length})` }
-                  ].map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedCollection(c.id as any)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
-                        selectedCollection === c.id
-                          ? 'bg-[#6B1B7E] text-white shadow-xs'
-                          : 'text-slate-600 hover:text-[#6B1B7E]'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Student & Age</th>
+                    <th className="py-3 px-4">Parent Details</th>
+                    <th className="py-3 px-4">Requested Course</th>
+                    <th className="py-3 px-4">Preferred Slot</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredTrials.map(tr => (
+                    <tr key={tr.id} className="hover:bg-slate-50/80">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        {tr.studentName}
+                        <span className="block text-[11px] text-slate-400 font-normal">{tr.studentAge} years old</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700">
+                        <span className="font-semibold">{tr.parentName}</span>
+                        <span className="block text-[11px] text-slate-500">{tr.parentPhone}</span>
+                        <span className="block text-[10px] text-slate-400">{tr.parentEmail}</span>
+                      </td>
+                      <td className="py-3.5 px-4 font-medium text-[#6B1B7E]">
+                        {tr.courseTitle}
+                        <span className="block text-[10px] text-slate-400">Pref: {tr.preferredTeacherGender} teacher</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600">
+                        {tr.preferredTimeSlot}
+                        <span className="block text-[10px] text-slate-400">{tr.timezone}</span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <select
+                          value={tr.status}
+                          onChange={e => handleUpdateTrialStatus(tr.id, e.target.value)}
+                          className="px-2 py-1 bg-white border border-slate-300 rounded-md text-[11px] font-bold"
+                        >
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="enrolled">Enrolled</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <a
+                          href={`https://wa.me/${tr.parentPhone.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum%20${encodeURIComponent(tr.parentName)}%2C%20this%20is%20Abdul%20Basit%20from%20True%20Way%20Quran%20regarding%20the%20free%20trial%20class%20for%20${encodeURIComponent(tr.studentName)}.`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg inline-flex items-center gap-1 shadow-xs"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
-                  <input
-                    type="text"
-                    value={databaseSearch}
-                    onChange={(e) => setDatabaseSearch(e.target.value)}
-                    placeholder="Search collection records..."
-                    className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#6B1B7E] focus:bg-white transition"
-                  />
-                </div>
-              </div>
-
-              {/* Data Table */}
-              <div className="overflow-x-auto border border-purple-100 rounded-2xl">
-                {selectedCollection === 'students' && (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                      <tr>
-                        <th className="p-3">User ID</th>
-                        <th className="p-3">Name</th>
-                        <th className="p-3">Email</th>
-                        <th className="p-3">Role</th>
-                        <th className="p-3">Location / Timezone</th>
-                        <th className="p-3">Courses Enrolled</th>
-                        <th className="p-3">Streak Days</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-purple-50">
-                      {students.map(s => (
-                        <tr key={s.id} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-mono font-bold text-slate-500">{s.id}</td>
-                          <td className="p-3 font-bold text-slate-900">{s.name}</td>
-                          <td className="p-3 text-slate-600">{s.email}</td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-full bg-purple-100 text-[#6B1B7E] text-[10px] font-bold uppercase">
-                              {s.role}
-                            </span>
-                          </td>
-                          <td className="p-3 text-slate-600">{s.country} ({s.timezone})</td>
-                          <td className="p-3 font-bold text-[#E0107F]">{s.enrolledCourseIds.length} Active Courses</td>
-                          <td className="p-3 font-bold text-slate-900">{s.progress.streakDays} Days</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {selectedCollection === 'attendance' && (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                      <tr>
-                        <th className="p-3">Date Record</th>
-                        <th className="p-3">Student Name</th>
-                        <th className="p-3">Session Type</th>
-                        <th className="p-3">Check-in Time</th>
-                        <th className="p-3">Attendance Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-purple-50">
-                      {Object.entries(attendanceData).map(([date, rec]: [string, any]) => (
-                        <tr key={date} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-mono font-bold text-slate-900">{date}</td>
-                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Enrolled Student'}</td>
-                          <td className="p-3 text-slate-600">{rec.sessionType}</td>
-                          <td className="p-3 font-mono text-slate-600">{rec.time}</td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
-                              Verified {rec.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {selectedCollection === 'hifz' && (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                      <tr>
-                        <th className="p-3">Student</th>
-                        <th className="p-3">Active Surah (Sabaq)</th>
-                        <th className="p-3">Target Range</th>
-                        <th className="p-3">Recent Revision (Sabqi)</th>
-                        <th className="p-3">Manzil Juz Cycle</th>
-                        <th className="p-3">Retained Ayahs</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-purple-50">
-                      {Object.entries(hifzRecords).map(([key, rec]: [string, any]) => (
-                        <tr key={key} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-bold text-slate-900">{rec.studentName || 'Enrolled Student'}</td>
-                          <td className="p-3 font-bold text-[#6B1B7E]">{rec.activeSurah}</td>
-                          <td className="p-3 text-slate-600">{rec.sabaqAyahRange}</td>
-                          <td className="p-3 text-slate-600">{rec.sabqiTarget}</td>
-                          <td className="p-3 text-slate-600">{rec.manzilJuz}</td>
-                          <td className="p-3 font-bold text-[#E0107F]">{rec.memorizedAyahsCount} Ayahs</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {selectedCollection === 'lessons' && (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                      <tr>
-                        <th className="p-3">Lesson #</th>
-                        <th className="p-3">Title</th>
-                        <th className="p-3">Arabic Title</th>
-                        <th className="p-3">Word Count</th>
-                        <th className="p-3">Passing Score</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-purple-50">
-                      {lessons.map(l => (
-                        <tr key={l.id} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-bold text-[#6B1B7E]">Lesson {l.lessonNumber}</td>
-                          <td className="p-3 font-bold text-slate-900">{l.title}</td>
-                          <td className="p-3 font-arabic text-sm text-slate-700">{l.arabicTitle}</td>
-                          <td className="p-3 text-slate-600">{l.words.length} Vocabulary Words</td>
-                          <td className="p-3 font-bold text-[#E0107F]">{l.passingScore}% Accuracy</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {selectedCollection === 'assessments' && (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                      <tr>
-                        <th className="p-3">Assessment ID</th>
-                        <th className="p-3">Letter / Word</th>
-                        <th className="p-3">Transliteration</th>
-                        <th className="p-3">Accuracy Score</th>
-                        <th className="p-3">Makhraj Feedback</th>
-                        <th className="p-3">Timestamp</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-purple-50">
-                      {attempts.map(att => (
-                        <tr key={att.id} className="hover:bg-purple-50/30">
-                          <td className="p-3 font-mono text-slate-500">{att.id}</td>
-                          <td className="p-3 font-arabic text-lg font-bold text-slate-900">{att.arabic}</td>
-                          <td className="p-3 font-bold text-[#6B1B7E]">{att.transliteration}</td>
-                          <td className="p-3 font-bold text-emerald-600">{att.score}%</td>
-                          <td className="p-3 text-slate-600">{att.makhrajFeedback}</td>
-                          <td className="p-3 text-slate-500">{att.timestamp}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* Tab 3: Lessons & Passing Score Thresholds */}
-      {activeTab === 'lessons' && (
-        <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="flex items-center justify-between pb-4 border-b border-purple-100">
-            <div>
-              <h2 className="text-xl font-black text-slate-900">Madani Qaida Lessons & Passing Thresholds</h2>
-              <p className="text-xs text-slate-600">Configure minimum required pronunciation accuracy for each lesson.</p>
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-          <div className="divide-y divide-purple-50">
-            {lessons.map(lesson => (
-              <div key={lesson.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-[#6B1B7E]">Lesson {lesson.lessonNumber}</span>
-                    <span className="text-sm font-bold text-slate-900">{lesson.title}</span>
+        {/* Tab 3: Student Management */}
+        {activeTab === 'students' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900">
+                  Registered Students Management ({studentsList.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Add new students, assign teachers, and toggle active status.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAddStudent(true)}
+                className="px-4 py-2.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Add New Student</span>
+              </button>
+            </div>
+
+            {/* Add Student Modal / Inline Form */}
+            {showAddStudent && (
+              <div className="p-6 bg-purple-50/50 rounded-2xl border border-purple-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-slate-900 text-sm">Create Student Profile</h4>
+                  <button onClick={() => setShowAddStudent(false)} className="text-xs text-slate-400 hover:text-slate-600">
+                    Cancel
+                  </button>
+                </div>
+
+                <form onSubmit={handleCreateStudent} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Student Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Zayd Miller"
+                      value={newStudentName}
+                      onChange={e => setNewStudentName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
                   </div>
-                  <span className="font-arabic text-base text-purple-900 font-bold">{lesson.arabicTitle}</span>
-                  <p className="text-xs text-slate-500">{lesson.words.length} vocabulary words</p>
-                </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-600 font-medium">Passing Threshold:</span>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Student Login Email *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="zayd@example.com"
+                      value={newStudentEmail}
+                      onChange={e => setNewStudentEmail(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Parent Name</label>
+                    <input
+                      type="text"
+                      placeholder="Sarah Miller"
+                      value={newStudentParent}
+                      onChange={e => setNewStudentParent(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Parent Phone / WhatsApp</label>
+                    <input
+                      type="tel"
+                      placeholder="+44 7890 123456"
+                      value={newStudentPhone}
+                      onChange={e => setNewStudentPhone(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Enrolled Course</label>
                     <select
-                      value={lesson.passingScore}
-                      onChange={(e) => handleUpdateThreshold(lesson.id, Number(e.target.value))}
-                      className="bg-white text-slate-900 text-xs border border-purple-200 rounded-xl px-3 py-1.5 font-bold focus:outline-none focus:border-[#6B1B7E]"
+                      value={newStudentCourse}
+                      onChange={e => setNewStudentCourse(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
                     >
-                      <option value={60}>60% (Easy)</option>
-                      <option value={70}>70% (Standard)</option>
-                      <option value={75}>75% (Recommended)</option>
-                      <option value={80}>80% (Strict)</option>
-                      <option value={85}>85% (Advanced)</option>
-                      <option value={90}>90% (Mastery)</option>
+                      {DEFAULT_QURAN_COURSES.map(c => (
+                        <option key={c.id} value={c.id}>{c.title}</option>
+                      ))}
                     </select>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Tab 4: Teacher Audio Studio */}
-      {activeTab === 'teacher_studio' && (
-        <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="pb-4 border-b border-purple-100">
-            <h2 className="text-xl font-black text-slate-900">Record Custom Recitations for Lessons</h2>
-            <p className="text-xs text-slate-600 mt-1">
-              Record your own voice to replace the synthesized audio. Students will listen to your authentic recitation and practice directly from your recordings.
-            </p>
-          </div>
-
-          {/* Word Selector */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Select Qaida Lesson:</label>
-              <select
-                value={selectedStudioLessonId}
-                onChange={(e) => {
-                  setSelectedStudioLessonId(e.target.value);
-                  const l = lessons.find(less => less.id === e.target.value);
-                  if (l && l.words[0]) setSelectedStudioWordId(l.words[0].id);
-                }}
-                className="w-full bg-white border border-purple-200 text-xs text-slate-900 rounded-xl p-2.5 focus:outline-none focus:border-[#6B1B7E] font-medium"
-              >
-                {lessons.map(l => (
-                  <option key={l.id} value={l.id}>
-                    Lesson {l.lessonNumber}: {l.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Select Word / Letter:</label>
-              <select
-                value={selectedStudioWordId}
-                onChange={(e) => setSelectedStudioWordId(e.target.value)}
-                className="w-full bg-white border border-purple-200 text-xs text-slate-900 rounded-xl p-2.5 focus:outline-none focus:border-[#6B1B7E] font-arabic text-sm"
-              >
-                {selectedLesson?.words.map(w => (
-                  <option key={w.id} value={w.id}>
-                    {w.arabic} - {w.transliteration} ({w.makhraj})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Recording Canvas */}
-          {selectedWord && (
-            <div className="bg-purple-50/50 border border-purple-200 rounded-2xl p-6 text-center space-y-4">
-              <div className="font-arabic text-7xl font-bold text-slate-900 py-2">
-                {selectedWord.arabic}
-              </div>
-              <div className="text-sm font-bold text-[#6B1B7E]">
-                {selectedWord.transliteration} · <span className="text-slate-600 font-normal">{selectedWord.makhraj}</span>
-              </div>
-
-              {selectedWord.teacherVoiceUrl && (
-                <div className="text-xs text-emerald-700 font-semibold bg-emerald-100 border border-emerald-300 py-1.5 px-3 rounded-lg inline-block">
-                  Custom Teacher Audio Active
-                </div>
-              )}
-
-              {/* Record buttons */}
-              <div className="flex items-center justify-center gap-4 pt-3 flex-wrap">
-                <button
-                  onClick={isRecordingTeacher ? handleStopTeacherRecord : handleStartTeacherRecord}
-                  className={`px-6 py-3 rounded-xl font-bold text-xs flex items-center gap-2 transition shadow-md cursor-pointer ${
-                    isRecordingTeacher
-                      ? 'bg-red-600 text-white animate-pulse'
-                      : 'bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white'
-                  }`}
-                >
-                  {isRecordingTeacher ? (
-                    <>
-                      <Square className="w-4 h-4 fill-current" />
-                      <span>Stop Teacher Recording</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-4 h-4 text-pink-300" />
-                      <span>Record In My Voice</span>
-                    </>
-                  )}
-                </button>
-
-                {teacherRecordedUrl && (
-                  <button
-                    onClick={() => new Audio(teacherRecordedUrl).play()}
-                    className="px-4 py-3 bg-white hover:bg-purple-50 text-[#6B1B7E] border border-purple-200 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer"
-                  >
-                    <Play className="w-4 h-4 text-emerald-600" />
-                    <span>Preview Audio</span>
-                  </button>
-                )}
-
-                {teacherRecordedUrl && (
-                  <button
-                    onClick={handleSaveTeacherRecitation}
-                    className="px-5 py-3 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Save to Qaida Lesson</span>
-                  </button>
-                )}
-              </div>
-
-              {teacherAudioSaved && (
-                <div className="text-xs text-emerald-700 font-bold flex items-center justify-center gap-1 mt-2">
-                  <Check className="w-4 h-4" />
-                  <span>Teacher recording successfully published. All students will now hear this audio.</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Tab 5: Registered Students Roster */}
-      {activeTab === 'students' && (
-        <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-purple-100">
-            <h2 className="text-xl font-black text-slate-900">Student Roster & Enrollments</h2>
-            <span className="text-xs text-slate-500 font-semibold">{students.length} Total Users</span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-purple-50/80 text-[#6B1B7E] uppercase text-[10px] font-black border-b border-purple-100">
-                <tr>
-                  <th className="p-3">Student Name</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Location</th>
-                  <th className="p-3">Enrolled Courses</th>
-                  <th className="p-3">Qaida Progress</th>
-                  <th className="p-3">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-purple-50">
-                {students.map(std => (
-                  <tr key={std.id} className="hover:bg-purple-50/30">
-                    <td className="p-3 font-bold text-slate-900">{std.name}</td>
-                    <td className="p-3 text-slate-600">{std.email}</td>
-                    <td className="p-3">{std.country}</td>
-                    <td className="p-3 font-semibold text-[#6B1B7E]">{std.enrolledCourseIds.length} Courses</td>
-                    <td className="p-3">{std.progress.masteredWordIds.length} words mastered</td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Tab 6: Pronunciation Audits */}
-      {activeTab === 'assessments' && (
-        <div className="bg-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-purple-100">
-            <h2 className="text-xl font-black text-slate-900">Live Student Voice Submissions</h2>
-            <span className="text-xs text-slate-500 font-semibold">{attempts.length} Submissions</span>
-          </div>
-
-          <div className="divide-y divide-purple-50 space-y-3">
-            {attempts.map(att => (
-              <div key={att.id} className="pt-3 flex items-center justify-between gap-4 text-xs">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-arabic text-xl font-bold text-slate-900">{att.arabic}</span>
-                    <span className="text-slate-600">({att.transliteration})</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      att.passed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                    }`}>
-                      Score: {att.score}%
-                    </span>
-                  </div>
-                  <p className="text-slate-600 text-[11px]">{att.makhrajFeedback}</p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-slate-500">{att.timestamp}</span>
-                  {att.audioUrl && (
-                    <button
-                      onClick={() => new Audio(att.audioUrl).play()}
-                      className="p-1.5 bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] rounded border border-purple-200 cursor-pointer"
-                      title="Listen Student Audio"
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Assign Teacher</label>
+                    <select
+                      value={newStudentTeacher}
+                      onChange={e => setNewStudentTeacher(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
                     >
-                      <Volume2 className="w-3.5 h-3.5" />
+                      {DEFAULT_TEACHERS.map(t => (
+                        <option key={t.id} value={t.id}>{t.name} ({t.gender})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3 flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white font-bold text-xs rounded-xl shadow-xs"
+                    >
+                      Save & Register Student
                     </button>
-                  )}
-                </div>
+                  </div>
+                </form>
               </div>
-            ))}
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Assigned Teacher</th>
+                    <th className="py-3 px-4">Parent Details</th>
+                    <th className="py-3 px-4">Monthly Fee</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {studentsList.map(st => (
+                    <tr key={st.id} className="hover:bg-slate-50/80">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        {st.name}
+                        <span className="block text-[10px] text-slate-400 font-normal">{st.email}</span>
+                      </td>
+                      <td className="py-3.5 px-4 text-[#6B1B7E] font-medium">
+                        {st.assignedTeacherName || 'Qari Bilal'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700">
+                        <span className="font-semibold">{st.parentName || st.name}</span>
+                        <span className="block text-[11px] text-slate-500">{st.phone}</span>
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        {st.currency === 'GBP' ? '£' : '$'}{st.monthlyFee}/mo
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <button
+                          onClick={() => handleToggleUserStatus(st.id)}
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
+                            st.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                          }`}
+                        >
+                          {st.status.toUpperCase()}
+                        </button>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <button
+                          onClick={() => handleDeleteUser(st.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 cursor-pointer transition"
+                          title="Remove Student"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Tab 4: Teacher Management */}
+        {activeTab === 'teachers' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Teacher Roster & Qualifications
+              </h3>
+              <p className="text-xs text-slate-500">
+                Certified scholars, their Sanad/Ijazah credentials, and assigned student counts.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {DEFAULT_TEACHERS.map(tc => (
+                <div key={tc.id} className="p-6 rounded-2xl border border-purple-100 bg-purple-50/20 space-y-3">
+                  <div className="flex items-start gap-4">
+                    <img src={tc.photo} alt={tc.name} className="w-16 h-16 rounded-xl object-cover border border-purple-200" />
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-base">{tc.name}</h4>
+                      <p className="text-xs text-[#6B1B7E] font-semibold">{tc.title}</p>
+                      <span className="text-[11px] text-emerald-700 font-bold block mt-1">
+                        Sanad: {tc.ijazah}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed">{tc.bio}</p>
+                  
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-purple-100">
+                    <span className="text-slate-500">Languages: <strong>{tc.languages.join(', ')}</strong></span>
+                    <span className="text-purple-900 font-bold">{tc.activeStudentsCount} Active Students</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: Class Timetables & Links */}
+        {activeTab === 'schedules' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-900">
+                  Class Timetables & Meeting Links ({schedules.length})
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Manage weekly recurring schedule slots and set custom Google Meet or Zoom URLs.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowAddSchedule(true)}
+                className="px-4 py-2.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create Class Schedule</span>
+              </button>
+            </div>
+
+            {/* Add Schedule Form */}
+            {showAddSchedule && (
+              <div className="p-6 bg-purple-50/50 rounded-2xl border border-purple-200 space-y-4">
+                <h4 className="font-bold text-slate-900 text-sm">Schedule a Class Slot</h4>
+                <form onSubmit={handleCreateSchedule} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Student</label>
+                    <select
+                      value={schedStudentId}
+                      onChange={e => setSchedStudentId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    >
+                      {studentsList.map(s => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Teacher</label>
+                    <select
+                      value={schedTeacherId}
+                      onChange={e => setSchedTeacherId(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    >
+                      {DEFAULT_TEACHERS.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Day of Week</label>
+                    <select
+                      value={schedDay}
+                      onChange={e => setSchedDay(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    >
+                      {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Time Slot</label>
+                    <input
+                      type="text"
+                      value={schedTime}
+                      onChange={e => setSchedTime(e.target.value)}
+                      placeholder="e.g. 05:00 PM"
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold text-slate-700 mb-1">Meeting Link (Google Meet / Zoom)</label>
+                    <input
+                      type="url"
+                      value={schedUrl}
+                      onChange={e => setSchedUrl(e.target.value)}
+                      placeholder="https://meet.google.com/..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 lg:col-span-3 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddSchedule(false)}
+                      className="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-[#6B1B7E] text-white rounded-xl font-bold shadow-xs"
+                    >
+                      Save Schedule
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Teacher</th>
+                    <th className="py-3 px-4">Day & Time</th>
+                    <th className="py-3 px-4">Meeting URL</th>
+                    <th className="py-3 px-4">Duration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {schedules.map(sch => (
+                    <tr key={sch.id} className="hover:bg-slate-50/80">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">{sch.studentName}</td>
+                      <td className="py-3.5 px-4 text-[#6B1B7E] font-medium">{sch.teacherName}</td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-700">{sch.dayOfWeek} at {sch.timeSlot}</td>
+                      <td className="py-3.5 px-4">
+                        <a href={sch.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline truncate max-w-xs block font-mono">
+                          {sch.meetingUrl}
+                        </a>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500">{sch.durationMinutes} mins</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Attendance & Progress */}
+        {activeTab === 'attendance' && (
+          <div className="bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Academy-Wide Attendance & Daily Lessons
+              </h3>
+              <p className="text-xs text-slate-500">
+                Review sessions completed, topics covered, and teacher evaluation ratings.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-4">Student</th>
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Teacher</th>
+                    <th className="py-3 px-4">Topic / Sabaq</th>
+                    <th className="py-3 px-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {attendance.map(att => (
+                    <tr key={att.id} className="hover:bg-slate-50/80">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">{att.studentName}</td>
+                      <td className="py-3.5 px-4 text-slate-600">{att.date} at {att.time}</td>
+                      <td className="py-3.5 px-4 text-[#6B1B7E] font-medium">{att.teacherName}</td>
+                      <td className="py-3.5 px-4 text-slate-700">{att.sessionTopic}</td>
+                      <td className="py-3.5 px-4">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                          {att.status.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 7: Send Broadcast Announcements */}
+        {activeTab === 'broadcast' && (
+          <div className="max-w-2xl bg-white p-7 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">
+                Send Academy-Wide Announcement
+              </h3>
+              <p className="text-xs text-slate-500">
+                Broadcast an alert that appears on all student, parent, and teacher dashboards.
+              </p>
+            </div>
+
+            {broadcastSavedNotice && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Announcement published to all portals!</span>
+              </div>
+            )}
+
+            <form onSubmit={handlePostBroadcast} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Announcement Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ramadan Schedule Timings & Special Hifz Intensive"
+                  value={broadcastTitle}
+                  onChange={e => setBroadcastTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Message Content *
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Type the message for students and teachers..."
+                  value={broadcastMsg}
+                  onChange={e => setBroadcastMsg(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:border-[#6B1B7E] focus:outline-hidden"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+              >
+                Publish Academy Announcement
+              </button>
+            </form>
+          </div>
+        )}
+
+      </div>
+
     </div>
   );
 };

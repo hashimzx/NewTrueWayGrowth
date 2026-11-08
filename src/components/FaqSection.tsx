@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, HelpCircle, Mail, MessageCircle, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, HelpCircle, Mail, MessageCircle, ArrowRight, BookOpen } from 'lucide-react';
 
 interface FaqSectionProps {
   onOpenEnroll: () => void;
@@ -11,28 +11,28 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
 
   const faqs = [
     {
-      q: 'What exactly do I get when I enroll?',
-      a: 'You get lifetime access to all course content, live Zoom sessions, dedicated community support, step-by-step student acquisition templates, and all future batch updates. It is a one-time payment with zero recurring fees.'
+      q: 'How does the 3-Day Free Trial work?',
+      a: 'The 3-day trial is 100% free with no credit card required. You submit your child\'s name, age, and preferred course. We match you with a certified instructor and schedule 3 private 1-on-1 classes. If satisfied, you can proceed with enrollment; otherwise, there is zero obligation.'
     },
     {
-      q: 'Do I need prior experience?',
-      a: 'No prior online teaching experience is required. Whether you are a Hafiz, Qari, Islamic studies student, or someone wanting to teach Noorani Qaida and Nazra, we guide you through teaching mechanics, tech setup, and student handling from day one.'
+      q: 'Are female Quran teachers available for girls and female students?',
+      a: 'Yes, absolutely. We have qualified female Hafizah and Alimah instructors with Ijazah in Tajweed dedicated exclusively to teaching sisters and young children in a comfortable, modest online environment.'
     },
     {
-      q: 'Is this theory or practical?',
-      a: 'This course is 100% hands-on and practical. You will execute mock teaching sessions, set up digital whiteboards, learn exact conversation scripts for international parents, and run real student recruitment campaigns.'
+      q: 'What age can children start learning at True Way Quran?',
+      a: 'Children can start the Madani Qaida Foundation course as young as 4 or 5 years old. Our instructors use visual slides, interactive phonics, and warm encouragement to make learning enjoyable and engaging for young minds.'
     },
     {
-      q: 'How is this different from free content online?',
-      a: 'Free videos give disjointed tips without a cohesive system. Here you receive a proven 30-day structured roadmap, continuous live mentorship directly from Abdul Basit Saleem, verified lesson plans, and an active teacher network.'
+      q: 'What equipment or apps do we need for classes?',
+      a: 'All you need is a laptop, desktop, iPad, tablet, or smartphone with an internet connection. Classes take place via Zoom or Google Meet with digital Quran screen sharing. We assist you with setup in under 2 minutes.'
     },
     {
-      q: 'Can I do this alongside my job or studies?',
-      a: 'Absolutely. The schedule is structured for busy professionals, university students, and homemakers. All live sessions are recorded in high-definition so you can study at your own pace.'
+      q: 'Can we change our class timetable or reschedule missed sessions?',
+      a: 'Yes. We understand family commitments, school exams, and vacations. With advance notice to your assigned teacher or the support desk, missed classes can be rescheduled at no additional cost.'
     },
     {
-      q: 'What payment methods do you accept?',
-      a: 'We accept all major international Credit and Debit Cards (Visa, Mastercard, American Express), digital wallets, and instant 256-bit SSL encrypted checkout for students worldwide.'
+      q: 'How long is each class and what are the class options?',
+      a: 'Classes are 30 minutes of private 1-on-1 instruction. Depending on your goals, families typically choose between 2 days, 3 days, or 5 days per week.'
     }
   ];
 
@@ -40,7 +40,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
     if (onOpenWhatsApp) {
       onOpenWhatsApp();
     } else {
-      window.open('https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%2C%20I%20have%20a%20question%20about%20the%20course', '_blank');
+      window.open('https://wa.me/923068959085?text=Assalam-o-Alaikum%20Abdul%20Basit%2C%20I%20have%20questions%20about%20True%20Way%20Quran%20classes.', '_blank');
     }
   };
 
@@ -53,31 +53,35 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
           {/* Left Column: Heading & Contact Card */}
           <div className="lg:col-span-5 space-y-6">
             <div className="space-y-3">
-              <h2 className="text-3xl sm:text-4xl font-black text-purple-950 tracking-tight">
-                Still Got Questions? <br className="hidden sm:inline" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-800 to-pink-600">
-                  We&apos;ve Got Answers.
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[#6B1B7E] text-xs font-bold border border-purple-200">
+                <HelpCircle className="w-3.5 h-3.5 text-[#E0107F]" />
+                <span>Frequently Asked Questions</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                Everything You Need <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F]">
+                  To Know Before Starting
                 </span>
               </h2>
 
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                Can&apos;t find what you need? Get all your questions answered in class or reach out to Mentor Abdul Basit Saleem directly.
+                Have questions regarding class timings, our teachers, or fee packages? Reach out to our admissions director anytime.
               </p>
             </div>
 
-            {/* Support Card like ustadleads.com */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50/60 border border-purple-200/80 rounded-2xl p-6 space-y-4 shadow-sm">
-              <h4 className="font-black text-purple-950 text-sm">
-                Need Fast 1-on-1 Guidance?
+            {/* Support Card */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50/60 border border-purple-200/80 rounded-2xl p-6 space-y-4 shadow-xs">
+              <h4 className="font-black text-slate-900 text-sm">
+                Need Immediate Help or Custom Schedule?
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Answer through WhatsApp voice note, email, or recorded live breakdown directly from our mentors.
+                Speak directly with Mentor Abdul Basit Saleem via WhatsApp voice note or message.
               </p>
 
               <div className="space-y-2 pt-1">
                 <button
                   onClick={handleWhatsApp}
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Chat on WhatsApp (+92 306 8959085)</span>
@@ -85,9 +89,9 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
 
                 <button
                   onClick={onOpenEnroll}
-                  className="w-full py-2.5 px-4 bg-white border border-purple-200 hover:bg-purple-100 text-purple-950 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 px-4 bg-white border border-purple-200 hover:bg-purple-100 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <span>Go to Enrollment Form</span>
+                  <span>Book Free 3-Day Trial</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -109,10 +113,10 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onOpenEnroll, onOpenWhat
                 >
                   <button
                     onClick={() => setOpenIdx(isOpen ? null : idx)}
-                    className="w-full py-4 px-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-purple-950 cursor-pointer"
+                    className="w-full py-4 px-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 cursor-pointer"
                   >
                     <span>{faq.q}</span>
-                    <span className="p-1 rounded-full bg-purple-100 text-purple-800 shrink-0">
+                    <span className="p-1 rounded-full bg-purple-100 text-[#6B1B7E] shrink-0">
                       {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                   </button>

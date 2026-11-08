@@ -25,7 +25,7 @@ import {
 
 interface QaidaViewerProps {
   lessons: QaidaLesson[];
-  currentUser: User | null;
+  currentUser?: any;
   onRecordSuccess: (attempt: PronunciationAttempt) => void;
   onToggleBookmark: (wordId: string) => void;
   onSaveTeacherVoice?: (lessonId: string, wordId: string, audioUrl: string) => void;
@@ -44,6 +44,25 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
   const [levelFilter, setLevelFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
   const [playingWordId, setPlayingWordId] = useState<string | null>(null);
 
+  // Local storage persistence for Qaida mastered words and bookmarks
+  const [localMastered, setLocalMastered] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('twq_qaida_mastered');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [localBookmarks, setLocalBookmarks] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('twq_qaida_bookmarks');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   // Teacher Voice Studio for Qaida letters/words
   const [recordingWordForTeacher, setRecordingWordForTeacher] = useState<QaidaWord | null>(null);
   const [isTeacherRecording, setIsTeacherRecording] = useState(false);
@@ -53,11 +72,48 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
   const currentLesson = lessons.find(l => l.id === selectedLessonId) || lessons[0];
 
   const isWordMastered = (wordId: string): boolean => {
-    return currentUser?.progress.masteredWordIds.includes(wordId) || false;
+    if (localMastered.includes(wordId)) return true;
+    const userMastered = currentUser?.progress?.masteredWordIds;
+    if (Array.isArray(userMastered) && userMastered.includes(wordId)) return true;
+    return false;
   };
 
   const isWordBookmarked = (wordId: string): boolean => {
-    return currentUser?.bookmarks.includes(wordId) || false;
+    if (localBookmarks.includes(wordId)) return true;
+    const userBookmarks = currentUser?.bookmarks;
+    if (Array.isArray(userBookmarks) && userBookmarks.includes(wordId)) return true;
+    return false;
+  };
+
+  const handleToggleBookmark = (wordId: string) => {
+    setLocalBookmarks(prev => {
+      const next = prev.includes(wordId) ? prev.filter(id => id !== wordId) : [...prev, wordId];
+      try {
+        localStorage.setItem('twq_qaida_bookmarks', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    if (onToggleBookmark) {
+      onToggleBookmark(wordId);
+    }
+  };
+
+  const handleVoiceSuccess = (attempt: PronunciationAttempt) => {
+    if (attempt.score >= (currentLesson.passingScore || 80)) {
+      setLocalMastered(prev => {
+        if (!prev.includes(attempt.wordId)) {
+          const next = [...prev, attempt.wordId];
+          try {
+            localStorage.setItem('twq_qaida_mastered', JSON.stringify(next));
+          } catch {}
+          return next;
+        }
+        return prev;
+      });
+    }
+    if (onRecordSuccess) {
+      onRecordSuccess(attempt);
+    }
   };
 
   const handlePlayWord = async (e: React.MouseEvent, word: QaidaWord, rate: number = 0.85) => {
@@ -168,7 +224,7 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
             </div>
             <div className="text-center px-3">
               <span className="block text-2xl font-black text-emerald-400">
-                {currentUser?.progress.masteredWordIds.length || 0}
+                {localMastered.length || currentUser?.progress?.masteredWordIds?.length || 0}
               </span>
               <span className="text-[11px] text-purple-200 font-medium uppercase">Mastered</span>
             </div>
@@ -379,7 +435,7 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onToggleBookmark(word.id);
+                          handleToggleBookmark(word.id);
                         }}
                         className="text-slate-300 hover:text-purple-600 transition p-0.5"
                         title={bookmarked ? 'Remove Bookmark' : 'Bookmark for Review'}
@@ -485,7 +541,7 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
           isOpen={Boolean(activeWordForVoice)}
           onClose={() => setActiveWordForVoice(null)}
           onSuccess={(attempt) => {
-            onRecordSuccess(attempt);
+            handleVoiceSuccess(attempt);
           }}
           onNextWord={handleNextWordInModal}
           hasNextWord={hasNextWord}

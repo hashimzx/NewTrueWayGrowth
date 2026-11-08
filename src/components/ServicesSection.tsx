@@ -1,267 +1,212 @@
 import React, { useState } from 'react';
+import { DEFAULT_GROWTH_SERVICES, ServiceItem } from '../utils/growthDatabase';
 import { 
-  BookOpen, 
-  Sparkles, 
-  Check, 
   ArrowRight, 
+  Sparkles, 
+  CheckCircle2, 
+  ChevronRight, 
   Clock, 
-  Award, 
-  Languages, 
-  HeartHandshake, 
-  ShieldCheck, 
-  ChevronRight,
-  BookMarked,
-  Layers,
-  GraduationCap
+  HelpCircle,
+  Share2,
+  Search,
+  TrendingUp,
+  Users,
+  PenTool,
+  Layout,
+  CheckCircle,
+  Target
 } from 'lucide-react';
 
 interface ServicesSectionProps {
-  onSelectService: (serviceName: string) => void;
-  onOpenQaida: () => void;
-  onBookTrial: () => void;
+  onSelectServiceForQuote: (serviceId: string, serviceTitle: string) => void;
+  currency?: 'USD' | 'GBP';
 }
 
 export const ServicesSection: React.FC<ServicesSectionProps> = ({
-  onSelectService,
-  onOpenQaida,
-  onBookTrial
+  onSelectServiceForQuote,
+  currency = 'USD'
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'recitation' | 'memorization' | 'islamic'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  const [expandedProcessServiceId, setExpandedProcessServiceId] = useState<string | null>(null);
 
-  const services = [
-    {
-      id: 'noorani-qaida',
-      category: 'recitation',
-      title: 'Online Noorani & Madani Qaida Course',
-      arabicTitle: 'القَاعِدَة النُّورَانِيَّة وَالمَدَنِيَّة',
-      tagline: 'The ideal foundation for beginners and kids',
-      description: 'Master Arabic alphabet pronunciation from exact vocal points (Makharij). Progress through compound letters, short vowels (Harakat), Tanween, Sukoon, and Tashdeed to read the Quran with ease.',
-      features: [
-        'Recognizing Arabic letters in individual & joined forms',
-        'Correct Makharij articulation points & acoustic clarity',
-        'Short vowels, Tanween, Sukoon, and Qalqalah exercises',
-        'Interactive voice recognition assessment & drills',
-        'Prerequisite for fluent Quran reading'
-      ],
-      idealFor: 'Kids (ages 4+) and adult beginners',
-      duration: '1 to 3 Months',
-      badge: 'Most Popular'
-    },
-    {
-      id: 'quran-tajweed',
-      category: 'recitation',
-      title: 'Quran Reading with Tajweed Rules',
-      arabicTitle: 'تِلَاوَةُ القُرْآنِ بِالتَّجْوِيد',
-      tagline: 'Flawless recitation compliant with Prophet Muhammad ﷺ tradition',
-      description: 'Learn and apply all major Tajweed rules directly while reciting the Holy Quran. Master Noon Sakinah, Meem Sakinah, heavy vs light letters (Tafkheem/Tarqeeq), Madd prolongations, and stopping signs (Waqf).',
-      features: [
-        'Izhar, Idgham, Iqlab, and Ikhfa mastery',
-        'Heavy and light letter discrimination (Musta\'liyah)',
-        'Rules of Madd (Natural, Obligatory, Permissible)',
-        'Rules of Waqf (Stopping signs & proper resuming)',
-        'Color-coded Tajweed Mushaf reading'
-      ],
-      idealFor: 'Students who completed Qaida and wish to recite fluently',
-      duration: '3 to 6 Months',
-      badge: 'Recommended'
-    },
-    {
-      id: 'quran-hifz',
-      category: 'memorization',
-      title: 'Quran Memorisation (Hifz-ul-Quran)',
-      arabicTitle: 'تَحْفِيظُ القُرْآنِ الكَرِيم',
-      tagline: 'Preserve the words of Allah in your heart',
-      description: 'A customized, structured memorization pathway guided by Hafiz tutors. Combines modern spaced repetition revision with the traditional triple-system: Sabaq (new verse), Sabqi (recent revision), and Manzil (overall cycle).',
-      features: [
-        'Memorization of daily Sabaq with 100% Tajweed accuracy',
-        'Daily Sabqi revision of past 5 to 10 pages',
-        'Manzil revision cycle to ensure zero retention loss',
-        'Memorization of selected Surahs (Yasin, Mulk, Rahman, Waqiah)',
-        'Full Hifz or Partial Hifz options'
-      ],
-      idealFor: 'Dedicated children, teens, and adults',
-      duration: '1 to 3 Years (Flexible pace)',
-      badge: 'High Honor'
-    },
-    {
-      id: 'translation-tafseer',
-      category: 'islamic',
-      title: 'Quran Translation & Tafseer Course',
-      arabicTitle: 'تَرْجَمَةُ وَتَفْسِيرُ القُرْآن',
-      tagline: 'Understand the divine meaning, wisdom & contextual revelation',
-      description: 'Move beyond mere recitation to understand what Allah is communicating to you. Study word-by-word meanings, grammatical roots, reasons for revelation (Shan-e-Nuzool), and practical life lessons.',
-      features: [
-        'Word-by-word translation in English or Urdu',
-        'Detailed explanation (Tafseer) of historical context',
-        'Understanding Quranic parables, commands, and ethics',
-        'Modern real-world application of divine guidance',
-        'Taught by qualified Alims and scholars'
-      ],
-      idealFor: 'Adults and youths seeking spiritual connection',
-      duration: '6 to 12 Months'
-    },
-    {
-      id: 'islamic-studies',
-      category: 'islamic',
-      title: 'Islamic Studies & Character Building',
-      arabicTitle: 'الدِّرَاسَاتُ الإِسْلَامِيَّةُ وَالأَخْلَاق',
-      tagline: 'Comprehensive deen education for Muslim children and youth',
-      description: 'Nurture strong Islamic identity in children growing up in the West. Covers the 6 Kalimas, step-by-step Salah (Namaz), essential daily Masnoon Duas, stories of the Prophets, and Islamic manners (Akhlaq).',
-      features: [
-        'Correct performance of Wudu and 5 Daily Prayers (Salah)',
-        'Memorization of daily life Duas with meanings',
-        'Stories of the Prophets and Companions (Seerah)',
-        'Halal & Haram guidelines, good manners with parents & peers',
-        'Interactive quizzes and engaging workbooks'
-      ],
-      idealFor: 'Children aged 5 to 16 in UK, USA, Canada & Europe',
-      duration: 'Ongoing Weekly'
-    },
-    {
-      id: 'ten-qirat',
-      category: 'recitation',
-      title: 'Ten Qira\'at & Advanced Tajweed Course',
-      arabicTitle: 'القِرَاءَاتُ العَشْر وَالإِجَازَة',
-      tagline: 'Authentic prophetic recitation methods with Ijazah Sanad',
-      description: 'For advanced reciters wishing to study the canonical Qira\'at (Hafs \'an \'Asim, Warsh \'an Nafi\', Qaloon, Al-Duri, etc.) with unbroken chains of transmission back to the Prophet Muhammad ﷺ.',
-      features: [
-        'Comprehensive study of Matn Al-Jazariyyah and Shatibiyyah',
-        'Comparative study of canonical recitation dialects',
-        'Sanad and Ijazah certification pathway for qualified reciters',
-        'Direct one-on-one mentorship by Senior Qira\'at Scholars'
-      ],
-      idealFor: 'Imams, teachers, and advanced Quran students',
-      duration: '1 Year Intensive'
-    },
-    {
-      id: 'arabic-language',
-      category: 'islamic',
-      title: 'Quranic Arabic Language Course',
-      arabicTitle: 'لُغَةُ القُرْآنِ الكَرِيم',
-      tagline: 'Directly comprehend 80% of Quranic vocabulary',
-      description: 'Learn the sacred language of the Quran. Focus on high-frequency Quranic words, basic Nahw (syntax), Sarf (morphology), and sentence structure so you can understand recitation directly during prayer.',
-      features: [
-        'High-frequency vocabulary occurring 50+ times in the Quran',
-        'Basic Arabic grammar made simple and accessible',
-        'Translating short Surahs and daily Azkar without translation',
-        'Speaking and reading basic Arabic phrases'
-      ],
-      idealFor: 'Adults and youth wanting to understand Salah and Quran directly',
-      duration: '6 Months'
-    }
+  const filterCategories = [
+    { id: 'all', label: 'All Services (8)' },
+    { id: 'Paid Acquisition', label: 'Paid Advertising' },
+    { id: 'Search & Visibility', label: 'SEO & Search' },
+    { id: 'Social Media', label: 'Social & Management' },
+    { id: 'Creative Production', label: 'Creative & Design' },
+    { id: 'Executive Strategy', label: 'Consultation' }
   ];
 
-  const filteredServices = services.filter(s => {
-    if (selectedCategory === 'all') return true;
-    return s.category === selectedCategory;
-  });
+  const filteredServices = selectedFilter === 'all'
+    ? DEFAULT_GROWTH_SERVICES
+    : DEFAULT_GROWTH_SERVICES.filter(s => s.category.toLowerCase().includes(selectedFilter.toLowerCase()) || (selectedFilter === 'Social Media' && (s.category === 'Social Media' || s.category === 'Full Management')));
 
   return (
-    <section className="py-16 bg-white border-b border-purple-100">
+    <section className="py-16 sm:py-24 bg-[#faf8ff] border-b border-[#6B1B7E]/10" id="services">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
-        {/* Header */}
+        {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-purple-950">
-            Our Online Quran Services & Courses
+          <span className="text-xs font-black uppercase tracking-wider text-[#6B1B7E] bg-white px-3.5 py-1.5 rounded-full border border-purple-200 shadow-2xs">
+            Comprehensive Growth Capabilities
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#6B1B7E] tracking-tight">
+            Our Digital Marketing Services
           </h2>
-
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            True Way Quran offers comprehensive online Islamic education based on UK and international educational standards. Every course includes 1-on-1 personalized attention, flexible scheduling, and certified male & female tutors.
+            Every business requires a customized growth engine. Explore our 8 core specialized pillars engineered to attract qualified visitors, maximize conversion rates, and build long-term brand equity.
           </p>
 
-          {/* Filter Tabs */}
-          <div className="inline-flex p-1 bg-purple-50 rounded-2xl border border-purple-100 mt-4 flex-wrap justify-center gap-1">
-            {[
-              { id: 'all', label: 'All Services' },
-              { id: 'recitation', label: 'Qaida & Tajweed' },
-              { id: 'memorization', label: 'Hifz Program' },
-              { id: 'islamic', label: 'Islamic Studies & Arabic' }
-            ].map(tab => (
+          {/* Filter Pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+            {filterCategories.map(cat => (
               <button
-                key={tab.id}
-                onClick={() => setSelectedCategory(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
-                  selectedCategory === tab.id
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-slate-600 hover:text-purple-900 hover:bg-purple-100/50'
+                key={cat.id}
+                onClick={() => setSelectedFilter(cat.id)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedFilter === cat.id
+                    ? 'bg-[#6B1B7E] text-white shadow-sm'
+                    : 'bg-white text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50 border border-purple-100'
                 }`}
               >
-                {tab.label}
+                {cat.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredServices.map(service => (
-            <div
-              key={service.id}
-              className="bg-white rounded-3xl p-7 border border-purple-100 hover:border-purple-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
-            >
-              {service.badge && (
-                <div className="absolute top-0 right-0 bg-purple-600 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                  {service.badge}
-                </div>
-              )}
+        {/* 8 Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {filteredServices.map(service => {
+            const isProcessExpanded = expandedProcessServiceId === service.id;
+            const price = currency === 'GBP' ? `£${service.startingPriceGBP}` : `$${service.startingPriceUSD}`;
 
-              <div className="space-y-4">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600">
-                    {service.duration} · 1-on-1 Live
-                  </span>
-                  <h3 className="text-xl font-bold text-purple-950 mt-1 group-hover:text-purple-700 transition-colors">
-                    {service.title}
-                  </h3>
-                  <p className="font-arabic text-sm text-purple-800 mt-0.5 dir-rtl">
-                    {service.arabicTitle}
-                  </p>
-                </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {service.description}
-                </p>
-
-                {/* Features list */}
-                <div className="space-y-2 pt-2 border-t border-purple-100/80">
-                  {service.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
-                      <Check className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2 text-[11px] text-purple-900 bg-purple-50/70 p-2.5 rounded-xl border border-purple-100">
-                  <strong className="text-purple-950">Ideal For:</strong> {service.idealFor}
-                </div>
-              </div>
-
-              {/* Action buttons */}
-              <div className="pt-6 mt-6 border-t border-purple-100 flex items-center justify-between gap-2">
-                {service.id === 'noorani-qaida' ? (
-                  <button
-                    onClick={onOpenQaida}
-                    className="text-xs font-bold text-purple-700 hover:text-purple-900 underline"
-                  >
-                    Open Interactive Qaida
-                  </button>
-                ) : (
-                  <span className="text-xs font-medium text-slate-500">Free 3-Day Trial</span>
+            return (
+              <div
+                key={service.id}
+                className="bg-white rounded-3xl p-6 sm:p-7 border border-purple-100 hover:border-[#6B1B7E]/40 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
+              >
+                {/* Popular Badge */}
+                {service.popular && (
+                  <div className="absolute top-0 right-7 transform -translate-y-1/2 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white text-[10px] font-black uppercase tracking-wider px-3 py-0.5 rounded-full shadow-sm">
+                    Most Popular
+                  </div>
                 )}
 
-                <button
-                  onClick={onBookTrial}
-                  className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm"
-                >
-                  <span>Book Free Class</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="space-y-5">
+                  {/* Category & Turnaround */}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-50 text-[#6B1B7E] border border-purple-100">
+                      {service.category}
+                    </span>
+                    <span className="text-slate-400 text-[11px] flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-[#E0107F]" />
+                      <span>{service.turnaround}</span>
+                    </span>
+                  </div>
+
+                  {/* Title & Tagline */}
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-[#6B1B7E] transition-colors">
+                      {service.title}
+                    </h3>
+                    <p className="text-xs font-semibold text-[#E0107F] mt-1">
+                      {service.tagline}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {service.description}
+                  </p>
+
+                  {/* Key Benefits */}
+                  <div className="space-y-2 pt-2 border-t border-purple-50">
+                    <span className="text-[11px] font-black uppercase tracking-wider text-[#6B1B7E] block">
+                      Key Client Benefits:
+                    </span>
+                    <ul className="space-y-1.5">
+                      {service.keyBenefits.map((benefit, bIdx) => (
+                        <li key={bIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F] mt-1.5 shrink-0" />
+                          <span>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Work Process Dropdown Toggle */}
+                  <div className="pt-2 border-t border-purple-50">
+                    <button
+                      onClick={() => setExpandedProcessServiceId(isProcessExpanded ? null : service.id)}
+                      className="text-xs font-bold text-[#6B1B7E] hover:text-[#E0107F] flex items-center justify-between w-full py-1 cursor-pointer transition"
+                    >
+                      <span>{isProcessExpanded ? 'Hide Work Process' : 'View 4-Step Work Process'}</span>
+                      <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isProcessExpanded ? 'rotate-90' : ''}`} />
+                    </button>
+
+                    {isProcessExpanded && (
+                      <div className="mt-3 space-y-2 bg-purple-50/70 p-3 rounded-2xl border border-purple-100 text-[11px]">
+                        {service.workProcess.map(step => (
+                          <div key={step.step} className="flex items-start gap-2 text-slate-700">
+                            <span className="w-5 h-5 rounded-full bg-white text-[#6B1B7E] font-black text-[10px] flex items-center justify-center shrink-0 border border-purple-200">
+                              {step.step}
+                            </span>
+                            <div>
+                              <strong className="text-slate-900 block">{step.title}</strong>
+                              <span className="text-slate-500 leading-tight block">{step.desc}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom Pricing & CTA Row */}
+                <div className="pt-6 mt-6 border-t border-purple-100 flex items-center justify-between gap-3">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Starting from</span>
+                    <span className="text-lg font-black text-[#6B1B7E]">{price}</span>
+                  </div>
+
+                  <button
+                    onClick={() => onSelectServiceForQuote(service.id, service.title)}
+                    className="px-4 py-2.5 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] hover:from-[#5B2A9A] hover:to-[#6B1B7E] text-white text-xs font-black rounded-xl shadow-sm hover:shadow transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Get a Quote</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {/* Custom Tailored Consultation Box */}
+        <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] rounded-3xl p-6 sm:p-10 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <span className="text-[11px] font-black uppercase tracking-wider text-pink-200 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+              Need Multi-Service Synergy?
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black">
+              Bespoke Omnichannel Marketing Packages
+            </h3>
+            <p className="text-xs sm:text-sm text-purple-100 leading-relaxed">
+              Combine Meta Ads, SEO, and Social Media Management into a unified high-converting growth retainer with dedicated account management and custom performance milestones.
+            </p>
+          </div>
+
+          <button
+            onClick={() => onSelectServiceForQuote('custom-package', 'Custom Multi-Service Retainer')}
+            className="px-7 py-3.5 bg-white hover:bg-purple-50 text-[#6B1B7E] font-black text-xs sm:text-sm rounded-xl shadow-lg transition shrink-0 cursor-pointer"
+          >
+            Request Custom Omnichannel Quote
+          </button>
+        </div>
+
       </div>
     </section>
   );

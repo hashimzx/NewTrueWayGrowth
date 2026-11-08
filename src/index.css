@@ -201,3 +201,55 @@
   animation: holoSheenSlide 3.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* True Way Quran Logo Animations */
+@keyframes logoGleam {
+  0% {
+    transform: translateX(-150%) skewX(-25deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  35% {
+    transform: translateX(250%) skewX(-25deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(250%) skewX(-25deg);
+    opacity: 0;
+  }
+}
+
+.animate-logo-gleam {
+  animation: logoGleam 4.5s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.animate-logo-float {
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoAuraPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.03);
+  }
+}
+
+.animate-logo-aura {
+  animation: logoAuraPulse 3.5s ease-in-out infinite;
+}
+
+

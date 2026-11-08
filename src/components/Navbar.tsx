@@ -1,690 +1,587 @@
-import React, { useState, useRef } from 'react';
-import { User } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
 import { AnimatedLogo } from './AnimatedLogo';
 import { 
-  Home,
-  BookOpen, 
-  GraduationCap, 
-  Mic, 
+  Home, 
+  Sparkles, 
+  Menu, 
+  X, 
   User as UserIcon, 
   ShieldCheck, 
   LogOut, 
-  Sparkles,
-  BookMarked,
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  MessageCircle,
   ChevronDown,
-  History,
-  Clock,
-  Moon,
-  CheckCircle2,
+  ChevronRight,
+  GraduationCap,
   Award,
-  CreditCard,
-  Compass
+  Layers,
+  HeartHandshake,
+  HelpCircle,
+  Clock,
+  Compass,
+  Headphones
 } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
   setCurrentView: (view: string) => void;
-  currentUser: User | null;
+  currentUser: any | null;
   onOpenAuth: () => void;
-  onOpenEnroll: () => void;
+  onOpenTrialModal: () => void;
   onLogout: () => void;
-  currency: 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD';
-  setCurrency: (c: 'USD' | 'GBP' | 'EUR' | 'CAD' | 'AUD') => void;
-  timezone: string;
-  setTimezone: (tz: string) => void;
+  currency?: 'USD' | 'GBP';
+  setCurrency?: (c: 'USD' | 'GBP') => void;
 }
 
-/**
- * Navbar - True Way Quran
- * Styled after Integrated Biosciences (navbar.gallery/navbar/integrated-biosciences):
- * - Refined floating capsule container with subtle hairline border and backdrop glassmorphism
- * - Formal, modern typography with clean pill active and hover states
- * - Balanced, comfortable height (48-50px)
- * - Formal presentation with zero casual emojis, using clean Lucide vector icons
- * - Exact brand palette: #6B1B7E (primary purple), #5B2A9A (violet), #E0107F (magenta)
- */
 export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   setCurrentView,
   currentUser,
   onOpenAuth,
-  onOpenEnroll,
+  onOpenTrialModal,
   onLogout
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [learnDropdownOpen, setLearnDropdownOpen] = useState(false);
-  const [spiritualDropdownOpen, setSpiritualDropdownOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
-  const learnTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const spiritualTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const isLearnActive = ['courses', 'hifz', 'qaida', 'history'].includes(currentView);
-  const isSpiritualActive = ['namaz', 'namaz_salah_guide', 'namaz_tahajjud', 'duas', 'worship_guide'].includes(currentView);
+  const navigateToSection = (sectionId: string) => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+    if (currentView !== 'home') {
+      setCurrentView('home');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const navigateToView = (view: string) => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+    setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <header className="sticky top-0 z-50 py-3 sm:py-4 px-3 sm:px-6 transition-all duration-300 pointer-events-none">
+    <header className="sticky top-0 z-50 py-2.5 sm:py-3.5 px-3 sm:px-6 transition-all duration-300 pointer-events-none">
       
-      {/* Big, Highly Interactive Floating Capsule Navbar */}
-      <div className="max-w-7xl mx-auto rounded-full bg-white/95 backdrop-blur-xl border-2 border-[#6B1B7E]/25 shadow-xl shadow-[#6B1B7E]/10 px-3.5 sm:px-8 py-2.5 sm:py-4 transition-all duration-300 pointer-events-auto">
-        <div className="flex items-center justify-between gap-2.5 sm:gap-6 min-h-[54px] sm:min-h-[66px]">
+      {/* Floating Capsule Navbar adjusted to never overflow */}
+      <div 
+        ref={navRef}
+        className="max-w-7xl mx-auto rounded-full bg-white/95 backdrop-blur-xl border border-[#6E1373]/20 shadow-lg shadow-[#6E1373]/5 px-3.5 sm:px-6 py-2 transition-all duration-300 pointer-events-auto"
+      >
+        <div className="flex items-center justify-between gap-2 sm:gap-4 min-h-[48px] sm:min-h-[54px]">
           
-          {/* Prominent Interactive Brand Animated Logo */}
+          {/* True Way Quran Official Animated Logo */}
           <button
             onClick={() => {
               setCurrentView('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center focus:outline-none text-left shrink-0 cursor-pointer transition-transform hover:scale-[1.03] active:scale-[0.98] origin-left"
+            className="flex items-center focus:outline-none text-left shrink-0 cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98] origin-left"
             aria-label="True Way Quran Home"
           >
-            <AnimatedLogo size="responsive" />
+            <AnimatedLogo size="responsive" variant="trimmed" />
           </button>
 
-          {/* Desktop Navigation Menu (Big, prominent, easy to interact with) */}
-          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-2">
+          {/* Desktop Navigation Links with Dropdown Sections & Sub-Sections */}
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
             
-            {/* 1. Home */}
+            {/* 1. Home Direct Button */}
             <button
               onClick={() => {
                 setCurrentView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
-                currentView === 'home'
-                  ? 'bg-[#6B1B7E] text-white font-black shadow-sm'
-                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50'
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                currentView === 'home' && !activeDropdown
+                  ? 'bg-[#6E1373] text-white shadow-xs'
+                  : 'text-slate-700 hover:text-[#6E1373] hover:bg-purple-50'
               }`}
             >
               Home
             </button>
 
-            {/* 2. Learn Dropdown (Hifz, Courses, Madani Qaida, History) */}
+            {/* 2. About Academy Section with Sub-Sections Dropdown */}
             <div 
               className="relative"
-              onMouseEnter={() => {
-                if (learnTimeoutRef.current) clearTimeout(learnTimeoutRef.current);
-                setLearnDropdownOpen(true);
-              }}
-              onMouseLeave={() => {
-                learnTimeoutRef.current = setTimeout(() => setLearnDropdownOpen(false), 200);
-              }}
+              onMouseEnter={() => setActiveDropdown('about')}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
               <button
-                onClick={() => setLearnDropdownOpen(!learnDropdownOpen)}
-                className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
-                  isLearnActive
-                    ? 'bg-[#6B1B7E] text-white font-bold shadow-xs'
-                    : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
+                onClick={() => setActiveDropdown(activeDropdown === 'about' ? null : 'about')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeDropdown === 'about'
+                    ? 'bg-purple-100 text-[#6E1373]'
+                    : 'text-slate-700 hover:text-[#6E1373] hover:bg-purple-50'
                 }`}
               >
-                <span>Learn</span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${isLearnActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${learnDropdownOpen ? 'rotate-180' : ''}`} />
+                <span>About Academy</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'about' ? 'rotate-180 text-[#6E1373]' : 'text-slate-400'}`} />
               </button>
 
-              {learnDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-68 bg-white/98 backdrop-blur-xl border border-[#6B1B7E]/15 rounded-2xl shadow-xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
+              {/* Sub-Section Menu */}
+              {activeDropdown === 'about' && (
+                <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-purple-100 p-2 space-y-1 animate-fadeIn z-50">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-purple-900 border-b border-purple-50">
+                    Academy Insights
+                  </div>
+                  
                   <button
-                    onClick={() => {
-                      setCurrentView('hifz');
-                      setLearnDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer group"
+                    onClick={() => navigateToSection('about')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <div className="p-1.5 rounded-lg bg-pink-100 text-[#E0107F] group-hover:bg-[#E0107F] group-hover:text-white transition mt-0.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                    </div>
+                    <GraduationCap className="w-4 h-4 text-[#6E1373] shrink-0" />
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-xs font-bold text-slate-900 group-hover:text-[#6B1B7E]">Quran Hifz (Memorization)</p>
-                        <span className="text-[9px] font-black px-1.5 py-0.2 rounded-full bg-pink-100 text-[#E0107F]">New</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500">Sabaq, Sabqi & Manzil 1-on-1</p>
+                      <div className="leading-tight">About True Way Quran</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Authentic 1-on-1 online madrasa</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('courses');
-                      setLearnDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer group"
+                    onClick={() => navigateToSection('why-choose-us')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <div className="p-1.5 rounded-lg bg-purple-100 text-[#6B1B7E] group-hover:bg-[#6B1B7E] group-hover:text-white transition mt-0.5">
-                      <GraduationCap className="w-3.5 h-3.5" />
-                    </div>
+                    <Award className="w-4 h-4 text-[#851C82] shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-[#6B1B7E]">Quran Courses</p>
-                      <p className="text-[10px] text-slate-500">Tajweed, Tafseer & Teacher Training</p>
+                      <div className="leading-tight">Why Choose Us</div>
+                      <div className="text-[10px] text-slate-500 font-normal">6 core benefits & parent reports</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('qaida');
-                      setLearnDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer group"
+                    onClick={() => navigateToSection('how-it-works')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <div className="p-1.5 rounded-lg bg-purple-100 text-[#5B2A9A] group-hover:bg-[#5B2A9A] group-hover:text-white transition mt-0.5">
-                      <Mic className="w-3.5 h-3.5" />
-                    </div>
+                    <Layers className="w-4 h-4 text-[#C72F8A] shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-[#6B1B7E]">Madani Qaida</p>
-                      <p className="text-[10px] text-slate-500">Makharij & Tajweed colored rules</p>
+                      <div className="leading-tight">How It Works</div>
+                      <div className="text-[10px] text-slate-500 font-normal">4 simple enrollment stages</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('history');
-                      setLearnDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-2.5 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-2.5 cursor-pointer group"
+                    onClick={() => navigateToSection('learning-process')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <div className="p-1.5 rounded-lg bg-purple-50 text-slate-600 group-hover:bg-[#6B1B7E] group-hover:text-white transition mt-0.5">
-                      <History className="w-3.5 h-3.5" />
-                    </div>
+                    <Headphones className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
-                      <p className="text-xs font-bold text-slate-900 group-hover:text-[#6B1B7E]">History of the Quran</p>
-                      <p className="text-[10px] text-slate-500">22-Milestone preservation carousel</p>
+                      <div className="leading-tight">Virtual Classroom</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Live screen sharing & Makhraj voice</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigateToSection('reviews')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
+                  >
+                    <HeartHandshake className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div>
+                      <div className="leading-tight">Parent Reviews</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Worldwide verified testimonials</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigateToSection('faqs')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
+                  >
+                    <HelpCircle className="w-4 h-4 text-indigo-500 shrink-0" />
+                    <div>
+                      <div className="leading-tight">Admissions FAQs</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Timetables, teachers & equipment</div>
                     </div>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* 3. Full Quran (All 114 Surahs - Opens in New Tab) */}
-            <a
-              href="?view=quran"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
-                currentView === 'quran'
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
-                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
-              }`}
-              title="Open Holy Quran in a new tab"
-            >
-              <BookOpen className={`w-4 h-4 ${currentView === 'quran' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
-              <span>Full Quran</span>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                currentView === 'quran' ? 'bg-white/20 text-white' : 'bg-pink-100 text-[#E0107F]'
-              }`}>
-                114
-              </span>
-            </a>
-
-            {/* 4. Namaz & Spiritual Dropdown */}
+            {/* 3. Quran Courses Section with Sub-Sections Dropdown */}
             <div 
               className="relative"
-              onMouseEnter={() => {
-                if (spiritualTimeoutRef.current) clearTimeout(spiritualTimeoutRef.current);
-                setSpiritualDropdownOpen(true);
-              }}
-              onMouseLeave={() => {
-                spiritualTimeoutRef.current = setTimeout(() => setSpiritualDropdownOpen(false), 200);
-              }}
+              onMouseEnter={() => setActiveDropdown('courses')}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
               <button
-                onClick={() => setSpiritualDropdownOpen(!spiritualDropdownOpen)}
-                className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
-                  isSpiritualActive
-                    ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
-                    : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
+                onClick={() => setActiveDropdown(activeDropdown === 'courses' ? null : 'courses')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  activeDropdown === 'courses'
+                    ? 'bg-purple-100 text-[#6E1373]'
+                    : 'text-slate-700 hover:text-[#6E1373] hover:bg-purple-50'
                 }`}
               >
-                <span>Namaz & Spiritual</span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-150 ${isSpiritualActive ? 'text-pink-200' : 'text-[#6B1B7E]'} ${spiritualDropdownOpen ? 'rotate-180' : ''}`} />
+                <span>Quran Courses</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'courses' ? 'rotate-180 text-[#6E1373]' : 'text-slate-400'}`} />
               </button>
 
-              {spiritualDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-88 bg-white/98 backdrop-blur-xl border border-[#6B1B7E]/15 rounded-2xl shadow-xl p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 space-y-1">
+              {/* Sub-Section Menu */}
+              {activeDropdown === 'courses' && (
+                <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-purple-100 p-2 space-y-1 animate-fadeIn z-50">
+                  <div className="px-3 py-1.5 flex items-center justify-between border-b border-purple-50">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-900">Structured Curriculum</span>
+                    <button 
+                      onClick={() => navigateToSection('courses')} 
+                      className="text-[10px] font-bold text-[#6E1373] hover:underline"
+                    >
+                      View All (5)
+                    </button>
+                  </div>
+
                   <button
-                    onClick={() => {
-                      setCurrentView('namaz_salah_guide');
-                      setSpiritualDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-3 rounded-xl bg-purple-50/70 hover:bg-purple-100/80 transition flex items-start gap-3 cursor-pointer border border-purple-200/60"
+                    onClick={() => navigateToSection('courses')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <CheckCircle2 className="w-4.5 h-4.5 text-[#E0107F] mt-0.5 shrink-0" />
+                    <span className="w-5 h-5 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center text-[10px] font-black shrink-0">1</span>
                     <div>
-                      <p className="text-xs sm:text-[13px] font-bold text-[#6B1B7E] leading-snug">
-                        A Step-by-Step Guide to Daily Prayer (Salah)
-                      </p>
-                      <p className="text-[10px] text-slate-500">Wudu, 5 daily prayers Rak'at table & Salam Center manual</p>
+                      <div className="leading-tight">Madani Qaida Course</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Alphabet, articulation & basic reading</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('namaz_tahajjud');
-                      setSpiritualDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-3 rounded-xl bg-pink-50/70 hover:bg-pink-100/80 transition flex items-start gap-3 cursor-pointer border border-pink-200/60"
+                    onClick={() => navigateToSection('courses')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <Moon className="w-4.5 h-4.5 text-[#6B1B7E] mt-0.5 shrink-0" />
+                    <span className="w-5 h-5 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-[10px] font-black shrink-0">2</span>
                     <div>
-                      <p className="text-xs sm:text-[13px] font-bold text-[#6B1B7E] leading-snug">
-                        How to Pray Tahajjud
-                      </p>
-                      <p className="text-[10px] text-slate-500">Night vigil window, Rak'at format & Prophetic supplication</p>
+                      <div className="leading-tight">Quran with Tajweed</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Correct pronunciation & Tarteel rules</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('namaz');
-                      setSpiritualDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
+                    onClick={() => navigateToSection('courses')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <Clock className="w-4.5 h-4.5 text-[#6B1B7E] mt-0.5 shrink-0" />
+                    <span className="w-5 h-5 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-black shrink-0">3</span>
                     <div>
-                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">Auto Namaz Times & Qibla</p>
-                      <p className="text-[10px] text-slate-500">Live calculation schedule based on location</p>
+                      <div className="leading-tight">Quran Memorization (Hifz)</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Sabaq, Sabqi & Manzil revision</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('worship_guide');
-                      setSpiritualDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
+                    onClick={() => navigateToSection('courses')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <Sparkles className="w-4.5 h-4.5 text-[#E0107F] mt-0.5 shrink-0" />
+                    <span className="w-5 h-5 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-[10px] font-black shrink-0">4</span>
                     <div>
-                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">True Way of Namaz & Roza</p>
-                      <p className="text-[10px] text-slate-500">Eid, Janazah, Postures & Right/Wrong comparisons</p>
+                      <div className="leading-tight">Quran Translation & Tafseer</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Word-for-word meaning & reflections</div>
                     </div>
                   </button>
 
                   <button
-                    onClick={() => {
-                      setCurrentView('duas');
-                      setSpiritualDropdownOpen(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                    className="w-full text-left p-3 rounded-xl hover:bg-purple-50/90 transition flex items-start gap-3 cursor-pointer"
+                    onClick={() => navigateToSection('courses')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-purple-50 transition flex items-center gap-2.5 text-xs font-bold text-slate-800 hover:text-[#6E1373] cursor-pointer"
                   >
-                    <BookMarked className="w-4.5 h-4.5 text-[#5B2A9A] mt-0.5 shrink-0" />
+                    <span className="w-5 h-5 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-black shrink-0">5</span>
                     <div>
-                      <p className="text-xs sm:text-[13px] font-bold text-slate-900">Authentic Duas Library</p>
-                      <p className="text-[10px] text-slate-500">Morning, evening & daily Sunnah supplications</p>
+                      <div className="leading-tight">Islamic Studies & Daily Duas</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Sunnah Salah, Wudu & Masnoon Duas</div>
                     </div>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* 5. Pricing */}
-            <button
-              onClick={() => {
-                setCurrentView('pricing');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
-                ['pricing', 'courses'].includes(currentView)
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
-                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
-              }`}
+            {/* 4. Quran & Tools Section with Sub-Sections Dropdown */}
+            <div 
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('tools')}
+              onMouseLeave={() => setActiveDropdown(null)}
             >
-              Pricing
-            </button>
+              <button
+                onClick={() => setActiveDropdown(activeDropdown === 'tools' ? null : 'tools')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                  currentView === 'quran' || currentView === 'qaida' || currentView === 'duas' || currentView === 'namaz' || activeDropdown === 'tools'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'text-slate-700 hover:text-emerald-700 hover:bg-emerald-50'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Quran & Learning Tools</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${activeDropdown === 'tools' ? 'rotate-180 text-emerald-700' : 'text-slate-400'}`} />
+              </button>
 
-            {/* 6. Contact */}
+              {/* Sub-Section Menu */}
+              {activeDropdown === 'tools' && (
+                <div className="absolute top-full left-0 mt-2 w-76 bg-white rounded-2xl shadow-xl border border-purple-100 p-2 space-y-1 animate-fadeIn z-50">
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 border-b border-emerald-50">
+                    Interactive Islamic Tools
+                  </div>
+
+                  <button
+                    onClick={() => navigateToView('quran')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition flex items-center gap-2.5 text-xs font-bold cursor-pointer ${
+                      currentView === 'quran' ? 'bg-emerald-50 text-emerald-800' : 'hover:bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="leading-tight">Holy Quran Reader</div>
+                      <div className="text-[10px] text-slate-500 font-normal">All 114 Surahs, page memory & reciters</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigateToView('qaida')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition flex items-center gap-2.5 text-xs font-bold cursor-pointer ${
+                      currentView === 'qaida' ? 'bg-purple-50 text-[#6E1373]' : 'hover:bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4 text-[#C72F8A] shrink-0" />
+                    <div>
+                      <div className="leading-tight">Madani Qaida Interactive</div>
+                      <div className="text-[10px] text-slate-500 font-normal">22 lessons with AI voice assessment</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigateToView('duas')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition flex items-center gap-2.5 text-xs font-bold cursor-pointer ${
+                      currentView === 'duas' ? 'bg-blue-50 text-blue-800' : 'hover:bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <Compass className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <div className="leading-tight">Daily Masnoon Duas</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Authentic supplications with audio</div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigateToView('namaz')}
+                    className={`w-full text-left px-3 py-2 rounded-xl transition flex items-center gap-2.5 text-xs font-bold cursor-pointer ${
+                      currentView === 'namaz' ? 'bg-amber-50 text-amber-800' : 'hover:bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                    <div>
+                      <div className="leading-tight">Namaz Method & Times</div>
+                      <div className="text-[10px] text-slate-500 font-normal">Step-by-step Sunnah prayer guide</div>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 5. Contact Direct Button */}
             <button
-              onClick={() => {
-                setCurrentView('contact');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`px-4.5 py-2.5 rounded-full text-sm font-bold transition-all duration-150 cursor-pointer ${
-                currentView === 'contact'
-                  ? 'bg-[#6B1B7E] text-white font-bold shadow-md'
-                  : 'text-slate-700 hover:text-[#6B1B7E] hover:bg-purple-50/80'
-              }`}
+              onClick={() => navigateToSection('contact')}
+              className="px-3 py-1.5 rounded-full text-xs font-bold text-slate-700 hover:text-[#6E1373] hover:bg-purple-50 transition cursor-pointer"
             >
               Contact
             </button>
+
           </nav>
 
-          {/* Right Action Controls (Enlarged, prominent, easy to click) */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-
+          {/* Right Action Cluster: Portal Access & Book Free Trial */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            
+            {/* User Session Button / Portal Login */}
             {currentUser ? (
-              <div className="flex items-center gap-2">
-                {currentUser.role === 'admin' && (
-                  <button
-                    onClick={() => setCurrentView('admin')}
-                    className="p-2.5 text-xs font-bold rounded-full bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/20 hover:bg-purple-100 transition cursor-pointer"
-                    title="LMS Admin Database & Portal"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-[#6B1B7E]" />
-                  </button>
-                )}
-
+              <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setCurrentView('dashboard')}
-                  className={`px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-bold rounded-full border flex items-center gap-2 cursor-pointer max-w-[130px] sm:max-w-[160px] truncate transition ${
-                    currentView === 'dashboard'
-                      ? 'bg-[#6B1B7E] text-white border-[#6B1B7E]'
-                      : 'bg-purple-50 text-[#6B1B7E] border-[#6B1B7E]/20 hover:bg-purple-100'
-                  }`}
-                  title={`Student Portal & Hifz Tracker: ${currentUser.name}`}
+                  onClick={() => {
+                    if (currentUser.role === 'admin') setCurrentView('admin');
+                    else if (currentUser.role === 'instructor') setCurrentView('teacher');
+                    else setCurrentView('student');
+                  }}
+                  className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-purple-50 hover:bg-purple-100 border border-[#6E1373]/20 text-[#6E1373] font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
                 >
-                  <UserIcon className={`w-4 h-4 shrink-0 ${currentView === 'dashboard' ? 'text-pink-200' : 'text-[#E0107F]'}`} />
-                  <span className="truncate">{currentUser.name.split(' ')[0]}</span>
-                </button>
-
-                <button
-                  onClick={() => setCurrentView('hifz')}
-                  className={`hidden md:inline-flex px-3.5 py-2.5 text-xs sm:text-sm font-bold rounded-full border items-center gap-1.5 cursor-pointer transition ${
-                    currentView === 'hifz'
-                      ? 'bg-[#E0107F] text-white border-[#E0107F]'
-                      : 'bg-pink-50 text-[#E0107F] border-pink-200 hover:bg-pink-100'
-                  }`}
-                  title="Hifz Memorization Program"
-                >
-                  <Award className="w-4 h-4 shrink-0" />
-                  <span>Hifz</span>
+                  <UserIcon className="w-3.5 h-3.5 text-[#C72F8A]" />
+                  <span className="truncate max-w-[80px] sm:max-w-[120px]">
+                    {currentUser.name.split(' ')[0]}
+                  </span>
                 </button>
 
                 <button
                   onClick={onLogout}
+                  className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-600 text-xs font-bold transition cursor-pointer"
                   title="Sign Out"
-                  className="hidden sm:inline-flex p-2 text-slate-400 hover:text-red-600 rounded-full hover:bg-red-50 transition cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="text-xs sm:text-sm font-bold text-[#6B1B7E] bg-purple-50 hover:bg-purple-100 border border-[#6B1B7E]/25 px-5 sm:px-6 py-2.5 rounded-full transition shadow-xs cursor-pointer"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-slate-700 hover:text-[#6E1373] hover:bg-purple-50 text-xs font-bold transition border border-slate-200 hover:border-purple-200 cursor-pointer flex items-center gap-1.5"
               >
-                Sign In
+                <UserIcon className="w-3.5 h-3.5 text-[#6E1373]" />
+                <span className="hidden sm:inline">Portal Login</span>
+                <span className="sm:hidden">Login</span>
               </button>
             )}
 
-            {/* Primary Enroll CTA Pill */}
+            {/* Primary CTA: Book Free Trial */}
             <button
-              onClick={onOpenEnroll}
-              className="hidden sm:flex bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] hover:opacity-95 text-white text-xs sm:text-sm font-bold px-5 sm:px-7 py-2.5 rounded-full shadow-md hover:shadow-lg transition items-center gap-2 cursor-pointer active:scale-95"
+              onClick={onOpenTrialModal}
+              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#C72F8A] hover:from-[#561F79] hover:to-[#6E1373] text-white font-black text-xs sm:text-xs shadow-md shadow-purple-900/15 hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
             >
-              <Sparkles className="w-4 h-4 text-pink-200 shrink-0" />
-              <span>Enroll Now</span>
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Book Free Trial</span>
             </button>
 
-            {/* Mobile 3-Bar Toggle */}
+            {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden relative w-11 h-11 flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-full hover:bg-purple-50 transition cursor-pointer focus:outline-none shrink-0 border border-purple-100"
+              className="lg:hidden p-1.5 rounded-xl text-slate-700 hover:text-[#6E1373] hover:bg-purple-50 transition cursor-pointer"
               aria-label="Toggle navigation menu"
-              aria-expanded={mobileMenuOpen}
             >
-              <span 
-                className={`h-0.5 w-5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-2' : ''
-                }`} 
-              />
-              <span 
-                className={`h-0.5 w-5 bg-[#E0107F] rounded-full transition-all duration-300 ease-in-out ${
-                  mobileMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100'
-                }`} 
-              />
-              <span 
-                className={`h-0.5 w-5 bg-[#6B1B7E] rounded-full transition-all duration-300 ease-in-out transform origin-center ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`} 
-              />
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
           </div>
 
         </div>
-      </div>
 
-      {/* Mobile Navigation Drawer (Formal, zero emojis) */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden mt-2 max-w-5xl mx-auto bg-white/98 backdrop-blur-2xl border border-[#6B1B7E]/20 rounded-3xl p-4 sm:p-5 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-3 duration-200 pointer-events-auto max-h-[85vh] overflow-y-auto">
-          
-          {/* Section 1: Quran & Memorization */}
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-[#6B1B7E] px-2 mb-1.5">
-              Quran & Memorization
-            </p>
-            <div className="grid grid-cols-1 xs:grid-cols-2 gap-1.5 text-xs font-semibold">
+        {/* Mobile Accordion Drawer: Perfectly structured so no section goes out of viewport */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden mt-2 pt-2 pb-3 px-1 border-t border-purple-100 flex flex-col gap-1 text-xs font-bold max-h-[75vh] overflow-y-auto">
+            
+            {/* Home */}
+            <button
+              onClick={() => {
+                setCurrentView('home');
+                setMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="text-left px-3.5 py-2 rounded-xl hover:bg-purple-50 text-slate-700 flex items-center justify-between"
+            >
+              <span>Home</span>
+              <Home className="w-4 h-4 text-slate-400" />
+            </button>
+
+            {/* About Academy Accordion */}
+            <div className="border border-purple-50 rounded-xl overflow-hidden">
               <button
-                onClick={() => {
-                  setCurrentView('home');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  currentView === 'home'
-                    ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                    : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                }`}
+                onClick={() => setMobileExpandedSection(mobileExpandedSection === 'about' ? null : 'about')}
+                className="w-full text-left px-3.5 py-2 bg-purple-50/50 hover:bg-purple-50 text-[#6E1373] flex items-center justify-between"
               >
-                <Home className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                <span>Home</span>
+                <span>About Academy</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpandedSection === 'about' ? 'rotate-180' : ''}`} />
               </button>
-
-              <button
-                onClick={() => {
-                  setCurrentView('hifz');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  currentView === 'hifz'
-                    ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-[#6B1B7E] font-bold'
-                    : 'bg-pink-50/70 text-[#6B1B7E] hover:bg-pink-100/70'
-                }`}
-              >
-                <Award className="w-3.5 h-3.5 text-[#E0107F]" />
-                <span>Quran Hifz Program</span>
-              </button>
-
-              {currentUser && (
-                <button
-                  onClick={() => {
-                    setCurrentView('dashboard');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`p-2.5 rounded-xl text-left col-span-full transition flex items-center gap-2 ${
-                    currentView === 'dashboard'
-                      ? 'bg-[#6B1B7E] text-white font-bold'
-                      : 'bg-purple-100/80 text-[#6B1B7E] hover:bg-purple-200/70'
-                  }`}
-                >
-                  <UserIcon className="w-3.5 h-3.5 text-[#E0107F]" />
-                  <span>Student Portal & Hifz Daily Tracker</span>
-                </button>
+              {mobileExpandedSection === 'about' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <button onClick={() => navigateToSection('about')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • About True Way Quran
+                  </button>
+                  <button onClick={() => navigateToSection('why-choose-us')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • Why Choose Us (6 Advantages)
+                  </button>
+                  <button onClick={() => navigateToSection('how-it-works')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • How It Works (4 Stages)
+                  </button>
+                  <button onClick={() => navigateToSection('learning-process')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • Virtual Classroom & Process
+                  </button>
+                  <button onClick={() => navigateToSection('reviews')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • Parent & Student Reviews
+                  </button>
+                  <button onClick={() => navigateToSection('faqs')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • Admissions FAQs
+                  </button>
+                </div>
               )}
-
-              <a
-                href="?view=quran"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  currentView === 'quran'
-                    ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                    : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                }`}
-                title="Open Holy Quran in a new tab"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                <span>Full Quran (114 Surahs - New Tab)</span>
-              </a>
-
-              <button
-                onClick={() => {
-                  setCurrentView('qaida');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  currentView === 'qaida'
-                    ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                    : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                }`}
-              >
-                <Mic className="w-3.5 h-3.5 text-[#5B2A9A]" />
-                <span>Madani Qaida (Colored)</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setCurrentView('history');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  currentView === 'history'
-                    ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                    : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                }`}
-              >
-                <History className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                <span>History of the Quran</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setCurrentView('pricing');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                  ['pricing', 'courses'].includes(currentView)
-                    ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                    : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                }`}
-              >
-                <CreditCard className="w-3.5 h-3.5 text-[#E0107F]" />
-                <span>Pricing & Tuition Plans</span>
-              </button>
             </div>
-          </div>
 
-          {/* Section 2: Namaz & Spiritual Sub-sections */}
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-[#6B1B7E] px-2 mb-1.5">
-              Namaz & Spiritual Sub-Sections
-            </p>
-            <div className="grid grid-cols-1 gap-1.5 text-xs font-semibold">
+            {/* Quran Courses Accordion */}
+            <div className="border border-purple-50 rounded-xl overflow-hidden">
               <button
-                onClick={() => {
-                  setCurrentView('namaz_salah_guide');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition border flex items-center gap-2 ${
-                  currentView === 'namaz_salah_guide'
-                    ? 'bg-purple-100 text-[#6B1B7E] border-[#6B1B7E]/30 font-bold'
-                    : 'bg-purple-50/80 text-[#6B1B7E] border-purple-200/60 hover:bg-purple-100/70'
-                }`}
+                onClick={() => setMobileExpandedSection(mobileExpandedSection === 'courses' ? null : 'courses')}
+                className="w-full text-left px-3.5 py-2 bg-purple-50/50 hover:bg-purple-50 text-[#6E1373] flex items-center justify-between"
               >
-                <CheckCircle2 className="w-4 h-4 text-[#E0107F] shrink-0" />
-                <span>A step-by-step guide to performing the daily Islamic prayer (Salah)</span>
+                <span>Quran Courses (5)</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpandedSection === 'courses' ? 'rotate-180' : ''}`} />
               </button>
-
-              <button
-                onClick={() => {
-                  setCurrentView('namaz_tahajjud');
-                  setMobileMenuOpen(false);
-                }}
-                className={`p-2.5 rounded-xl text-left transition border flex items-center gap-2 ${
-                  currentView === 'namaz_tahajjud'
-                    ? 'bg-pink-100 text-[#6B1B7E] border-[#E0107F]/30 font-bold'
-                    : 'bg-pink-50/80 text-[#6B1B7E] border-pink-200/60 hover:bg-pink-100/70'
-                }`}
-              >
-                <Moon className="w-4 h-4 text-[#6B1B7E] shrink-0" />
-                <span>How to pray tahajjud</span>
-              </button>
-
-              <div className="grid grid-cols-1 xs:grid-cols-2 gap-1.5">
-                <button
-                  onClick={() => {
-                    setCurrentView('namaz');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                    currentView === 'namaz'
-                      ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                      : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                  }`}
-                >
-                  <Clock className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                  <span>Auto Namaz Times & Qibla</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCurrentView('worship_guide');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`p-2.5 rounded-xl text-left transition flex items-center gap-2 ${
-                    currentView === 'worship_guide'
-                      ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                      : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                  }`}
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#E0107F]" />
-                  <span>Eid, Janazah & Roza Guide</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCurrentView('duas');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`p-2.5 rounded-xl text-left transition col-span-full flex items-center gap-2 ${
-                    currentView === 'duas'
-                      ? 'bg-purple-100/90 text-[#6B1B7E] font-bold'
-                      : 'bg-purple-50/60 text-slate-800 hover:bg-purple-100/50'
-                  }`}
-                >
-                  <BookMarked className="w-3.5 h-3.5 text-[#5B2A9A]" />
-                  <span>Daily Authentic Duas Library</span>
-                </button>
-              </div>
+              {mobileExpandedSection === 'courses' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • 1. Madani Qaida Course
+                  </button>
+                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • 2. Quran with Tajweed
+                  </button>
+                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • 3. Quran Memorization (Hifz)
+                  </button>
+                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • 4. Quran Translation & Tafseer
+                  </button>
+                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
+                    • 5. Islamic Studies & Daily Duas
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Section 3: Student Actions */}
-          <div className="pt-2.5 border-t border-purple-100 flex items-center justify-between gap-2">
-            <button
-              onClick={() => {
-                if (currentUser) {
-                  setCurrentView('dashboard');
-                } else {
-                  onOpenAuth();
-                }
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs font-bold text-[#6B1B7E] px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 transition"
-            >
-              {currentUser ? `User: ${currentUser.name.split(' ')[0]}` : 'Sign In'}
-            </button>
-            <button
-              onClick={() => {
-                onOpenEnroll();
-                setMobileMenuOpen(false);
-              }}
-              className="text-xs font-bold text-white px-5 py-2 rounded-xl bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] shadow-sm"
-            >
-              Enroll Now
-            </button>
-          </div>
-        </div>
-      )}
+            {/* Quran & Tools Accordion */}
+            <div className="border border-emerald-100 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setMobileExpandedSection(mobileExpandedSection === 'tools' ? null : 'tools')}
+                className="w-full text-left px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Quran & Learning Tools</span>
+                </span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpandedSection === 'tools' ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileExpandedSection === 'tools' && (
+                <div className="p-2 space-y-1 bg-white">
+                  <button onClick={() => navigateToView('quran')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-emerald-50 text-emerald-900 flex items-center gap-2">
+                    <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Holy Quran Reader (114 Surahs)</span>
+                  </button>
+                  <button onClick={() => navigateToView('qaida')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-purple-900 flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C72F8A]" />
+                    <span>Madani Qaida Interactive (22 Lessons)</span>
+                  </button>
+                  <button onClick={() => navigateToView('duas')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-50 text-blue-900 flex items-center gap-2">
+                    <Compass className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Daily Masnoon Duas</span>
+                  </button>
+                  <button onClick={() => navigateToView('namaz')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-amber-50 text-amber-900 flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Namaz Prayer Times & Method</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
+            {/* Direct Contact */}
+            <button
+              onClick={() => navigateToSection('contact')}
+              className="text-left px-3.5 py-2 rounded-xl hover:bg-purple-50 text-slate-700"
+            >
+              Contact & Admissions Desk
+            </button>
+
+          </div>
+        )}
+
+      </div>
     </header>
   );
 };
