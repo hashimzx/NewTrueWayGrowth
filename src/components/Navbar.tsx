@@ -65,8 +65,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-50 py-3 sm:py-4 px-3 sm:px-6 transition-all duration-300 pointer-events-none">
       
       {/* Big, Highly Interactive Floating Capsule Navbar */}
-      <div className="max-w-7xl mx-auto rounded-full bg-white/95 backdrop-blur-xl border-2 border-[#6B1B7E]/25 shadow-xl shadow-[#6B1B7E]/10 px-5 sm:px-8 py-3 sm:py-4 transition-all duration-300 pointer-events-auto">
-        <div className="flex items-center justify-between gap-3 sm:gap-6 min-h-[58px] sm:min-h-[66px]">
+      <div className="max-w-7xl mx-auto rounded-full bg-white/95 backdrop-blur-xl border-2 border-[#6B1B7E]/25 shadow-xl shadow-[#6B1B7E]/10 px-3.5 sm:px-8 py-2.5 sm:py-4 transition-all duration-300 pointer-events-auto">
+        <div className="flex items-center justify-between gap-2.5 sm:gap-6 min-h-[54px] sm:min-h-[66px]">
           
           {/* Prominent Interactive Brand Animated Logo */}
           <button
@@ -78,10 +78,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="True Way Quran Home"
           >
             <div className="hidden sm:block">
-              <AnimatedLogo size="md" showUrl={true} />
+              <AnimatedLogo size="responsive" showUrl={true} />
             </div>
             <div className="block sm:hidden">
-              <AnimatedLogo size="sm" showUrl={false} />
+              <AnimatedLogo size="responsive" showUrl={false} />
             </div>
           </button>
 
