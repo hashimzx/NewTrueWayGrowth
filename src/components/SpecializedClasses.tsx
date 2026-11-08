@@ -1,15 +1,6 @@
 import React from 'react';
 import { 
-  Users, 
-  Baby, 
-  UserCheck, 
-  Heart, 
-  ShieldCheck, 
-  Clock, 
-  Award, 
-  Sparkles, 
-  ArrowRight, 
-  CheckCircle2 
+  ArrowRight
 } from 'lucide-react';
 
 interface SpecializedClassesProps {
@@ -36,7 +27,6 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
         'Monthly progress reports & star achievements',
         'Safe, supervised child-friendly online classroom'
       ],
-      icon: Baby,
       cardGradient: 'from-amber-500/10 via-purple-50 to-white',
       borderHover: 'hover:border-amber-400',
       ctaText: 'Book Free Trial for My Child'
@@ -55,7 +45,6 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
         'Special modules on Daily Salah, Duas & Motherhood',
         'Ijazah preparation & Quran memorization pathways'
       ],
-      icon: Heart,
       cardGradient: 'from-fuchsia-500/10 via-purple-50 to-white',
       borderHover: 'hover:border-fuchsia-400',
       ctaText: 'Book Free Trial with Female Tutor'
@@ -74,7 +63,6 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
         'Word-by-word Quran translation & Tafseer reflection',
         'Accelerated personalized 1-on-1 tutor pace'
       ],
-      icon: UserCheck,
       cardGradient: 'from-purple-500/10 via-indigo-50 to-white',
       borderHover: 'hover:border-purple-400',
       ctaText: 'Book Free Adult Consultation'
@@ -99,8 +87,7 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
         {/* 3 Specialized Tracks: Desktop Grid + Mobile Swipeable Carousel */}
         <div className="relative">
           <div className="flex lg:grid lg:grid-cols-3 gap-6 overflow-x-auto lg:overflow-visible snap-x snap-mandatory no-scrollbar pb-4 pt-1 px-1">
-            {tracks.map((track, idx) => {
-              const Icon = track.icon;
+            {tracks.map((track) => {
               return (
                 <div
                   key={track.id}
@@ -111,14 +98,11 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
 
                   <div className="relative z-10 space-y-5">
                     
-                    {/* Badge & Icon */}
+                    {/* Badge */}
                     <div className="flex items-center justify-between">
                       <span className={`text-[11px] font-extrabold px-3 py-1 rounded-full border ${track.badgeColor}`}>
                         {track.badge}
                       </span>
-                      <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-700 shadow-sm group-hover:scale-110 transition-transform">
-                        <Icon className="w-6 h-6" />
-                      </div>
                     </div>
 
                     {/* Title & Subtitle */}
@@ -142,8 +126,8 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
                         Program Highlights:
                       </span>
                       {track.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-700">
-                          <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                        <div key={fIdx} className="flex items-start gap-2.5 text-xs text-slate-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-600 mt-1.5 shrink-0" />
                           <span>{feat}</span>
                         </div>
                       ))}
@@ -171,11 +155,15 @@ export const SpecializedClasses: React.FC<SpecializedClassesProps> = ({
           </div>
         </div>
 
-        {/* 3 Days Free Trial Guarantee Strip */}
+        {/* 3 Days Free Trial Guarantee Strip with Original Brand Logo */}
         <div className="bg-gradient-to-r from-purple-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-amber-300 shrink-0">
-              <Sparkles className="w-7 h-7" />
+            <div className="w-16 h-14 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-md shrink-0">
+              <img
+                src="/assets/aistudio/true_way_logo_trimmed.png"
+                alt="True Way Quran"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h4 className="text-lg sm:text-xl font-bold">Start with 3 Days Free Trial Classes</h4>

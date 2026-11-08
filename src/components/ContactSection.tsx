@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Clock, 
-  CheckCircle2, 
-  Send, 
-  Sparkles, 
-  ShieldCheck, 
-  Globe 
+  Send
 } from 'lucide-react';
 
 interface ContactSectionProps {
@@ -59,25 +51,23 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
         {/* Global Contact Numbers Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="flex items-center gap-2 text-purple-600 text-xs font-bold uppercase">
-              <Globe className="w-4 h-4" />
-              <span>United Kingdom & Global</span>
+            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
+              United Kingdom & Global
             </div>
             <p className="text-base font-extrabold text-slate-900">+44 808 5310 303</p>
             <span className="text-[11px] text-slate-500">Toll-Free International</span>
           </div>
 
           <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="flex items-center gap-2 text-purple-600 text-xs font-bold uppercase">
-              <Globe className="w-4 h-4" />
-              <span>United States & Canada</span>
+            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
+              United States & Canada
             </div>
             <p className="text-base font-extrabold text-slate-900">+1 (318) 931 0931</p>
             <span className="text-[11px] text-slate-500">Direct North America Line</span>
           </div>
 
           <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold uppercase">
+            <div className="flex items-center gap-2 text-emerald-600 text-xs font-bold uppercase tracking-wider">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>UstadLeads WhatsApp</span>
             </div>
@@ -86,9 +76,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
           </div>
 
           <div className="bg-white border border-purple-100 rounded-2xl p-5 shadow-sm space-y-1.5 hover:border-purple-300 transition">
-            <div className="flex items-center gap-2 text-purple-600 text-xs font-bold uppercase">
-              <Mail className="w-4 h-4" />
-              <span>Official Email</span>
+            <div className="text-purple-600 text-xs font-bold uppercase tracking-wider">
+              Official Email
             </div>
             <p className="text-base font-extrabold text-slate-900 truncate">support@ustadleads.com</p>
             <span className="text-[11px] text-slate-500">Admissions & Inquiries</span>
@@ -111,8 +100,12 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
 
             {isSubmitted ? (
               <div className="py-12 text-center space-y-4">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 border border-emerald-300 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-10 h-10" />
+                <div className="w-20 h-20 bg-purple-50 border border-purple-200 rounded-3xl flex items-center justify-center mx-auto shadow-sm p-3">
+                  <img
+                    src="/assets/aistudio/true_way_logo_trimmed.png"
+                    alt="True Way Quran"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <h4 className="text-2xl font-black text-purple-950">Free Trial Request Received!</h4>
                 <p className="text-xs text-slate-600 max-w-md mx-auto">
@@ -257,8 +250,8 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
                   <span>Submit & Claim 3-Day Free Trial</span>
                 </button>
 
-                <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 pt-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 pt-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                   <span>100% Free · No Obligation · Instant WhatsApp Confirmation</span>
                 </div>
               </form>
@@ -295,10 +288,19 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
             {/* Admissions Advisory & Support Information (No Bank Details) */}
             <div className="bg-white rounded-3xl p-6 border border-purple-100 shadow-sm space-y-5">
               <div className="flex items-center justify-between border-b border-purple-100 pb-3">
-                <h4 className="text-base font-bold text-purple-950 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-purple-600" />
-                  <span>Admissions Advisory Desk</span>
-                </h4>
+                <div className="flex items-center gap-2.5">
+                  <img
+                    src="/assets/aistudio/true_way_logo_trimmed.png"
+                    alt="True Way Quran"
+                    className="h-8 w-auto object-contain"
+                  />
+                  <div>
+                    <h4 className="text-sm font-black text-purple-950">
+                      Admissions Advisory Desk
+                    </h4>
+                    <p className="text-[10px] text-purple-600 font-semibold">True Way Quran Academy</p>
+                  </div>
+                </div>
                 <span className="text-[10px] bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">
                   Available 24/7
                 </span>
@@ -309,36 +311,24 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ initialTrack }) 
               </p>
 
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <Clock className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
-                  <div className="text-xs">
-                    <p className="font-bold text-purple-950">Flexible Global Timings</p>
-                    <p className="text-slate-500 text-[11px] mt-0.5">Classes running 24/7 across UK, USA, Canada, Australia and Gulf timezones.</p>
-                  </div>
+                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
+                  <p className="font-bold text-purple-950 text-xs">Flexible Global Timings</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5">Classes running 24/7 across UK, USA, Canada, Australia and Gulf timezones.</p>
                 </div>
 
-                <div className="flex items-start gap-3 p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="text-xs">
-                    <p className="font-bold text-purple-950">Certified Male & Female Faculty</p>
-                    <p className="text-slate-500 text-[11px] mt-0.5">Alim & Alimah certified teachers specialized in kids, adult beginners, and advanced Tajweed.</p>
-                  </div>
+                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
+                  <p className="font-bold text-purple-950 text-xs">Certified Male & Female Faculty</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5">Alim & Alimah certified teachers specialized in kids, adult beginners, and advanced Tajweed.</p>
                 </div>
 
-                <div className="flex items-start gap-3 p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
-                  <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  <div className="text-xs">
-                    <p className="font-bold text-purple-950">100% Free 3-Day Evaluation</p>
-                    <p className="text-slate-500 text-[11px] mt-0.5">No credit card required. Experience interactive private lessons before any commitment.</p>
-                  </div>
+                <div className="p-3.5 bg-purple-50/60 rounded-2xl border border-purple-100">
+                  <p className="font-bold text-purple-950 text-xs">100% Free 3-Day Evaluation</p>
+                  <p className="text-slate-500 text-[11px] mt-0.5">No credit card required. Experience interactive private lessons before any commitment.</p>
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-600 border border-slate-200 flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Academic Office:</strong> UstadLeads & True Way Quran Academy · UK & Pakistan Student Desks.
-                </span>
+              <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-600 border border-slate-200">
+                <strong>Academic Office:</strong> UstadLeads & True Way Quran Academy · UK & Pakistan Student Desks.
               </div>
             </div>
           </div>

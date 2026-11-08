@@ -9,7 +9,6 @@ import {
   BookOpen, 
   UserCheck, 
   ArrowRight, 
-  ShieldCheck, 
   CreditCard,
   ChevronDown,
   ChevronUp,
@@ -529,8 +528,12 @@ export const CoursesSection: React.FC<CoursesSectionProps> = ({
       {/* Trust & Guarantee Banner */}
       <div className="bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-white/10 text-pink-200 rounded-2xl shrink-0 border border-white/20">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="w-16 h-14 bg-white rounded-2xl p-1.5 flex items-center justify-center shadow-md shrink-0">
+            <img
+              src="/assets/aistudio/true_way_logo_trimmed.png"
+              alt="True Way Quran"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h4 className="text-base font-bold">100% Satisfaction & Tajweed Guarantee</h4>

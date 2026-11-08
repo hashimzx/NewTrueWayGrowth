@@ -5,11 +5,7 @@ import {
   Volume2, 
   VolumeX, 
   Maximize2, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowRight,
-  ShieldCheck,
-  Video
+  ArrowRight
 } from 'lucide-react';
 
 interface VideoSectionProps {
@@ -167,9 +163,8 @@ export const VideoSection: React.FC<VideoSectionProps> = ({ onEnroll, onExploreQ
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-xl border border-purple-200/80 space-y-5">
               <div className="space-y-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-pink-600 uppercase tracking-wider">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>What You Learn Inside</span>
+                <div className="text-xs font-bold text-pink-600 uppercase tracking-wider">
+                  What You Learn Inside
                 </div>
                 <h3 className="text-xl font-black text-purple-950">
                   Comprehensive Academy Roadmap
@@ -179,7 +174,7 @@ export const VideoSection: React.FC<VideoSectionProps> = ({ onEnroll, onExploreQ
               <div className="space-y-3">
                 {keyHighlights.map((highlight, index) => (
                   <div key={index} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-pink-600 mt-2 shrink-0" />
                     <span>{highlight}</span>
                   </div>
                 ))}

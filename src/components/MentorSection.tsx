@@ -105,9 +105,8 @@ export const MentorSection: React.FC<MentorSectionProps> = ({ onEnroll, onOpenWh
                 <div className="absolute bottom-4 left-4 right-4 bg-purple-950/85 backdrop-blur-md border border-white/20 text-white p-3.5 rounded-xl shadow-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                        <span>Abdul Basit Saleem</span>
-                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <h4 className="font-bold text-sm text-white">
+                        Abdul Basit Saleem
                       </h4>
                       <p className="text-xs text-purple-200">Academy Director & Master Trainer</p>
                     </div>
@@ -168,9 +167,9 @@ export const MentorSection: React.FC<MentorSectionProps> = ({ onEnroll, onOpenWh
                   key={idx}
                   className="flex items-start gap-3.5 p-3 rounded-xl bg-white border border-purple-100 hover:border-pink-300 transition shadow-2xs group"
                 >
-                  <div className="mt-0.5 p-1 rounded-lg bg-pink-100 text-pink-700 group-hover:bg-pink-600 group-hover:text-white transition shrink-0">
-                    <CheckCircle2 className="w-4 h-4" />
-                  </div>
+                  <span className="w-6 h-6 rounded-lg bg-purple-100 text-[#6B1B7E] font-bold text-xs flex items-center justify-center shrink-0 border border-purple-200 mt-0.5">
+                    {idx + 1}
+                  </span>
                   <span className="text-sm font-semibold text-slate-800 group-hover:text-purple-950 transition">
                     {point}
                   </span>

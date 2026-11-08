@@ -162,17 +162,17 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2 text-xs font-bold text-slate-600">
             <span className="flex items-center gap-1.5 text-[#6B1B7E]">
-              <CheckCircle2 className="w-4 h-4 text-[#E0107F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F]" />
               1-on-1 Live Private Tutors
             </span>
             <span>·</span>
             <span className="flex items-center gap-1.5 text-[#6B1B7E]">
-              <CheckCircle2 className="w-4 h-4 text-[#E0107F]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#E0107F]" />
               24/7 Flexible Scheduling
             </span>
             <span>·</span>
             <span className="flex items-center gap-1.5 text-[#6B1B7E]">
-              <Gift className="w-4 h-4 text-emerald-600" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
               20% Sibling & Family Discount
             </span>
           </div>
@@ -273,8 +273,7 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
         <div className="bg-gradient-to-r from-purple-50 via-white to-pink-50 p-6 sm:p-8 rounded-3xl border border-[#6B1B7E]/20 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 text-xs font-black text-[#6B1B7E] uppercase tracking-wide">
-                <ShieldCheck className="w-4 h-4 text-[#E0107F]" />
+              <span className="inline-block text-xs font-black text-[#6B1B7E] uppercase tracking-wide">
                 Course Prerequisites & Eligibility
               </span>
               <h4 className="text-lg sm:text-xl font-black text-slate-900">
@@ -288,10 +287,9 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
             {onOpenQaida && (
               <button
                 onClick={onOpenQaida}
-                className="px-5 py-3 rounded-2xl bg-white hover:bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/30 text-xs font-black transition shadow-xs shrink-0 flex items-center gap-2 cursor-pointer"
+                className="px-5 py-3 rounded-2xl bg-white hover:bg-purple-50 text-[#6B1B7E] border border-[#6B1B7E]/30 text-xs font-black transition shadow-xs shrink-0 cursor-pointer"
               >
-                <BookOpen className="w-4 h-4 text-[#E0107F]" />
-                <span>Open Madani Qaida (22 Lessons)</span>
+                Open Madani Qaida (22 Lessons)
               </button>
             )}
           </div>
@@ -569,10 +567,7 @@ export const HifzSection: React.FC<HifzSectionProps> = ({
                     </button>
 
                     <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                        Card & PayPal Accepted
-                      </span>
+                      <span>Card & PayPal Accepted</span>
                       <span>·</span>
                       <span>3-Day Free Trial</span>
                     </div>

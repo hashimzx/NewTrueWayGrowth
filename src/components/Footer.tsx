@@ -3,14 +3,8 @@ import { AnimatedLogo } from './AnimatedLogo';
 import { 
   Mail, 
   Phone, 
-  MapPin, 
-  Globe, 
-  ShieldCheck, 
-  Heart, 
-  Sparkles, 
   MessageCircle,
-  CreditCard,
-  Video
+  CreditCard
 } from 'lucide-react';
 
 interface FooterProps {
@@ -36,13 +30,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenEnroll }) => {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-purple-300">
-              <span className="flex items-center gap-1">
-                <Globe className="w-3.5 h-3.5 text-pink-400" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
                 Serving Students in 25+ Countries
               </span>
               <span>·</span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 1,000+ Active Students
               </span>
             </div>
@@ -50,20 +44,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenEnroll }) => {
             <div className="pt-2 flex flex-wrap gap-2">
               <button
                 onClick={onOpenEnroll}
-                className="px-5 py-2.5 bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600 hover:from-purple-800 hover:to-pink-700 text-white rounded-xl text-xs font-black shadow-lg shadow-pink-500/20 transition flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 bg-gradient-to-r from-purple-700 via-purple-600 to-pink-600 hover:from-purple-800 hover:to-pink-700 text-white rounded-xl text-xs font-black shadow-lg shadow-pink-500/20 transition cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-pink-200" />
-                <span>Enroll Now — PKR 4,999</span>
+                Enroll Now — PKR 4,999
               </button>
 
               <a
                 href="https://wa.me/923068959085"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>WhatsApp Abdul</span>
+                WhatsApp Abdul
               </a>
             </div>
           </div>
@@ -248,10 +240,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenEnroll }) => {
             &copy; {new Date().getFullYear()} True Way Quran (www.truewayquran.com). All rights reserved.
           </p>
 
-          <div className="flex items-center gap-4">
-            <span className="text-purple-300 font-semibold">
-              Powered by <span className="bg-gradient-to-r from-pink-400 to-purple-300 bg-clip-text text-transparent font-black">Truth way growth</span>
-            </span>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-purple-300 font-semibold text-xs">Powered by</span>
+              <img
+                src="/assets/aistudio/image_129c38c6.png"
+                alt="True Way Growth"
+                className="h-6 w-auto object-contain bg-white rounded px-1.5 py-0.5 inline-block shadow-xs"
+              />
+            </div>
             <span>·</span>
             <button onClick={() => onNavigate('contact')} className="hover:text-white transition cursor-pointer">
               Privacy

@@ -77,12 +77,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center focus:outline-none text-left shrink-0 cursor-pointer transition-transform hover:scale-[1.03] active:scale-[0.98] origin-left"
             aria-label="True Way Quran Home"
           >
-            <div className="hidden sm:block">
-              <AnimatedLogo size="responsive" showUrl={true} />
-            </div>
-            <div className="block sm:hidden">
-              <AnimatedLogo size="responsive" showUrl={false} />
-            </div>
+            <AnimatedLogo size="responsive" />
           </button>
 
           {/* Desktop Navigation Menu (Big, prominent, easy to interact with) */}

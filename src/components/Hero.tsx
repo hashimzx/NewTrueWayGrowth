@@ -1,9 +1,6 @@
 import React from 'react';
 import { 
-  Sparkles, 
-  ArrowRight, 
-  MessageCircle, 
-  BookOpen
+  ArrowRight 
 } from 'lucide-react';
 
 interface HeroProps {
@@ -100,10 +97,9 @@ export const Hero: React.FC<HeroProps> = ({
             href="?view=quran"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto px-6 py-4 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] font-bold text-sm rounded-2xl border border-purple-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+            className="w-full sm:w-auto px-6 py-4 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] font-bold text-sm rounded-2xl border border-purple-200 transition flex items-center justify-center cursor-pointer shadow-xs"
             title="Open Quran Reader in a new tab"
           >
-            <BookOpen className="w-4 h-4 text-[#E0107F]" />
             <span>Read Holy Quran (New Tab)</span>
           </a>
         </div>
@@ -114,10 +110,9 @@ export const Hero: React.FC<HeroProps> = ({
           <span>Instant WhatsApp Support:</span>
           <button 
             onClick={handleWhatsApp}
-            className="font-bold text-emerald-700 hover:underline flex items-center gap-1 cursor-pointer"
+            className="font-bold text-emerald-700 hover:underline cursor-pointer"
           >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>+92 306 8959085</span>
+            +92 306 8959085
           </button>
         </div>
 
