@@ -89,12 +89,25 @@ export default function App() {
 
   // Logged in user session
   const [currentUser, setCurrentUser] = useState<any | null>(() => {
-    const saved = localStorage.getItem('twq_current_user_v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {}
-    }
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('twq_current_user_v2');
+        if (saved) {
+          return JSON.parse(saved);
+        }
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('view') === 'student') {
+          return {
+            id: 'usr-student-1',
+            name: 'Hashim Zafar',
+            email: 'student@truewayquran.com',
+            role: 'student',
+            country: 'United Kingdom',
+            timezone: 'Europe/London (GMT)'
+          };
+        }
+      }
+    } catch {}
     return null;
   });
 

@@ -195,3 +195,7 @@ export function getAyahTafseerAndHistory(
     tafseerReference: `Classical Tafsir Tradition · Ibn Kathir & Al-Jalalayn (Surah ${surahName} ${surahNumber}:${ayahNumber})`
   };
 }
+
+export function getAyahInsight(surahNumber: number, ayahNumber: number): AyahInsight {
+  return getAyahTafseerAndHistory(surahNumber, ayahNumber, `Surah ${surahNumber}`, '', '');
+}
