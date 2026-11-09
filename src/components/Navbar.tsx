@@ -41,7 +41,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   onOpenAuth,
   onOpenTrialModal,
-  onLogout
+  onLogout,
+  currency = 'USD',
+  setCurrency
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -437,10 +439,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Primary CTA: Book Free Trial */}
             <button
               onClick={onOpenTrialModal}
-              className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#C72F8A] hover:from-[#561F79] hover:to-[#6E1373] text-white font-black text-xs sm:text-xs shadow-md shadow-purple-900/15 hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
+              className="px-2.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#C72F8A] hover:from-[#561F79] hover:to-[#6E1373] text-white font-black text-[11px] sm:text-xs shadow-md shadow-purple-900/15 hover:shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Book Free Trial</span>
+              <span className="sm:hidden">Free Trial</span>
+              <span className="hidden sm:inline">Book Free Trial</span>
             </button>
 
             {/* Mobile Hamburger Toggle */}
@@ -449,17 +452,42 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="lg:hidden p-1.5 rounded-xl text-slate-700 hover:text-[#6E1373] hover:bg-purple-50 transition cursor-pointer"
               aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#6E1373]" /> : <Menu className="w-5 h-5" />}
             </button>
 
           </div>
 
         </div>
 
-        {/* Mobile Accordion Drawer: Perfectly structured so no section goes out of viewport */}
+        {/* Mobile Accordion Drawer: Perfectly structured, clean and responsive */}
         {mobileMenuOpen && (
-          <div className="lg:hidden mt-2 pt-2 pb-3 px-1 border-t border-purple-100 flex flex-col gap-1 text-xs font-bold max-h-[75vh] overflow-y-auto">
+          <div className="lg:hidden mt-2 pt-3 pb-3 px-1 border-t border-purple-100 flex flex-col gap-1.5 text-xs font-bold max-h-[75vh] overflow-y-auto">
             
+            {/* Quick Currency Switcher inside Mobile Drawer */}
+            {setCurrency && (
+              <div className="flex items-center justify-between p-2 bg-purple-50/60 rounded-xl border border-purple-100 mb-1">
+                <span className="text-[11px] text-slate-600 font-semibold">Tuition Currency:</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrency('USD')}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                      currency === 'USD' ? 'bg-[#6E1373] text-white shadow-xs' : 'bg-white text-slate-600'
+                    }`}
+                  >
+                    USD ($)
+                  </button>
+                  <button
+                    onClick={() => setCurrency('GBP')}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition ${
+                      currency === 'GBP' ? 'bg-[#6E1373] text-white shadow-xs' : 'bg-white text-slate-600'
+                    }`}
+                  >
+                    GBP (£)
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Home */}
             <button
               onClick={() => {
@@ -467,17 +495,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setMobileMenuOpen(false);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="text-left px-3.5 py-2 rounded-xl hover:bg-purple-50 text-slate-700 flex items-center justify-between"
+              className="text-left px-3.5 py-2.5 rounded-xl hover:bg-purple-50 text-slate-700 flex items-center justify-between cursor-pointer"
             >
               <span>Home</span>
               <Home className="w-4 h-4 text-slate-400" />
             </button>
 
+            {/* Pricing & Packages Direct Link */}
+            <button
+              onClick={() => navigateToSection('pricing')}
+              className="text-left px-3.5 py-2.5 rounded-xl bg-purple-50/80 hover:bg-purple-100 text-[#6E1373] flex items-center justify-between cursor-pointer border border-purple-100"
+            >
+              <span className="flex items-center gap-1.5 font-black">
+                <Sparkles className="w-3.5 h-3.5 text-[#C72F8A]" />
+                <span>Pricing & Class Packages</span>
+              </span>
+              <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold">From $35/mo</span>
+            </button>
+
             {/* About Academy Accordion */}
-            <div className="border border-purple-50 rounded-xl overflow-hidden">
+            <div className="border border-purple-100 rounded-xl overflow-hidden">
               <button
                 onClick={() => setMobileExpandedSection(mobileExpandedSection === 'about' ? null : 'about')}
-                className="w-full text-left px-3.5 py-2 bg-purple-50/50 hover:bg-purple-50 text-[#6E1373] flex items-center justify-between"
+                className="w-full text-left px-3.5 py-2.5 bg-slate-50 hover:bg-purple-50 text-slate-800 flex items-center justify-between cursor-pointer"
               >
                 <span>About Academy</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpandedSection === 'about' ? 'rotate-180' : ''}`} />
@@ -488,10 +528,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     • About True Way Quran
                   </button>
                   <button onClick={() => navigateToSection('why-choose-us')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • Why Choose Us (6 Advantages)
-                  </button>
-                  <button onClick={() => navigateToSection('how-it-works')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • How It Works (4 Stages)
+                    • Why Choose Us
                   </button>
                   <button onClick={() => navigateToSection('learning-process')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
                     • Virtual Classroom & Process
@@ -506,41 +543,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* Quran Courses Accordion */}
-            <div className="border border-purple-50 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setMobileExpandedSection(mobileExpandedSection === 'courses' ? null : 'courses')}
-                className="w-full text-left px-3.5 py-2 bg-purple-50/50 hover:bg-purple-50 text-[#6E1373] flex items-center justify-between"
-              >
-                <span>Quran Courses (5)</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${mobileExpandedSection === 'courses' ? 'rotate-180' : ''}`} />
-              </button>
-              {mobileExpandedSection === 'courses' && (
-                <div className="p-2 space-y-1 bg-white">
-                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • 1. Madani Qaida Course
-                  </button>
-                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • 2. Quran with Tajweed
-                  </button>
-                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • 3. Quran Memorization (Hifz)
-                  </button>
-                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • 4. Quran Translation & Tafseer
-                  </button>
-                  <button onClick={() => navigateToSection('courses')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-slate-700">
-                    • 5. Islamic Studies & Daily Duas
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* Quran & Tools Accordion */}
             <div className="border border-emerald-100 rounded-xl overflow-hidden">
               <button
                 onClick={() => setMobileExpandedSection(mobileExpandedSection === 'tools' ? null : 'tools')}
-                className="w-full text-left px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center justify-between"
+                className="w-full text-left px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 flex items-center justify-between cursor-pointer"
               >
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
@@ -556,7 +563,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                   <button onClick={() => navigateToView('qaida')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-purple-50 text-purple-900 flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-[#C72F8A]" />
-                    <span>Madani Qaida Interactive (22 Lessons)</span>
+                    <span>Madani Qaida Interactive</span>
                   </button>
                   <button onClick={() => navigateToView('duas')} className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-blue-50 text-blue-900 flex items-center gap-2">
                     <Compass className="w-3.5 h-3.5 text-blue-600" />
@@ -573,7 +580,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Direct Contact */}
             <button
               onClick={() => navigateToSection('contact')}
-              className="text-left px-3.5 py-2 rounded-xl hover:bg-purple-50 text-slate-700"
+              className="text-left px-3.5 py-2.5 rounded-xl hover:bg-purple-50 text-slate-700 cursor-pointer"
             >
               Contact & Admissions Desk
             </button>

@@ -1,128 +1,149 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { useState } from 'react';
 import { 
   Check, 
   Sparkles, 
   ArrowRight, 
-  HelpCircle,
-  ShieldCheck
+  Calendar,
+  ShieldCheck,
+  Award,
+  Users,
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 
 interface PricingSectionProps {
   onSelectTier: (tierName: string) => void;
   currency?: 'USD' | 'GBP';
   onSetCurrency?: (c: 'USD' | 'GBP') => void;
+  onBookFreeTrial?: () => void;
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({
   onSelectTier,
   currency = 'USD',
-  onSetCurrency
+  onSetCurrency,
+  onBookFreeTrial
 }) => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly'>('monthly');
 
   const packages = [
     {
-      id: 'starter',
-      name: 'Starter Growth',
-      tagline: 'Ideal for local businesses & emerging brands getting started',
-      priceUSD: billingCycle === 'monthly' ? 499 : 429,
-      priceGBP: billingCycle === 'monthly' ? 399 : 349,
+      id: 'foundation',
+      name: 'Foundation Plan (2 Days/Week)',
+      classes: '8 One-on-One Classes / Month',
+      duration: '30 mins per class',
+      tagline: 'Ideal for beginners starting Noorani / Madani Qaida & daily Islamic fundamentals',
+      priceUSD: billingCycle === 'monthly' ? 35 : 30,
+      priceGBP: billingCycle === 'monthly' ? 28 : 24,
       popular: false,
       features: [
-        'Dedicated Social Media Management (2 Channels)',
-        '12 Custom Branded Graphics & Reels / month',
-        'Basic On-Page SEO & Meta Tag Optimization',
-        'Direct-Response Ad Campaign Setup (1 Ad Channel)',
-        'Bi-Weekly Performance Recap & Analytics Report',
-        'Direct WhatsApp Account Support Desk'
+        '1-on-1 personalized live classes with certified scholar',
+        'Madani Qaida with correct Arabic letter pronunciation',
+        'Foundational Tajweed rules & Makharij training',
+        'Daily Duas, Kalimas & basic prayer (Salah) steps',
+        'Flexible schedule tailored to your family timezone',
+        'Monthly progress report sent directly to parents',
+        'Free 3-Day Trial Class (No credit card needed)'
       ],
-      bestFor: 'Startups & Local Service Businesses'
+      bestFor: 'Young children (ages 4-8) & complete beginners'
     },
     {
-      id: 'business',
-      name: 'Accelerated Scaling',
-      tagline: 'Our flagship full-funnel acquisition engine for scaling businesses',
-      priceUSD: billingCycle === 'monthly' ? 999 : 849,
-      priceGBP: billingCycle === 'monthly' ? 799 : 679,
+      id: 'standard',
+      name: 'Standard Tajweed Plan (3-4 Days/Week)',
+      classes: '16 One-on-One Classes / Month',
+      duration: '30 mins per class',
+      tagline: 'Our most popular comprehensive pathway for steady Quran recitation & Islamic studies',
+      priceUSD: billingCycle === 'monthly' ? 55 : 47,
+      priceGBP: billingCycle === 'monthly' ? 44 : 37,
       popular: true,
       features: [
-        'Multi-Channel Social Management (3-4 Channels)',
-        '24 High-Impact Creative Assets (Reels, Carousels, Ad Banners)',
-        'Full Technical SEO + Authority Backlink Building',
-        'Advanced Meta (FB/IG) Ad Management with Retargeting',
-        'Conversion Rate Optimization (CRO) for Landing Pages',
-        'Weekly Video Performance Reviews & Ad Spend Audits',
-        'Priority 24/7 Dedicated Account Director via WhatsApp'
+        '1-on-1 personalized lessons with Al-Azhar / Wifaq scholars',
+        'Nazra Quran recitation with applied Tajweed rules',
+        'Full Salah masterclass, Wudu, and Six Kalimas practice',
+        'Complete access to Student Islamic Learning Portal',
+        'Voice recording & speech recognition recitation tests',
+        'Weekly Sabaq homework reviews & WhatsApp support',
+        'Free rescheduling & 100% money-back guarantee'
       ],
-      bestFor: 'E-Commerce Brands & Established Firms'
+      bestFor: 'Children & adults seeking fluent, beautiful recitation'
     },
     {
-      id: 'enterprise',
-      name: 'Market Dominance',
-      tagline: 'Comprehensive omnichannel marketing department for market leaders',
-      priceUSD: billingCycle === 'monthly' ? 1999 : 1699,
-      priceGBP: billingCycle === 'monthly' ? 1599 : 1359,
+      id: 'intensive',
+      name: 'Intensive Hifz & Tafseer (5 Days/Week)',
+      classes: '22 One-on-One Classes / Month',
+      duration: '30-45 mins per class',
+      tagline: 'Daily dedicated mentorship for Quran memorization, translation and deeper Islamic sciences',
+      priceUSD: billingCycle === 'monthly' ? 80 : 68,
+      priceGBP: billingCycle === 'monthly' ? 65 : 55,
       popular: false,
       features: [
-        'Complete Omnichannel Social Dominance (All Channels)',
-        'Unlimited Monthly Graphic & Short-Form Video Assets',
-        'Aggressive Google Ads + Meta Ads Multi-Funnel Management',
-        'Influencer Partnership Scouting & Outreach Management',
-        'Custom PR & High-Domain Authority Editorial Link Building',
-        'Dedicated Senior Growth Director + Full Creative Pod',
-        'Custom Live Data Dashboard & Executive Strategy Sessions'
+        '5 Days a week 1-on-1 intensive daily sessions',
+        'Dedicated Hafiz / Qari mentor for daily Sabaq & revision',
+        'Structured 3-tier Hifz roadmap (Sabaq, Sabqi, Manzil)',
+        'Quran Translation (Lafzi) & classical Ayah Tafseer',
+        'Official True Way Quran Academy Graduation Certificate',
+        'Priority timetable booking across UK, USA & Global timezones',
+        'Direct parent-teacher quarterly video conferences'
       ],
-      bestFor: 'Multi-Location Brands & High-Growth Companies'
+      bestFor: 'Serious Hifz students, sisters & advanced learners'
     }
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-white border-b border-[#6B1B7E]/10" id="pricing">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section className="py-16 sm:py-24 bg-white border-b border-[#6E1373]/10" id="pricing">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-black uppercase tracking-wider text-[#6B1B7E] bg-purple-50 px-3.5 py-1.5 rounded-full border border-purple-200">
-            Transparent Investment Plans
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#6B1B7E] tracking-tight">
-            Predictable Pricing Packages
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-[#6E1373] text-xs font-bold border border-purple-200">
+            <Sparkles className="w-3.5 h-3.5 text-[#C72F8A]" />
+            <span>Affordable Online Quran Education</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+            Transparent Pricing & Class Packages
           </h2>
+          
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            No surprise fees, no hidden markups, and no lock-in contracts. Choose the growth tier tailored to your immediate business stage or request a bespoke custom scope.
+            High quality 1-on-1 Islamic education with certified scholars should be accessible to every family. No registration fees, no long contracts, and 3 days free trial.
           </p>
 
           {/* Currency & Billing Cycle Toggles */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
             
             {/* Billing Cycle Toggle */}
             <div className="bg-purple-50 p-1 rounded-full border border-purple-200 flex items-center text-xs font-bold">
               <button
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-4 py-1.5 rounded-full transition cursor-pointer ${
-                  billingCycle === 'monthly' ? 'bg-[#6B1B7E] text-white shadow-xs' : 'text-slate-600 hover:text-[#6B1B7E]'
+                  billingCycle === 'monthly' ? 'bg-[#6E1373] text-white shadow-xs' : 'text-slate-600 hover:text-[#6E1373]'
                 }`}
               >
-                Monthly Retainer
+                Monthly Plan
               </button>
               <button
                 onClick={() => setBillingCycle('quarterly')}
                 className={`px-4 py-1.5 rounded-full transition cursor-pointer flex items-center gap-1 ${
-                  billingCycle === 'quarterly' ? 'bg-[#6B1B7E] text-white shadow-xs' : 'text-slate-600 hover:text-[#6B1B7E]'
+                  billingCycle === 'quarterly' ? 'bg-[#6E1373] text-white shadow-xs' : 'text-slate-600 hover:text-[#6E1373]'
                 }`}
               >
-                <span>Quarterly Retainer</span>
+                <span>Quarterly Plan</span>
                 <span className="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-black">Save 15%</span>
               </button>
             </div>
 
-            {/* Currency selector if setter provided */}
+            {/* Currency selector */}
             {onSetCurrency && (
               <div className="bg-purple-50 p-1 rounded-full border border-purple-200 flex items-center text-xs font-bold">
                 <button
                   onClick={() => onSetCurrency('USD')}
                   className={`px-3 py-1.5 rounded-full transition cursor-pointer ${
-                    currency === 'USD' ? 'bg-[#6B1B7E] text-white shadow-xs' : 'text-slate-600'
+                    currency === 'USD' ? 'bg-[#6E1373] text-white shadow-xs' : 'text-slate-600'
                   }`}
                 >
                   USD ($)
@@ -130,7 +151,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 <button
                   onClick={() => onSetCurrency('GBP')}
                   className={`px-3 py-1.5 rounded-full transition cursor-pointer ${
-                    currency === 'GBP' ? 'bg-[#6B1B7E] text-white shadow-xs' : 'text-slate-600'
+                    currency === 'GBP' ? 'bg-[#6E1373] text-white shadow-xs' : 'text-slate-600'
                   }`}
                 >
                   GBP (£)
@@ -150,38 +171,44 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 key={pkg.id}
                 className={`rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 relative border ${
                   pkg.popular
-                    ? 'border-2 border-[#E0107F] shadow-2xl shadow-purple-900/15 ring-4 ring-[#E0107F]/10 scale-102 bg-white'
-                    : 'border-[#6B1B7E]/20 shadow-lg hover:shadow-xl bg-white'
+                    ? 'border-2 border-[#C72F8A] shadow-2xl shadow-purple-900/15 ring-4 ring-[#C72F8A]/10 scale-102 bg-white'
+                    : 'border-[#6E1373]/20 shadow-md hover:shadow-xl bg-white'
                 }`}
               >
                 {pkg.popular && (
-                  <div className="absolute top-0 right-8 transform -translate-y-1/2 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white text-[11px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md">
-                    Most Popular Choice
+                  <div className="absolute top-0 right-8 transform -translate-y-1/2 bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#C72F8A] text-white text-[11px] font-black uppercase tracking-wider px-4 py-1 rounded-full shadow-md flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-300" />
+                    <span>Most Popular Choice</span>
                   </div>
                 )}
 
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h3 className="text-2xl font-black text-slate-900">{pkg.name}</h3>
-                    <p className="text-xs text-slate-500 mt-1 leading-snug">{pkg.tagline}</p>
+                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{pkg.name}</h3>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-bold text-[#6E1373] bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                        {pkg.classes}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2 leading-relaxed">{pkg.tagline}</p>
                   </div>
 
                   {/* Price */}
                   <div className="pt-2 border-t border-purple-100">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-black text-[#6B1B7E]">{displayPrice}</span>
+                      <span className="text-4xl font-black text-[#6E1373]">{displayPrice}</span>
                       <span className="text-xs text-slate-500 font-bold">/ month</span>
                     </div>
                     <span className="text-[11px] font-semibold text-emerald-600 block mt-0.5">
-                      {billingCycle === 'quarterly' ? 'Billed quarterly with 15% discount' : 'Flexible month-to-month agreement'}
+                      {billingCycle === 'quarterly' ? 'Quarterly billing with 15% discount applied' : 'Flexible month-to-month agreement'}
                     </span>
                   </div>
 
                   {/* Features List */}
                   <div className="space-y-3 pt-2 border-t border-purple-50">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-[#6B1B7E] block">
-                      Everything Included:
+                    <span className="text-[11px] font-black uppercase tracking-wider text-[#6E1373] block">
+                      Course Benefits Included:
                     </span>
                     <ul className="space-y-2.5">
                       {pkg.features.map((feat, fIdx) => (
@@ -197,14 +224,17 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
                 {/* Bottom CTA */}
                 <div className="pt-8 mt-6 border-t border-purple-100 space-y-2">
                   <button
-                    onClick={() => onSelectTier(pkg.name)}
+                    onClick={() => {
+                      if (onBookFreeTrial) onBookFreeTrial();
+                      else onSelectTier(pkg.name);
+                    }}
                     className={`w-full py-3.5 px-4 font-black rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md ${
                       pkg.popular
-                        ? 'bg-gradient-to-r from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white hover:opacity-95'
-                        : 'bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] border border-purple-200'
+                        ? 'bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#C72F8A] text-white hover:opacity-95'
+                        : 'bg-purple-50 hover:bg-purple-100 text-[#6E1373] border border-purple-200'
                     }`}
                   >
-                    <span>Choose {pkg.name}</span>
+                    <span>Enroll Now / Book Free Trial</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
@@ -218,22 +248,28 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
           })}
         </div>
 
-        {/* Custom Scope Card */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-purple-50/60 border border-purple-200 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+        {/* Sibling & Family Discount Banner */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-purple-50/70 border border-purple-200 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
           <div className="space-y-1">
-            <h4 className="text-base font-bold text-[#6B1B7E]">
-              Need a completely custom enterprise scope?
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+              <span>Family Privilege Offer</span>
+            </div>
+            <h4 className="text-base font-bold text-[#6E1373]">
+              Enrolling 2 or more children? Enjoy a 15% Sibling Discount!
             </h4>
             <p className="text-xs text-slate-600">
-              We frequently architect bespoke arrangements for multi-brand franchises, international startups, and high-volume e-commerce stores.
+              We support families learning together. Every additional sibling automatically qualifies for an ongoing 15% reduction across all plans.
             </p>
           </div>
 
           <button
-            onClick={() => onSelectTier('Custom Enterprise Retainer')}
-            className="px-6 py-3 bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0 shadow-sm"
+            onClick={() => {
+              if (onBookFreeTrial) onBookFreeTrial();
+              else onSelectTier('Family / Sibling Package');
+            }}
+            className="px-6 py-3 bg-[#6E1373] hover:bg-[#561F79] text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0 shadow-sm"
           >
-            Request Custom Scope & Proposal
+            Claim Family Trial & Discount
           </button>
         </div>
 

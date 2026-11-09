@@ -33,7 +33,8 @@ import {
   BookmarkCheck,
   Menu,
   X,
-  RotateCcw
+  RotateCcw,
+  Mic
 } from 'lucide-react';
 import { 
   AcademyUser, 
@@ -66,6 +67,9 @@ import { PortalHadithSection } from './portal/PortalHadithSection';
 import { PortalKnowledgeSection } from './portal/PortalKnowledgeSection';
 import { PortalQuizzesSection } from './portal/PortalQuizzesSection';
 import { PortalProgressSection } from './portal/PortalProgressSection';
+import { PortalVoiceVaultSection } from './portal/PortalVoiceVaultSection';
+import { PortalHifzTrackerSection } from './portal/PortalHifzTrackerSection';
+import { PortalHabitTrackerSection } from './portal/PortalHabitTrackerSection';
 
 interface StudentDashboardProps {
   user: {
@@ -85,6 +89,9 @@ interface StudentDashboardProps {
 export type StudentPortalTab = 
   | 'overview'
   | 'quran'
+  | 'voice_vault'
+  | 'hifz_tracker'
+  | 'habit_tracker'
   | 'duas'
   | 'namaz'
   | 'kalimas'
@@ -272,6 +279,9 @@ Headquarters: True Way Quran, United Kingdom & International Desks
       items: [
         { id: 'overview', label: 'Dashboard & Sabaq', icon: Sparkles },
         { id: 'quran', label: 'Holy Quran & Translation', icon: BookOpen, badge: '114' },
+        { id: 'voice_vault', label: '🎙️ My Quran Voices', icon: Mic },
+        { id: 'hifz_tracker', label: '📊 Hifz Roadmap (30 Juz)', icon: Award },
+        { id: 'habit_tracker', label: '🕌 Salah & Sunnah Tracker', icon: Clock },
         { id: 'duas', label: 'Daily Duas (15 Categories)', icon: Heart },
         { id: 'namaz', label: 'Namaz / Salah Learning', icon: Clock },
         { id: 'kalimas', label: 'Six Kalimas', icon: ShieldCheck },
@@ -377,6 +387,9 @@ Headquarters: True Way Quran, United Kingdom & International Desks
           {[
             { id: 'overview', label: 'Dashboard' },
             { id: 'quran', label: '📖 Holy Quran' },
+            { id: 'voice_vault', label: '🎙️ My Voices' },
+            { id: 'hifz_tracker', label: '📊 Hifz (30 Juz)' },
+            { id: 'habit_tracker', label: '🕌 Salah Habits' },
             { id: 'duas', label: '🤲 Daily Duas' },
             { id: 'namaz', label: '🕌 Namaz / Salah' },
             { id: 'kalimas', label: '✨ Six Kalimas' },
@@ -744,6 +757,30 @@ Headquarters: True Way Quran, United Kingdom & International Desks
             studentId={dbUser.id}
             studentName={dbUser.name}
             onBookmarkChanged={() => setProfileRefreshKey(k => k + 1)}
+          />
+        )}
+
+        {/* 2B. MY QURAN VOICE VAULT */}
+        {activeTab === 'voice_vault' && (
+          <PortalVoiceVaultSection
+            studentName={dbUser.name}
+            onNavigateToVerse={(surahNum) => {
+              setActiveTab('quran');
+            }}
+          />
+        )}
+
+        {/* 2C. HIFZ ROADMAP */}
+        {activeTab === 'hifz_tracker' && (
+          <PortalHifzTrackerSection
+            studentName={dbUser.name}
+          />
+        )}
+
+        {/* 2D. DAILY SALAH & SUNNAH HABITS */}
+        {activeTab === 'habit_tracker' && (
+          <PortalHabitTrackerSection
+            studentName={dbUser.name}
           />
         )}
 

@@ -17,7 +17,9 @@ import {
   ArrowRight,
   ExternalLink,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Mic,
+  Award
 } from 'lucide-react';
 import { ALL_114_SURAHS, SurahSummary } from '../../data/allSurahsMeta';
 import { loadFullSurah, FullSurahData } from '../../utils/quranFullLoader';
@@ -30,6 +32,8 @@ import {
   updateLastReadingPosition,
   getStudentLearningProfile
 } from '../../utils/studentLearningStorage';
+import { AyahRecitationStudio } from './AyahRecitationStudio';
+import { getRecordingForVerse } from '../../utils/quranVoiceRecorder';
 
 interface PortalQuranSectionProps {
   studentId: string;
@@ -68,11 +72,16 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
   // Background info accordion
   const [showBackgroundInfo, setShowBackgroundInfo] = useState<boolean>(false);
 
+  // Recitation Testing & Voice Recording Studio
+  const [activeStudioAyahIndex, setActiveStudioAyahIndex] = useState<number>(0);
+  const [showStudio, setShowStudio] = useState<boolean>(true);
+
   // Load selected Surah
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     stopAudio();
+    setActiveStudioAyahIndex(0);
 
     loadFullSurah(selectedSurahNumber).then(data => {
       if (isMounted) {
@@ -403,6 +412,19 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
                   <span>Memorization Mode</span>
                 </button>
 
+                {/* Voice & Recitation Testing Studio Toggle */}
+                <button
+                  onClick={() => setShowStudio(!showStudio)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border cursor-pointer flex items-center gap-1.5 ${
+                    showStudio
+                      ? 'bg-gradient-to-r from-[#6E1373] to-[#851C82] text-white shadow-xs'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-700'
+                  }`}
+                >
+                  <Mic className="w-3.5 h-3.5 text-pink-300" />
+                  <span>Voice & Speaking Test</span>
+                </button>
+
                 {/* Surah Background Accordion Toggle */}
                 <button
                   onClick={() => setShowBackgroundInfo(!showBackgroundInfo)}
@@ -447,6 +469,27 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
               </div>
             )}
           </div>
+
+          {/* Interactive Recitation & Voice Studio */}
+          {showStudio && currentSurahData.ayahs[activeStudioAyahIndex] && (
+            <div id="recitation-studio" className="scroll-mt-24">
+              <AyahRecitationStudio
+                surahNumber={currentSurahData.number}
+                surahName={currentSurahData.englishName}
+                totalVerses={currentSurahData.ayahsCount}
+                currentAyah={currentSurahData.ayahs[activeStudioAyahIndex]}
+                reciter={selectedReciter}
+                onSelectAyah={(ayahNum) => {
+                  const idx = currentSurahData.ayahs.findIndex(a => a.numberInSurah === ayahNum);
+                  if (idx >= 0) setActiveStudioAyahIndex(idx);
+                }}
+                onRecitationPassed={(ayahNum, score) => {
+                  // If passed with >= 75%
+                  console.log(`Ayah ${ayahNum} passed with ${score}%!`);
+                }}
+              />
+            </div>
+          )}
 
           {/* Bismillah Header (except Surah 9 At-Tawbah) */}
           {currentSurahData.number !== 9 && (
@@ -518,6 +561,21 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
                       >
                         {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                         <span className="hidden sm:inline">{isPlaying ? 'Pause' : 'Recite'}</span>
+                      </button>
+
+                      {/* Studio Focus: Record & Test Speaking */}
+                      <button
+                        onClick={() => {
+                          setActiveStudioAyahIndex(index);
+                          setShowStudio(true);
+                          const el = document.getElementById('recitation-studio');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-[#6E1373] text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                        title="Record your voice & test speaking accuracy (75% to pass)"
+                      >
+                        <Mic className="w-3.5 h-3.5 text-[#C72F8A]" />
+                        <span className="hidden md:inline">Voice & Test</span>
                       </button>
 
                       {/* Bookmark Button */}

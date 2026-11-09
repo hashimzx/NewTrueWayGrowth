@@ -10,6 +10,7 @@ import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { AboutSection } from './components/AboutSection';
 import { QuranCoursesSection } from './components/QuranCoursesSection';
+import { PricingSection } from './components/PricingSection';
 import { WhyChooseUs } from './components/WhyChooseUs';
 import { TeachersSection } from './components/TeachersSection';
 import { HowItWorks } from './components/HowItWorks';
@@ -231,11 +232,12 @@ export default function App() {
               }}
             />
 
-            {/* 3. Our 5 Quran Courses Section */}
-            <QuranCoursesSection
+            {/* 3. Transparent Pricing Packages */}
+            <PricingSection
               currency={currency}
-              onSelectCourse={(course) => handleOpenTrialModal(course.id)}
-              onBookFreeTrial={(courseId) => handleOpenTrialModal(courseId)}
+              onSetCurrency={setCurrency}
+              onSelectTier={() => handleOpenTrialModal()}
+              onBookFreeTrial={() => handleOpenTrialModal()}
             />
 
             {/* 4. Why Choose Us Section */}
@@ -243,12 +245,7 @@ export default function App() {
               onBookFreeTrial={() => handleOpenTrialModal()}
             />
 
-            {/* 6. How It Works Section */}
-            <HowItWorks
-              onBookFreeTrial={() => handleOpenTrialModal()}
-            />
-
-            {/* 7. Learning Process & Virtual Classroom */}
+            {/* 5. Learning Process & Virtual Classroom */}
             <LearningProcessSection />
 
             {/* 8. Genuine Testimonials Section */}

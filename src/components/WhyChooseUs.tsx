@@ -66,7 +66,7 @@ export const WhyChooseUs: React.FC<WhyChooseUsProps> = ({ onBookFreeTrial }) => 
             <span>Why Choose True Way Quran</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
-            Excellence in Online Quran Education
+            Why Families Worldwide Choose True Way Quran
           </h2>
           <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
             We understand how important authentic Islamic upbringing is for your family. Here is why hundreds of parents across the globe trust True Way Quran.
