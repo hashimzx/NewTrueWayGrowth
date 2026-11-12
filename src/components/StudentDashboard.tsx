@@ -65,6 +65,7 @@ import { getStudentLearningProfile } from '../utils/studentLearningStorage';
 
 // Child Learning Portal Sections
 import { PortalQuranSection } from './portal/PortalQuranSection';
+import { ColorCodedTajweedSection } from './portal/ColorCodedTajweedSection';
 import { PortalDuasSection } from './portal/PortalDuasSection';
 import { PortalNamazSection } from './portal/PortalNamazSection';
 import { PortalSixKalimasSection } from './portal/PortalSixKalimasSection';
@@ -96,6 +97,7 @@ interface StudentDashboardProps {
 export type StudentPortalTab = 
   | 'overview'
   | 'quran'
+  | 'tajweed_quran'
   | 'voice_vault'
   | 'hifz_tracker'
   | 'habit_tracker'
@@ -287,6 +289,7 @@ Headquarters: True Way Quran, United Kingdom & International Desks
       items: [
         { id: 'overview', label: 'Dashboard Overview', icon: Sparkles },
         { id: 'quran', label: 'Holy Quran (114 Surahs)', icon: BookOpen, badge: '114' },
+        { id: 'tajweed_quran', label: 'Color-Coded Tajweed (30 Paras)', icon: Sparkles, badge: 'PDFs' },
         { id: 'voice_vault', label: 'My Voice Studio', icon: Mic },
         { id: 'hifz_tracker', label: 'Hifz Roadmap (30 Juz)', icon: Award, badge: '30 Juz' },
         { id: 'habit_tracker', label: 'Salah & Sunnah Habits', icon: Clock }
@@ -416,6 +419,7 @@ Headquarters: True Way Quran, United Kingdom & International Desks
           {[
             { id: 'overview', label: 'Dashboard' },
             { id: 'quran', label: 'Holy Quran' },
+            { id: 'tajweed_quran', label: 'Color Tajweed (30 Paras)' },
             { id: 'voice_vault', label: 'My Voice Studio' },
             { id: 'hifz_tracker', label: 'Hifz (30 Juz)' },
             { id: 'habit_tracker', label: 'Salah Habits' },
@@ -1167,6 +1171,54 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                   </div>
                 </div>
 
+                {/* 8. Color-Coded Tajweed (30 Paras) */}
+                <div 
+                  onClick={() => {
+                    setActiveTab('tajweed_quran');
+                    window.scrollTo({ top: 100, behavior: 'smooth' });
+                  }}
+                  className="bg-white rounded-3xl border border-purple-100 shadow-xs hover:shadow-xl hover:border-purple-300 transition-all duration-300 overflow-hidden flex flex-col justify-between cursor-pointer group"
+                >
+                  {/* Visual Header ABOVE */}
+                  <div className="aspect-video w-full bg-gradient-to-br from-amber-600 via-rose-600 to-[#6E1373] p-5 text-white flex flex-col justify-between relative overflow-hidden">
+                    <div className="flex items-center justify-between relative z-10">
+                      <span className="px-2.5 py-1 rounded-full bg-white/20 text-[10px] font-black text-amber-200">
+                        Real Tajweed Mushaf
+                      </span>
+                      <span className="text-xs font-bold text-amber-300">All 30 Paras</span>
+                    </div>
+
+                    <div className="relative z-10">
+                      <div className="text-lg font-black leading-tight">Color-Coded Tajweed</div>
+                      <div className="text-[11px] text-amber-100">Tajweed Rules · 30 Paras PDFs</div>
+                    </div>
+
+                    {/* Decorative radial circles */}
+                    <div className="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none" />
+                  </div>
+
+                  {/* Written BELOW */}
+                  <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Madd · Ghunnah · Qalqalah</span>
+                        <span className="text-[10px] text-rose-700 font-bold bg-rose-50 px-2 py-0.5 rounded-md">30 Juz PDFs</span>
+                      </div>
+                      <h4 className="font-black text-slate-900 text-base group-hover:text-[#6E1373] transition-colors">
+                        Quran with Tajweed & Translation
+                      </h4>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Color-coded Tajweed guide, 30 Paras digital Mushaf reader, Surah directory, and verified online PDFs.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#6E1373]">
+                      <span>Open 30 Paras Tajweed</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -1434,6 +1486,20 @@ Headquarters: True Way Quran, United Kingdom & International Desks
             studentName={dbUser.name}
             onBookmarkChanged={() => setProfileRefreshKey(k => k + 1)}
             onBackToDashboard={() => {
+              setActiveTab('overview');
+              window.scrollTo({ top: 100, behavior: 'smooth' });
+            }}
+          />
+        )}
+
+        {/* 2T. COLOR-CODED TAJWEED MUSHAF (30 PARAS) */}
+        {activeTab === 'tajweed_quran' && (
+          <ColorCodedTajweedSection
+            onSelectSurah={(_num) => {
+              setActiveTab('quran');
+              window.scrollTo({ top: 100, behavior: 'smooth' });
+            }}
+            onBackToSurahList={() => {
               setActiveTab('overview');
               window.scrollTo({ top: 100, behavior: 'smooth' });
             }}
