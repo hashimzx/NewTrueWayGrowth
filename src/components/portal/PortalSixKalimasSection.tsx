@@ -46,7 +46,7 @@ export const PortalSixKalimasSection: React.FC<PortalSixKalimasSectionProps> = (
       return;
     }
     setSpeakingId(kalima.id);
-    await audioEngine.speakArabic(kalima.arabicText, 0.85);
+    await audioEngine.playKalima(kalima.id);
     setSpeakingId(null);
   };
 

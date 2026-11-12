@@ -9,6 +9,9 @@ import {
   Sun, 
   CheckCircle2, 
   Volume2, 
+  VolumeX,
+  Play,
+  Square,
   Bookmark, 
   BookmarkCheck,
   ChevronRight,
@@ -39,6 +42,22 @@ export const PortalKnowledgeSection: React.FC<PortalKnowledgeSectionProps> = ({
 
   // Manners interactive check
   const [mannerChecklist, setMannerChecklist] = useState<Record<string, boolean>>({});
+  const [playingNameNumber, setPlayingNameNumber] = useState<number | null>(null);
+
+  const handlePlayName = async (name: NameOfAllah) => {
+    if (playingNameNumber === name.number) {
+      audioEngine.stopVoice();
+      setPlayingNameNumber(null);
+      return;
+    }
+    setPlayingNameNumber(name.number);
+    if (name.audioUrl) {
+      await audioEngine.playAudioUrl(name.audioUrl, `asma-${name.number}`);
+    } else {
+      await audioEngine.playAsmaUlHusna(name.number);
+    }
+    setPlayingNameNumber(null);
+  };
 
   const handleSpeakArabic = async (text: string) => {
     await audioEngine.speakArabic(text, 0.85);
@@ -140,16 +159,43 @@ export const PortalKnowledgeSection: React.FC<PortalKnowledgeSectionProps> = ({
             </p>
           </div>
 
+          <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 border border-purple-200 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold text-[#6E1373] flex items-center gap-1.5">
+                <Volume2 className="w-4 h-4 text-[#851C82]" />
+                <span>Authentic Studio Audio Recitation (All 99 Names)</span>
+              </span>
+              <p className="text-xs text-slate-600">
+                Click the speaker button on any Divine Name card to hear its authentic Arabic pronunciation.
+              </p>
+            </div>
+            {playingNameNumber !== null && (
+              <button
+                onClick={() => {
+                  audioEngine.stopVoice();
+                  setPlayingNameNumber(null);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+              >
+                <Square className="w-3.5 h-3.5 fill-current" />
+                <span>Stop Playing (#{playingNameNumber})</span>
+              </button>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filteredNames.map(name => {
               const isBookmarked = isItemBookmarked(studentId, studentName, 'name_of_allah', {
                 title: `${name.number}. ${name.transliteration} (${name.meaning})`
               });
+              const isPlayingThis = playingNameNumber === name.number;
 
               return (
                 <div
                   key={name.number}
-                  className="bg-white rounded-3xl border border-slate-200 hover:border-purple-300 transition-all p-5 shadow-xs flex flex-col justify-between space-y-3"
+                  className={`bg-white rounded-3xl border transition-all p-5 shadow-xs flex flex-col justify-between space-y-3 ${
+                    isPlayingThis ? 'border-[#6E1373] ring-2 ring-purple-200' : 'border-slate-200 hover:border-purple-300'
+                  }`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -158,11 +204,19 @@ export const PortalKnowledgeSection: React.FC<PortalKnowledgeSectionProps> = ({
                       </span>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleSpeakArabic(name.arabic)}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
-                          title="Listen"
+                          onClick={() => handlePlayName(name)}
+                          className={`p-1.5 rounded-lg transition cursor-pointer flex items-center justify-center ${
+                            isPlayingThis
+                              ? 'bg-[#6E1373] text-white shadow-sm ring-2 ring-purple-300 animate-pulse'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          }`}
+                          title={isPlayingThis ? "Stop Recitation" : "Listen to Arabic Pronunciation"}
                         >
-                          <Volume2 className="w-3.5 h-3.5" />
+                          {isPlayingThis ? (
+                            <Square className="w-3.5 h-3.5 fill-current" />
+                          ) : (
+                            <Volume2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                         <button
                           onClick={() => handleBookmarkName(name)}

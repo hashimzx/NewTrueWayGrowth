@@ -54,7 +54,7 @@ export const WorshipGuideSection: React.FC<{
   // Play authentic Arabic voice using audio synth
   const handlePlayArabic = (id: string, arabicText: string) => {
     if (playingAudioId === id) {
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      soundEngine.stopVoice();
       setPlayingAudioId(null);
       return;
     }

@@ -13,7 +13,9 @@ import {
   Heart,
   Droplets,
   Bookmark,
-  BookmarkCheck
+  BookmarkCheck,
+  Square,
+  VolumeX
 } from 'lucide-react';
 import { 
   FIVE_DAILY_PRAYERS_RAKATS, 
@@ -53,7 +55,19 @@ export const PortalNamazSection: React.FC<PortalNamazSectionProps> = ({
       return;
     }
     setSpeakingStep(stepNum);
-    await audioEngine.speakArabic(arabic, 0.85);
+
+    // Takbeers 101-104 correspond to Janazah Takbeers 1 to 4
+    if (stepNum >= 101 && stepNum <= 104) {
+      await audioEngine.playJanazaStep(stepNum - 100);
+    } else if (stepNum === 201) {
+      await audioEngine.playJanazaChildDua('boy');
+    } else if (stepNum === 202) {
+      await audioEngine.playJanazaChildDua('girl');
+    } else if (stepNum >= 1 && stepNum <= 9) {
+      await audioEngine.playSalahStep(stepNum);
+    } else {
+      await audioEngine.speakArabic(arabic, 0.85);
+    }
     setSpeakingStep(null);
   };
 
@@ -562,57 +576,106 @@ export const PortalNamazSection: React.FC<PortalNamazSectionProps> = ({
                 The 4 Takbeers Procedure Step-by-Step
               </h4>
 
-              {JANAZAH_GUIDE.steps.map((step) => (
-                <div key={step.takbeerNumber} className="bg-slate-50 rounded-2xl p-5 border border-slate-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="w-8 h-8 rounded-full bg-[#6E1373] text-white font-bold text-xs flex items-center justify-center">
-                      #{step.takbeerNumber}
-                    </span>
-                    <button
-                      onClick={() => handleSpeak(step.recitationArabic, step.takbeerNumber + 100)}
-                      className="text-xs text-[#6E1373] hover:underline flex items-center gap-1 cursor-pointer font-semibold"
-                    >
-                      <Volume2 className="w-3.5 h-3.5" />
-                      <span>Listen</span>
-                    </button>
-                  </div>
+              {JANAZAH_GUIDE.steps.map((step) => {
+                const isPlayingThis = speakingStep === step.takbeerNumber + 100;
+                return (
+                  <div key={step.takbeerNumber} className={`bg-slate-50 rounded-2xl p-5 border transition-all space-y-3 ${
+                    isPlayingThis ? 'border-[#6E1373] ring-2 ring-purple-200 bg-purple-50/30' : 'border-slate-200'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="w-8 h-8 rounded-full bg-[#6E1373] text-white font-bold text-xs flex items-center justify-center">
+                        #{step.takbeerNumber}
+                      </span>
+                      <button
+                        onClick={() => handleSpeak(step.recitationArabic, step.takbeerNumber + 100)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition shadow-xs ${
+                          isPlayingThis
+                            ? 'bg-[#6E1373] text-white animate-pulse ring-2 ring-purple-300'
+                            : 'bg-purple-100 hover:bg-purple-200 text-[#6E1373]'
+                        }`}
+                        title={isPlayingThis ? "Stop Recitation" : `Listen to Takbeer #${step.takbeerNumber} Recitation`}
+                      >
+                        {isPlayingThis ? (
+                          <>
+                            <Square className="w-3.5 h-3.5 fill-current" />
+                            <span>Stop Recitation</span>
+                          </>
+                        ) : (
+                          <>
+                            <Volume2 className="w-3.5 h-3.5" />
+                            <span>Listen Audio</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
 
-                  <h5 className="font-bold text-slate-900 text-sm sm:text-base">
-                    {step.title}
-                  </h5>
-                  <p className="text-xs text-slate-600">{step.description}</p>
+                    <h5 className="font-bold text-slate-900 text-sm sm:text-base">
+                      {step.title}
+                    </h5>
+                    <p className="text-xs text-slate-600">{step.description}</p>
 
-                  <div className="bg-white rounded-xl p-4 border border-slate-200 space-y-2">
-                    <p dir="rtl" className="text-lg sm:text-xl font-arabic font-bold text-purple-950 text-right leading-loose">
-                      {step.recitationArabic}
-                    </p>
-                    <p className="text-xs text-purple-900 italic">
-                      {step.recitationTransliteration}
-                    </p>
-                    <p className="text-xs text-slate-800 font-medium">
-                      <strong>English Translation:</strong> {step.recitationEnglish}
-                    </p>
-                    {step.note && (
-                      <p className="text-[11px] text-slate-500 pt-1">
-                        Reference: {step.note}
+                    <div className="bg-white rounded-xl p-4 border border-slate-200 space-y-2">
+                      <p dir="rtl" className="text-lg sm:text-xl font-arabic font-bold text-purple-950 text-right leading-loose">
+                        {step.recitationArabic}
                       </p>
-                    )}
+                      <p className="text-xs text-purple-900 italic">
+                        {step.recitationTransliteration}
+                      </p>
+                      <p className="text-xs text-slate-800 font-medium">
+                        <strong>English Translation:</strong> {step.recitationEnglish}
+                      </p>
+                      {step.note && (
+                        <p className="text-[11px] text-slate-500 pt-1">
+                          Reference: {step.note}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Child Janazah Duas */}
             <div className="bg-gradient-to-r from-pink-50 via-purple-50 to-pink-50 rounded-2xl p-5 border border-pink-200 space-y-4">
-              <h5 className="font-bold text-[#6E1373] text-sm sm:text-base">
-                Specific Supplications for Deceased Children (Boy or Girl)
-              </h5>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h5 className="font-bold text-[#6E1373] text-sm sm:text-base">
+                  Specific Supplications for Deceased Children (Boy or Girl)
+                </h5>
+                <span className="text-[11px] text-purple-700 font-semibold bg-purple-100 px-2.5 py-0.5 rounded-full">
+                  Authentic Audio Included
+                </span>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Boy */}
-                <div className="bg-white rounded-xl p-4 border border-purple-100 space-y-2">
-                  <span className="text-xs font-bold text-blue-700 block">For a Deceased Boy:</span>
-                  <p dir="rtl" className="font-arabic font-bold text-slate-900 text-right text-base">
+                <div className={`bg-white rounded-xl p-4 border transition-all space-y-2 ${
+                  speakingStep === 201 ? 'border-blue-500 ring-2 ring-blue-100' : 'border-purple-100'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-blue-700 block">For a Deceased Boy:</span>
+                    <button
+                      onClick={() => handleSpeak(JANAZAH_GUIDE.duaChildBoy.arabic, 201)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition shadow-xs ${
+                        speakingStep === 201
+                          ? 'bg-blue-600 text-white animate-pulse'
+                          : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
+                      }`}
+                      title={speakingStep === 201 ? "Stop audio" : "Listen to Dua for Deceased Boy"}
+                    >
+                      {speakingStep === 201 ? (
+                        <>
+                          <Square className="w-3 h-3 fill-current" />
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3 h-3" />
+                          <span>Listen Voice</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p dir="rtl" className="font-arabic font-bold text-slate-900 text-right text-base leading-relaxed">
                     {JANAZAH_GUIDE.duaChildBoy.arabic}
                   </p>
                   <p className="text-xs text-purple-900 italic">{JANAZAH_GUIDE.duaChildBoy.transliteration}</p>
@@ -620,9 +683,34 @@ export const PortalNamazSection: React.FC<PortalNamazSectionProps> = ({
                 </div>
 
                 {/* Girl */}
-                <div className="bg-white rounded-xl p-4 border border-purple-100 space-y-2">
-                  <span className="text-xs font-bold text-pink-700 block">For a Deceased Girl:</span>
-                  <p dir="rtl" className="font-arabic font-bold text-slate-900 text-right text-base">
+                <div className={`bg-white rounded-xl p-4 border transition-all space-y-2 ${
+                  speakingStep === 202 ? 'border-pink-500 ring-2 ring-pink-100' : 'border-purple-100'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-pink-700 block">For a Deceased Girl:</span>
+                    <button
+                      onClick={() => handleSpeak(JANAZAH_GUIDE.duaChildGirl.arabic, 202)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition shadow-xs ${
+                        speakingStep === 202
+                          ? 'bg-pink-600 text-white animate-pulse'
+                          : 'bg-pink-50 hover:bg-pink-100 text-pink-700'
+                      }`}
+                      title={speakingStep === 202 ? "Stop audio" : "Listen to Dua for Deceased Girl"}
+                    >
+                      {speakingStep === 202 ? (
+                        <>
+                          <Square className="w-3 h-3 fill-current" />
+                          <span>Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3 h-3" />
+                          <span>Listen Voice</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p dir="rtl" className="font-arabic font-bold text-slate-900 text-right text-base leading-relaxed">
                     {JANAZAH_GUIDE.duaChildGirl.arabic}
                   </p>
                   <p className="text-xs text-purple-900 italic">{JANAZAH_GUIDE.duaChildGirl.transliteration}</p>
