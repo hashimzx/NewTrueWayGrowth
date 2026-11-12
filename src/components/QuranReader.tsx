@@ -48,12 +48,16 @@ import {
 interface QuranReaderProps {
   initialSurah?: number;
   initialSeekTime?: number;
+  onBackToHome?: () => void;
 }
 
 export const QuranReader: React.FC<QuranReaderProps> = ({ 
   initialSurah,
-  initialSeekTime
+  initialSeekTime,
+  onBackToHome
 }) => {
+  const [modalSurahPage, setModalSurahPage] = useState<number>(1);
+  const [modalDirectJump, setModalDirectJump] = useState<string>('');
   // Check if user has a previously saved reading position (page, surah, ayahs)
   const [resumedBannerInfo, setResumedBannerInfo] = useState<{
     surahNumber: number;
@@ -672,6 +676,44 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8" id="quran">
       
+      {/* Top Navigation Bar with Back Button & Direct Jump */}
+      <div className="bg-white rounded-2xl border border-purple-100 p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-[#6B1B7E] font-bold text-xs rounded-xl border border-purple-200 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <ChevronLeft className="w-4 h-4 text-[#851C82]" />
+              <span>← Back to Academy Home</span>
+            </button>
+          )}
+          <span className="text-xs font-bold text-slate-700 hidden md:inline">
+            Holy Quran Reader (114 Surahs)
+          </span>
+        </div>
+
+        {/* Direct Jump to Surah Dropdown in Top Bar */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-black text-[#6B1B7E] shrink-0">Direct Jump to Surah:</label>
+          <select
+            value={selectedSurahNumber}
+            onChange={(e) => {
+              const num = Number(e.target.value);
+              setSelectedSurahNumber(num);
+              setCurrentPage(1);
+            }}
+            className="w-full sm:w-auto px-3 py-1.5 bg-purple-50 border border-purple-200 text-[#6B1B7E] font-bold text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6B1B7E] cursor-pointer"
+          >
+            {ALL_114_SURAHS.map((s) => (
+              <option key={s.number} value={s.number}>
+                {s.number}. Surah {s.englishName} ({s.name}) — {s.englishTranslation} ({s.ayahsCount}v)
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      
       {/* Resumed Reading Position Notice Banner */}
       {resumedBannerInfo && (
         <div className="bg-gradient-to-r from-purple-900 via-[#6B1B7E] to-[#E0107F] text-white p-4 sm:p-5 rounded-3xl shadow-xl border-2 border-pink-400/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -797,72 +839,196 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
               </button>
             </div>
 
-            {/* Search & Filter Bar */}
-            <div className="p-4 bg-purple-50/60 border-b border-[#6B1B7E]/15 flex flex-wrap items-center gap-3">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="w-4 h-4 text-[#6B1B7E] absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={surahSearchQuery}
-                  onChange={(e) => setSurahSearchQuery(e.target.value)}
-                  placeholder="Search by Surah name (e.g. Kahf, Yasin, Rahman) or number (1-114)..."
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-[#6B1B7E]/25 rounded-xl text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
-                />
+            {/* Search, Filter & Direct Jump Bar */}
+            <div className="p-4 bg-purple-50/60 border-b border-[#6B1B7E]/15 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="w-4 h-4 text-[#6B1B7E] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={surahSearchQuery}
+                    onChange={(e) => {
+                      setSurahSearchQuery(e.target.value);
+                      setModalSurahPage(1);
+                    }}
+                    placeholder="Search by Surah name (e.g. Kahf, Yasin, Rahman) or number (1-114)..."
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-[#6B1B7E]/25 rounded-xl text-xs font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {(['all', 'Meccan', 'Medinan'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        setSurahFilterType(type);
+                        setModalSurahPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                        surahFilterType === type
+                          ? 'bg-[#6B1B7E] text-white shadow-xs'
+                          : 'bg-white text-slate-600 border border-purple-200 hover:bg-purple-100'
+                      }`}
+                    >
+                      {type === 'all' ? 'All (114)' : type}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                {(['all', 'Meccan', 'Medinan'] as const).map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setSurahFilterType(type)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                      surahFilterType === type
-                        ? 'bg-[#6B1B7E] text-white shadow-xs'
-                        : 'bg-white text-slate-600 border border-purple-200 hover:bg-purple-100'
-                    }`}
+              {/* Direct Jump to Surah Form in Modal */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1 border-t border-purple-200/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-[#6B1B7E] shrink-0">Direct Jump:</span>
+                  <select
+                    value={selectedSurahNumber}
+                    onChange={(e) => {
+                      const num = Number(e.target.value);
+                      setSelectedSurahNumber(num);
+                      setIsSurahModalOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
                   >
-                    {type === 'all' ? 'All Surahs (114)' : `${type} Revelation`}
+                    {ALL_114_SURAHS.map((s) => (
+                      <option key={s.number} value={s.number}>
+                        {s.number}. Surah {s.englishName} ({s.name})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const n = parseInt(modalDirectJump.trim(), 10);
+                    if (!isNaN(n) && n >= 1 && n <= 114) {
+                      setSelectedSurahNumber(n);
+                      setIsSurahModalOpen(false);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="number"
+                    min={1}
+                    max={114}
+                    value={modalDirectJump}
+                    onChange={(e) => setModalDirectJump(e.target.value)}
+                    placeholder="Jump # (1-114)"
+                    className="w-28 px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
+                  />
+                  <button
+                    type="submit"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#6B1B7E] hover:bg-[#5B2A9A] text-white text-xs font-black shadow-xs transition cursor-pointer"
+                  >
+                    Go ➔
                   </button>
-                ))}
+                </form>
               </div>
             </div>
 
-            {/* Surahs Grid List */}
-            <div className="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {filtered114Surahs.map((surah) => (
-                <button
-                  key={surah.number}
-                  onClick={() => {
-                    setSelectedSurahNumber(surah.number);
-                    setIsSurahModalOpen(false);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className={`p-3.5 rounded-2xl border text-left transition flex items-center justify-between gap-3 cursor-pointer ${
-                    selectedSurahNumber === surah.number
-                      ? 'bg-purple-50 border-[#6B1B7E] ring-2 ring-[#6B1B7E]/20 shadow-sm'
-                      : 'bg-white hover:bg-purple-50/50 border-slate-200 hover:border-[#6B1B7E]/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <span className="w-8 h-8 rounded-xl bg-[#6B1B7E]/10 text-[#6B1B7E] font-black text-xs flex items-center justify-center shrink-0">
-                      {surah.number}
+            {/* 15 Surahs Per Page Grid List */}
+            {(() => {
+              const SURAHS_PER_MODAL_PAGE = 15;
+              const totalModalPages = Math.ceil(filtered114Surahs.length / SURAHS_PER_MODAL_PAGE) || 1;
+              const currentModalSliceStart = (modalSurahPage - 1) * SURAHS_PER_MODAL_PAGE;
+              const currentModalSurahs = filtered114Surahs.slice(
+                currentModalSliceStart,
+                currentModalSliceStart + SURAHS_PER_MODAL_PAGE
+              );
+
+              return (
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
+                    <span>
+                      Page {modalSurahPage} of {totalModalPages} ({currentModalSurahs.length} Surahs displayed)
                     </span>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-bold text-slate-900 truncate">
-                        {surah.englishName}
-                      </p>
-                      <p className="text-[10px] text-slate-500 truncate">
-                        {surah.englishTranslation} · {surah.ayahsCount}v
-                      </p>
-                    </div>
+                    <span className="text-[#6B1B7E] bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+                      15 Surahs per page
+                    </span>
                   </div>
 
-                  <span className="font-arabic font-quran text-lg text-[#6B1B7E] font-bold shrink-0" dir="rtl">
-                    {surah.name}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {currentModalSurahs.map((surah) => (
+                      <button
+                        key={surah.number}
+                        onClick={() => {
+                          setSelectedSurahNumber(surah.number);
+                          setIsSurahModalOpen(false);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className={`p-3.5 rounded-2xl border text-left transition flex items-center justify-between gap-3 cursor-pointer ${
+                          selectedSurahNumber === surah.number
+                            ? 'bg-purple-50 border-[#6B1B7E] ring-2 ring-[#6B1B7E]/20 shadow-sm'
+                            : 'bg-white hover:bg-purple-50/50 border-slate-200 hover:border-[#6B1B7E]/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <span className="w-8 h-8 rounded-xl bg-[#6B1B7E]/10 text-[#6B1B7E] font-black text-xs flex items-center justify-center shrink-0">
+                            {surah.number}
+                          </span>
+                          <div className="overflow-hidden">
+                            <p className="text-xs font-bold text-slate-900 truncate">
+                              {surah.englishName}
+                            </p>
+                            <p className="text-[10px] text-slate-500 truncate">
+                              {surah.englishTranslation} · {surah.ayahsCount}v
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="font-arabic font-quran text-lg text-[#6B1B7E] font-bold shrink-0" dir="rtl">
+                          {surah.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Modal Pagination Toolbar */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-purple-100">
+                    <span className="text-xs text-slate-500 font-semibold">
+                      Showing {currentModalSliceStart + 1}–{Math.min(currentModalSliceStart + SURAHS_PER_MODAL_PAGE, filtered114Surahs.length)} of {filtered114Surahs.length} Surahs
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        disabled={modalSurahPage <= 1}
+                        onClick={() => setModalSurahPage((p) => Math.max(1, p - 1))}
+                        className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                      >
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <span>Previous 15</span>
+                      </button>
+
+                      {Array.from({ length: totalModalPages }, (_, i) => i + 1).map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setModalSurahPage(p)}
+                          className={`w-7 h-7 rounded-xl text-xs font-bold transition cursor-pointer ${
+                            modalSurahPage === p
+                              ? 'bg-[#6B1B7E] text-white shadow-xs'
+                              : 'bg-white hover:bg-purple-50 text-slate-700 border border-slate-200'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+
+                      <button
+                        disabled={modalSurahPage >= totalModalPages}
+                        onClick={() => setModalSurahPage((p) => Math.min(totalModalPages, p + 1))}
+                        className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>Next 15</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
           </div>
         </div>

@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   ShieldAlert,
   ArrowRight,
+  ArrowLeft,
   Radio,
   Play,
   Square,
@@ -29,6 +30,7 @@ interface QaidaViewerProps {
   onRecordSuccess: (attempt: PronunciationAttempt) => void;
   onToggleBookmark: (wordId: string) => void;
   onSaveTeacherVoice?: (lessonId: string, wordId: string, audioUrl: string) => void;
+  onBack?: () => void;
 }
 
 export const QaidaViewer: React.FC<QaidaViewerProps> = ({
@@ -36,7 +38,8 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
   currentUser,
   onRecordSuccess,
   onToggleBookmark,
-  onSaveTeacherVoice
+  onSaveTeacherVoice,
+  onBack
 }) => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>(lessons[0]?.id || 'lesson-1');
   const [activeWordForVoice, setActiveWordForVoice] = useState<QaidaWord | null>(null);
@@ -194,8 +197,24 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       
+      {/* Top Back Navigation Bar */}
+      {onBack && (
+        <div className="flex items-center justify-between pb-1">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-purple-50 text-[#6E1373] text-xs font-bold border border-purple-200 transition shadow-xs cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#851C82]" />
+            <span>← Back to Home / Portal</span>
+          </button>
+          <span className="text-xs text-slate-500 font-semibold hidden sm:inline">
+            True Way Quran Academy · Interactive Madani Qaida
+          </span>
+        </div>
+      )}
+
       {/* Top Banner / Course Header */}
       <div className="bg-gradient-to-r from-[#2e0854] via-[#3b0764] to-[#4a044e] text-white border border-purple-700/50 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xl">
         <div className="absolute right-0 top-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />

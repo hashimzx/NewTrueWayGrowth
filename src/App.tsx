@@ -271,6 +271,10 @@ export default function App() {
           <StudentDashboard
             user={currentUser}
             onLogout={handleLogout}
+            onNavigateHome={() => {
+              setCurrentView('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             onNavigateToQuran={() => setCurrentView('quran')}
             onNavigateToQaida={() => setCurrentView('qaida')}
             onOpenWhatsApp={() => window.open('https://wa.me/923068959085', '_blank')}
@@ -299,7 +303,12 @@ export default function App() {
 
         {/* QURAN READER (114 Surahs, pagination, audio pause/resume/replay, last-read memory) */}
         {currentView === 'quran' && (
-          <QuranReader />
+          <QuranReader
+            onBackToHome={() => {
+              setCurrentView(currentUser?.role === 'student' ? 'student' : 'home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
         )}
 
         {/* MADANI QAIDA VIEWER */}
@@ -310,6 +319,10 @@ export default function App() {
             onRecordSuccess={() => {}}
             onToggleBookmark={() => {}}
             onSaveTeacherVoice={handleSaveTeacherVoice}
+            onBack={() => {
+              setCurrentView(currentUser?.role === 'student' ? 'student' : 'home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         )}
 

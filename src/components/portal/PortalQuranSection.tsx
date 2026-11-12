@@ -15,11 +15,15 @@ import {
   CheckCircle2, 
   Layers, 
   ArrowRight,
+  ArrowLeft,
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Mic,
-  Award
+  Award,
+  Compass
 } from 'lucide-react';
 import { ALL_114_SURAHS, SurahSummary } from '../../data/allSurahsMeta';
 import { loadFullSurah, FullSurahData } from '../../utils/quranFullLoader';
@@ -39,12 +43,14 @@ interface PortalQuranSectionProps {
   studentId: string;
   studentName: string;
   onBookmarkChanged?: () => void;
+  onBackToDashboard?: () => void;
 }
 
 export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
   studentId,
   studentName,
-  onBookmarkChanged
+  onBookmarkChanged,
+  onBackToDashboard
 }) => {
   const profile = getStudentLearningProfile(studentId, studentName);
   const initialSurahNum = profile.lastReadingPosition?.surahNumber || 1;
@@ -54,6 +60,11 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedJuz, setSelectedJuz] = useState<number | 'all'>('all');
+
+  // Surah Directory Pagination: 15 Surahs per page as requested
+  const SURAHS_PER_PAGE = 15;
+  const [surahPage, setSurahPage] = useState<number>(() => Math.ceil(initialSurahNum / SURAHS_PER_PAGE));
+  const [directJumpValue, setDirectJumpValue] = useState<string>('');
 
   // Reciter & Audio
   const [selectedReciter, setSelectedReciter] = useState<QuranReciter>(POPULAR_RECITERS[0]);
@@ -75,6 +86,27 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
   // Recitation Testing & Voice Recording Studio
   const [activeStudioAyahIndex, setActiveStudioAyahIndex] = useState<number>(0);
   const [showStudio, setShowStudio] = useState<boolean>(true);
+
+  // Jump to specific Surah helper
+  const handleSelectSurah = (surahNum: number) => {
+    if (surahNum >= 1 && surahNum <= 114) {
+      setSelectedSurahNumber(surahNum);
+      setSurahPage(Math.ceil(surahNum / SURAHS_PER_PAGE));
+      const el = document.getElementById('active-surah-view');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handleDirectJumpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const num = parseInt(directJumpValue.trim(), 10);
+    if (!isNaN(num) && num >= 1 && num <= 114) {
+      handleSelectSurah(num);
+      setDirectJumpValue('');
+    }
+  };
 
   // Load selected Surah
   useEffect(() => {
@@ -181,9 +213,29 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
 
   const historicalContext = SURAH_HISTORICAL_BACKGROUNDS[selectedSurahNumber];
 
+  const totalSurahPages = Math.ceil(filteredSurahs.length / SURAHS_PER_PAGE) || 1;
+  const currentSliceStart = (surahPage - 1) * SURAHS_PER_PAGE;
+  const pageSurahs = filteredSurahs.slice(currentSliceStart, currentSliceStart + SURAHS_PER_PAGE);
+
   return (
     <div className="space-y-6">
       
+      {/* Top Breadcrumb & Back to Dashboard Bar */}
+      {onBackToDashboard && (
+        <div className="flex items-center justify-between pb-2">
+          <button
+            onClick={onBackToDashboard}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-purple-50 text-[#6E1373] text-xs font-bold border border-purple-200 transition shadow-xs cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#851C82]" />
+            <span>← Back to Dashboard Overview</span>
+          </button>
+          <span className="text-xs text-slate-500 font-semibold hidden sm:inline">
+            Student Portal / Holy Quran Reader
+          </span>
+        </div>
+      )}
+
       {/* Top Header Card */}
       <div className="bg-gradient-to-r from-[#6E1373] via-[#851C82] to-[#561F79] text-white rounded-3xl p-6 sm:p-8 shadow-md">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -203,7 +255,7 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
           {/* Quick Resume Button */}
           {profile.lastReadingPosition && (
             <button
-              onClick={() => setSelectedSurahNumber(profile.lastReadingPosition.surahNumber)}
+              onClick={() => handleSelectSurah(profile.lastReadingPosition.surahNumber)}
               className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-sm transition flex items-center gap-2 cursor-pointer shrink-0"
             >
               <RotateCcw className="w-4 h-4" />
@@ -213,8 +265,10 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
         </div>
       </div>
 
-      {/* Surah Selector & Search Controls */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+      {/* Surah Selector, Search & Direct Jump Controls */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-4">
+        
+        {/* Search, Filter & Reciter Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
           
           {/* Search Box */}
@@ -223,7 +277,10 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setSurahPage(1);
+              }}
               placeholder="Search by Surah name, English title, or number (e.g. 18, Kahf)..."
               className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6E1373] text-slate-900"
             />
@@ -233,7 +290,10 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
           <div className="md:col-span-3">
             <select
               value={selectedJuz}
-              onChange={(e) => setSelectedJuz(e.target.value === 'all' ? 'all' : parseInt(e.target.value, 10))}
+              onChange={(e) => {
+                setSelectedJuz(e.target.value === 'all' ? 'all' : parseInt(e.target.value, 10));
+                setSurahPage(1);
+              }}
               aria-label="Filter Surahs by Juz / Para"
               className="w-full px-3 py-2 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6E1373] text-slate-800"
             >
@@ -264,31 +324,147 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
           </div>
         </div>
 
-        {/* Quick Surah Horizontal Chip Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
-          <span className="text-xs font-semibold text-slate-500 shrink-0 mr-1">Surahs:</span>
-          {filteredSurahs.slice(0, 15).map(s => (
-            <button
-              key={s.number}
-              onClick={() => setSelectedSurahNumber(s.number)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition cursor-pointer flex items-center gap-1.5 ${
-                selectedSurahNumber === s.number
-                  ? 'bg-[#6E1373] text-white shadow-xs'
-                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-              }`}
+        {/* Direct Jump to Surah Bar (as requested: 1 or option bi add karo surah ka ke user direct kon se surah me jaye ga) */}
+        <div className="p-3.5 bg-purple-50/80 border border-purple-200 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="text-xs font-black text-[#6E1373] flex items-center gap-1.5 shrink-0">
+              <Compass className="w-4 h-4 text-[#851C82]" />
+              <span>Direct Jump to Surah:</span>
+            </label>
+            <select
+              value={selectedSurahNumber}
+              onChange={(e) => handleSelectSurah(Number(e.target.value))}
+              className="px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E1373] shadow-xs cursor-pointer"
             >
-              <span className="opacity-70 text-[10px]">{s.number}.</span>
-              <span>{s.englishName}</span>
-              <span className="font-arabic text-xs font-normal opacity-90">{s.name}</span>
+              {ALL_114_SURAHS.map((s) => (
+                <option key={s.number} value={s.number}>
+                  {s.number}. Surah {s.englishName} ({s.name}) — {s.englishTranslation} ({s.ayahsCount}v)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <form onSubmit={handleDirectJumpSubmit} className="flex items-center gap-2">
+            <input
+              type="number"
+              min={1}
+              max={114}
+              value={directJumpValue}
+              onChange={(e) => setDirectJumpValue(e.target.value)}
+              placeholder="Surah # (1-114)"
+              className="w-28 px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6E1373]"
+            />
+            <button
+              type="submit"
+              className="px-3.5 py-1.5 rounded-xl bg-[#6E1373] hover:bg-[#561F79] text-white text-xs font-black shadow-xs transition cursor-pointer"
+            >
+              Go ➔
             </button>
-          ))}
-          {filteredSurahs.length > 15 && (
-            <div className="text-xs text-slate-400 shrink-0 px-2">
-              +{filteredSurahs.length - 15} more in dropdown below
-            </div>
-          )}
+          </form>
         </div>
+
+        {/* 15 Surahs Per Page Directory Grid (as requested: pages add karo 15 surah 1 pages me add hone hai) */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-slate-600 font-bold px-1">
+            <span>
+              Surah Directory: Page {surahPage} of {totalSurahPages} ({pageSurahs.length} Surahs on this page)
+            </span>
+            <span className="text-[#851C82] bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
+              15 Surahs per page
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+            {pageSurahs.map((s) => {
+              const isSelected = selectedSurahNumber === s.number;
+              return (
+                <button
+                  key={s.number}
+                  onClick={() => handleSelectSurah(s.number)}
+                  className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 ${
+                    isSelected
+                      ? 'bg-gradient-to-br from-[#6E1373] to-[#851C82] text-white border-transparent shadow-md ring-2 ring-purple-300'
+                      : 'bg-white hover:bg-purple-50/60 border-slate-200 hover:border-purple-200 text-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`w-6 h-6 rounded-lg text-[10px] font-black flex items-center justify-center ${
+                      isSelected ? 'bg-white/20 text-white' : 'bg-purple-100 text-[#6E1373]'
+                    }`}>
+                      {s.number}
+                    </span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${
+                      isSelected ? 'bg-white/15 text-purple-100' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {s.revelationType}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="font-black text-xs truncate">{s.englishName}</div>
+                    <div className={`text-[10px] truncate ${isSelected ? 'text-purple-200' : 'text-slate-500'}`}>
+                      {s.englishTranslation}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-current/10 pt-1.5">
+                    <span className={`text-[10px] ${isSelected ? 'text-purple-200' : 'text-slate-400'}`}>
+                      {s.ayahsCount} Verses
+                    </span>
+                    <span className={`font-arabic text-sm font-bold ${isSelected ? 'text-white' : 'text-[#6E1373]'}`} dir="rtl">
+                      {s.name}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Pagination Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+            <span className="text-xs text-slate-500 font-semibold">
+              Showing Surahs {currentSliceStart + 1}–{Math.min(currentSliceStart + SURAHS_PER_PAGE, filteredSurahs.length)} of {filteredSurahs.length}
+            </span>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                disabled={surahPage <= 1}
+                onClick={() => setSurahPage(p => Math.max(1, p - 1))}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Previous 15</span>
+              </button>
+
+              {Array.from({ length: totalSurahPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSurahPage(p)}
+                  className={`w-7 h-7 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    surahPage === p
+                      ? 'bg-[#6E1373] text-white shadow-xs'
+                      : 'bg-white hover:bg-purple-50 text-slate-700 border border-slate-200'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+
+              <button
+                disabled={surahPage >= totalSurahPages}
+                onClick={() => setSurahPage(p => Math.min(totalSurahPages, p + 1))}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-slate-700 flex items-center gap-1 cursor-pointer"
+              >
+                <span>Next 15</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
+
+      <div id="active-surah-view" />
 
       {/* Main Selected Surah View */}
       {loading ? (
