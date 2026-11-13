@@ -175,7 +175,7 @@ export const IslamicResources: React.FC = () => {
                 onClick={handleTestAzan}
                 className="px-3.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold border border-zinc-700 transition"
               >
-                Test Azan Chime
+                Preview Azan Chime
               </button>
             </div>
           </div>

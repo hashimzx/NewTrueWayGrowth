@@ -354,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <Sparkles className="w-4 h-4 text-[#C72F8A] shrink-0" />
                     <div>
                       <div className="leading-tight">Madani Qaida Interactive</div>
-                      <div className="text-[10px] text-slate-500 font-normal">22 lessons with AI voice assessment</div>
+                      <div className="text-[10px] text-slate-500 font-normal">22 lessons with pronunciation audio</div>
                     </div>
                   </button>
 

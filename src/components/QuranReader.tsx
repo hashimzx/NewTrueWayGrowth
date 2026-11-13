@@ -3,9 +3,7 @@ import { POPULAR_RECITERS, QuranAyah, QuranReciter } from '../data/quranData';
 import { ALL_114_SURAHS, getSurahByNumber, getSurahAudioUrl, SurahSummary } from '../data/allSurahsMeta';
 import { loadFullSurah, FullSurahData } from '../utils/quranFullLoader';
 import { soundEngine } from '../utils/audioSynth';
-import { evaluateAyahPronunciation, StudentVoiceRecorder, AyahAssessmentResult } from '../utils/speechEvaluator';
 import { saveAudioSession, getAudioSession, formatTime } from '../utils/audioState';
-import confetti from 'canvas-confetti';
 import { 
   BookOpen, 
   BookMarked,
@@ -17,14 +15,8 @@ import {
   ChevronRight, 
   ChevronLeft,
   UserCheck, 
-  Mic, 
-  Lock, 
-  Unlock, 
-  AlertCircle, 
   CheckCircle2, 
   Square, 
-  Save, 
-  PlusCircle, 
   Search, 
   Grid, 
   X,
@@ -150,34 +142,10 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
   const [surahSearchQuery, setSurahSearchQuery] = useState<string>('');
   const [surahFilterType, setSurahFilterType] = useState<'all' | 'Meccan' | 'Medinan'>('all');
 
-  // Modes: 'listen' | 'recite_practice' | 'add_my_voice'
-  const [mode, setMode] = useState<'listen' | 'recite_practice' | 'add_my_voice'>('listen');
-  const [currentStepAyahIndex, setCurrentStepAyahIndex] = useState<number>(0);
-  const [isRecordingStudent, setIsRecordingStudent] = useState<boolean>(false);
-  const [studentAssessment, setStudentAssessment] = useState<AyahAssessmentResult | null>(null);
-  const [stepUnlocked, setStepUnlocked] = useState<boolean>(false);
-  const [passingThreshold, setPassingThreshold] = useState<number>(85);
-
-  // Custom Teacher Voice Studio
-  const [customTeacherRecordings, setCustomTeacherRecordings] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('twq_custom_quran_voices');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {}
-    }
-    return {};
-  });
-
-  const [studioSurahNumber, setStudioSurahNumber] = useState<number>(1);
-  const [studioAyahIndex, setStudioAyahIndex] = useState<number>(0);
-  const [isStudioRecording, setIsStudioRecording] = useState<boolean>(false);
-  const [studioRecordedBlobUrl, setStudioRecordedBlobUrl] = useState<string | null>(null);
-  const [studioSaveSuccess, setStudioSaveSuccess] = useState<boolean>(false);
+  // Modes: 'listen'
+  const [mode] = useState<'listen'>('listen');
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const studioRecorderRef = useRef<StudentVoiceRecorder>(new StudentVoiceRecorder());
-  const speechRecognitionRef = useRef<any>(null);
 
   // Active Surah Metadata
   const surahMeta: SurahSummary = getSurahByNumber(selectedSurahNumber) || ALL_114_SURAHS[0];
@@ -199,20 +167,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     };
   }, [selectedSurahNumber]);
 
-  // Combine default scholars with custom teacher reciter if custom recordings exist
-  const customVoiceKeysCount = Object.keys(customTeacherRecordings).length;
-  const recitersList: QuranReciter[] = [
-    ...POPULAR_RECITERS,
-    ...(customVoiceKeysCount > 0 ? [{
-      id: 'custom_teacher',
-      name: 'My Teacher Recitation (True Way Voice)',
-      title: 'Academy Teacher Recorded Voice',
-      country: 'Academy Studio',
-      style: 'Personal Teacher Pace & Tajweed',
-      audioBaseUrl: '',
-      avatar: 'TW'
-    }] : [])
-  ];
+  const recitersList: QuranReciter[] = POPULAR_RECITERS;
 
   const currentReciter: QuranReciter = recitersList.find(r => r.id === selectedReciterId) || recitersList[0];
 
@@ -234,17 +189,8 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     setDuration(0);
   }, [selectedSurahNumber, selectedReciterId]);
 
-  // Persist custom voices
+  // Sync page when changing Surah
   useEffect(() => {
-    localStorage.setItem('twq_custom_quran_voices', JSON.stringify(customTeacherRecordings));
-  }, [customTeacherRecordings]);
-
-  // Reset step assessment & sync page when changing Surah
-  useEffect(() => {
-    setCurrentStepAyahIndex(0);
-    setStepUnlocked(false);
-    setStudentAssessment(null);
-
     const saved = loadQuranReadingPosition();
     if (saved && saved.surahNumber === selectedSurahNumber) {
       setCurrentPage(saved.pageNumber);
@@ -463,11 +409,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     }
   };
 
-  const getAyahAudioUrl = (ayah: QuranAyah, reciter: QuranReciter, surahNum: number): string | null => {
-    if (reciter.id === 'custom_teacher') {
-      const key = `${surahNum}_${ayah.numberInSurah}`;
-      return customTeacherRecordings[key] || null;
-    }
+  const getAyahAudioUrl = (ayah: QuranAyah, reciter: QuranReciter, _surahNum: number): string | null => {
     return `${reciter.audioBaseUrl}${ayah.audioKey}.mp3`;
   };
 
@@ -538,119 +480,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     });
   };
 
-  // Recite and practice strict speech recognition (80-90% threshold requirement)
-  const handleStartAyahVoiceTest = async () => {
-    if (!fullSurahData) return;
-    const currentAyah = fullSurahData.ayahs[currentStepAyahIndex];
-    if (!currentAyah) return;
-
-    setStudentAssessment(null);
-    setIsRecordingStudent(true);
-    soundEngine.playCueSound('recording_start');
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    let transcript = '';
-
-    if (SpeechRecognition) {
-      const rec = new SpeechRecognition();
-      rec.lang = 'ar-SA';
-      rec.continuous = false;
-      rec.interimResults = false;
-      speechRecognitionRef.current = rec;
-
-      rec.onresult = (event: any) => {
-        if (event.results && event.results[0] && event.results[0][0]) {
-          transcript = event.results[0][0].transcript;
-        }
-      };
-
-      try {
-        rec.start();
-      } catch {}
-    }
-
-    setTimeout(() => {
-      if (speechRecognitionRef.current) {
-        try { speechRecognitionRef.current.stop(); } catch {}
-      }
-      setIsRecordingStudent(false);
-      soundEngine.playCueSound('recording_stop');
-
-      // Accurately evaluate what the user actually recited
-      const evaluatedTranscript = transcript.trim();
-      const result = evaluateAyahPronunciation(
-        evaluatedTranscript,
-        currentAyah.arabic,
-        currentAyah.transliteration,
-        passingThreshold
-      );
-
-      setStudentAssessment(result);
-
-      // Strictly lock next option if score is below the 80-90% threshold
-      if (result.passed && result.score >= passingThreshold) {
-        setStepUnlocked(true);
-        soundEngine.playCueSound('success');
-        confetti({
-          particleCount: 75,
-          spread: 60,
-          origin: { y: 0.6 },
-          colors: ['#6B1B7E', '#5B2A9A', '#E0107F', '#10B981']
-        });
-      } else {
-        setStepUnlocked(false);
-        soundEngine.playCueSound('retry');
-      }
-    }, 4500);
-  };
-
-  const handleNextStep = () => {
-    // Strictly block progression if user has not achieved the required 80-90% accuracy
-    if (!stepUnlocked || !studentAssessment || studentAssessment.score < passingThreshold || !fullSurahData) {
-      return;
-    }
-    if (currentStepAyahIndex < fullSurahData.ayahs.length - 1) {
-      setCurrentStepAyahIndex(prev => prev + 1);
-      setStepUnlocked(false);
-      setStudentAssessment(null);
-    }
-  };
-
-  // Teacher Voice Studio Handlers
-  const handleStartStudioRecord = async () => {
-    setStudioSaveSuccess(false);
-    const ok = await studioRecorderRef.current.start();
-    if (ok) {
-      setIsStudioRecording(true);
-      soundEngine.playCueSound('recording_start');
-    }
-  };
-
-  const handleStopStudioRecord = async () => {
-    setIsStudioRecording(false);
-    soundEngine.playCueSound('recording_stop');
-    const url = await studioRecorderRef.current.stop();
-    if (url) {
-      setStudioRecordedBlobUrl(url);
-    }
-  };
-
-  const handleSaveStudioVoice = () => {
-    if (!studioRecordedBlobUrl || !fullSurahData) return;
-    const ayah = fullSurahData.ayahs[studioAyahIndex];
-    if (!ayah) return;
-
-    const key = `${studioSurahNumber}_${ayah.numberInSurah}`;
-    setCustomTeacherRecordings(prev => ({
-      ...prev,
-      [key]: studioRecordedBlobUrl
-    }));
-
-    setSelectedReciterId('custom_teacher');
-    setStudioSaveSuccess(true);
-    setTimeout(() => setStudioSaveSuccess(false), 3000);
-  };
-
   // Filter 114 Surahs for modal browser
   const filtered114Surahs = ALL_114_SURAHS.filter(s => {
     if (surahFilterType !== 'all' && s.revelationType !== surahFilterType) return false;
@@ -677,8 +506,8 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8" id="quran">
       
       {/* Top Navigation Bar with Back Button & Direct Jump */}
-      <div className="bg-white rounded-2xl border border-purple-100 p-3 sm:p-4 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="bg-white rounded-2xl border border-purple-100 p-3 sm:p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 overflow-hidden">
+        <div className="flex items-center gap-2 shrink-0">
           {onBackToHome && (
             <button
               onClick={onBackToHome}
@@ -688,13 +517,13 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
               <span>← Back to Academy Home</span>
             </button>
           )}
-          <span className="text-xs font-bold text-slate-700 hidden md:inline">
+          <span className="text-xs font-bold text-slate-700 hidden lg:inline">
             Holy Quran Reader (114 Surahs)
           </span>
         </div>
 
         {/* Direct Jump to Surah Dropdown in Top Bar */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 min-w-0 w-full md:w-auto md:max-w-md overflow-hidden">
           <label className="text-xs font-black text-[#6B1B7E] shrink-0">Direct Jump to Surah:</label>
           <select
             value={selectedSurahNumber}
@@ -703,7 +532,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
               setSelectedSurahNumber(num);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-auto px-3 py-1.5 bg-purple-50 border border-purple-200 text-[#6B1B7E] font-bold text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6B1B7E] cursor-pointer"
+            className="w-full min-w-0 max-w-full flex-1 px-3 py-1.5 bg-purple-50 border border-purple-200 text-[#6B1B7E] font-bold text-xs rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6B1B7E] cursor-pointer truncate"
           >
             {ALL_114_SURAHS.map((s) => (
               <option key={s.number} value={s.number}>
@@ -775,43 +604,12 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
             </p>
           </div>
 
-          {/* Mode Switcher Tabs */}
+          {/* Reader Mode Indicator */}
           <div className="flex flex-wrap items-center gap-2 bg-black/20 backdrop-blur-md p-1.5 rounded-2xl border border-white/20">
-            <button
-              onClick={() => setMode('listen')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                mode === 'listen'
-                  ? 'bg-white text-[#6B1B7E] shadow-md'
-                  : 'text-purple-100 hover:text-white'
-              }`}
-            >
+            <div className="px-4 py-2 rounded-xl text-xs font-bold bg-white text-[#6B1B7E] shadow-md flex items-center gap-1.5">
               <Volume2 className="w-4 h-4" />
               <span>Read & Listen (All Ayat)</span>
-            </button>
-
-            <button
-              onClick={() => setMode('recite_practice')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                mode === 'recite_practice'
-                  ? 'bg-white text-[#6B1B7E] shadow-md'
-                  : 'text-purple-100 hover:text-white'
-              }`}
-            >
-              <Mic className="w-4 h-4" />
-              <span>Recite & Verify (Locked)</span>
-            </button>
-
-            <button
-              onClick={() => setMode('add_my_voice')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                mode === 'add_my_voice'
-                  ? 'bg-white text-[#6B1B7E] shadow-md'
-                  : 'text-purple-100 hover:text-white'
-              }`}
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Teacher Voice Studio</span>
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -878,7 +676,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
 
               {/* Direct Jump to Surah Form in Modal */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1 border-t border-purple-200/50">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <span className="text-xs font-black text-[#6B1B7E] shrink-0">Direct Jump:</span>
                   <select
                     value={selectedSurahNumber}
@@ -888,7 +686,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                       setIsSurahModalOpen(false);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
+                    className="w-full min-w-0 max-w-full flex-1 px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6B1B7E] truncate"
                   >
                     {ALL_114_SURAHS.map((s) => (
                       <option key={s.number} value={s.number}>
@@ -1034,381 +832,7 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
         </div>
       )}
 
-      {/* --- MODE 1: RECITE & ADVANCE (Locked Steps Voice Verifier) --- */}
-      {mode === 'recite_practice' && fullSurahData && (
-        <div className="bg-white border-2 border-[#6B1B7E]/30 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-100">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-[#6B1B7E]">
-                Ayah {fullSurahData.ayahs[currentStepAyahIndex]?.numberInSurah} of {fullSurahData.ayahs.length} ({fullSurahData.englishName})
-              </h2>
-              <p className="text-xs text-slate-500">
-                Recite correctly to unlock the next Ayah. If errors are detected, advancement is locked.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-700 bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
-              <span className="text-[#6B1B7E]">Passing Requirement (80–90%):</span>
-              <div className="flex items-center gap-1">
-                {[80, 85, 90].map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => {
-                      setPassingThreshold(val);
-                      if (studentAssessment) {
-                        setStepUnlocked(studentAssessment.score >= val);
-                      }
-                    }}
-                    className={`px-2.5 py-0.5 rounded-lg text-xs font-black transition cursor-pointer ${
-                      passingThreshold === val
-                        ? 'bg-[#6B1B7E] text-white shadow-xs'
-                        : 'bg-white text-slate-600 hover:bg-purple-100 border border-purple-200'
-                    }`}
-                    title={`Require at least ${val}% accuracy to unlock next Ayah`}
-                  >
-                    {val}%
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Current Step Target Ayah Box */}
-          {fullSurahData.ayahs[currentStepAyahIndex] && (
-            <div className="bg-gradient-to-b from-purple-50/70 to-white border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 text-center space-y-4">
-              <span className="text-xs font-bold text-[#6B1B7E] uppercase tracking-widest">
-                Surah {fullSurahData.englishName} · Ayah {fullSurahData.ayahs[currentStepAyahIndex].numberInSurah}
-              </span>
-
-              <div className="py-2 dir-rtl">
-                <p className="font-arabic font-quran text-4xl sm:text-5xl font-bold text-[#6B1B7E] leading-[2.2]">
-                  {fullSurahData.ayahs[currentStepAyahIndex].arabic}
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs sm:text-sm font-bold text-[#5B2A9A] italic">
-                  "{fullSurahData.ayahs[currentStepAyahIndex].transliteration}"
-                </p>
-                <p className="text-xs text-slate-600">
-                  {fullSurahData.ayahs[currentStepAyahIndex].translation}
-                </p>
-              </div>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-                {isPlaying && activeAyahIndex === currentStepAyahIndex ? (
-                  <button
-                    onClick={() => pauseAyah(currentStepAyahIndex)}
-                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                    title="Pause verse audio"
-                  >
-                    <Pause className="w-3.5 h-3.5 fill-current" />
-                    <span>Pause</span>
-                  </button>
-                ) : !isPlaying && activeAyahIndex === currentStepAyahIndex && pausedAyahIndex === currentStepAyahIndex ? (
-                  <button
-                    onClick={() => resumeAyah(currentStepAyahIndex)}
-                    className="px-4 py-2 bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                    title="Resume verse audio"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Resume</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => playAyah(currentStepAyahIndex)}
-                    className="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                  >
-                    <Volume2 className="w-3.5 h-3.5 text-[#E0107F]" />
-                    <span>Listen to Scholar First</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => replayAyah(currentStepAyahIndex)}
-                  className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 text-[#6B1B7E] rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
-                  title="Replay this verse from the beginning"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-[#6B1B7E]" />
-                  <span>Replay</span>
-                </button>
-
-                {activeAyahIndex === currentStepAyahIndex && (
-                  <button
-                    onClick={stopAudio}
-                    className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold flex items-center gap-1 transition cursor-pointer"
-                    title="Stop audio"
-                  >
-                    <Square className="w-3.5 h-3.5 fill-current" />
-                    <span>Stop</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Voice Assessment Recorder Control */}
-          <div className="bg-purple-50/50 border border-purple-200 rounded-2xl p-6 text-center space-y-4">
-            <div className="flex flex-col items-center justify-center">
-              <div className="relative my-2">
-                {isRecordingStudent && (
-                  <div className="absolute inset-0 rounded-full bg-[#E0107F]/30 animate-ping" />
-                )}
-                <button
-                  onClick={handleStartAyahVoiceTest}
-                  disabled={isRecordingStudent}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center transition-all transform active:scale-95 shadow-xl cursor-pointer ${
-                    isRecordingStudent
-                      ? 'bg-[#E0107F] text-white ring-8 ring-[#E0107F]/20 animate-pulse'
-                      : 'bg-gradient-to-tr from-[#6B1B7E] via-[#5B2A9A] to-[#E0107F] text-white hover:opacity-90'
-                  }`}
-                  aria-label="Start recording pronunciation for Ayah"
-                >
-                  {isRecordingStudent ? (
-                    <Square className="w-8 h-8 fill-current" />
-                  ) : (
-                    <Mic className="w-8 h-8" />
-                  )}
-                </button>
-              </div>
-
-              <div className="mt-2">
-                <p className="text-sm font-bold text-[#6B1B7E]">
-                  {isRecordingStudent ? 'Listening... Recite Ayah into microphone now' : 'Click to Recite This Ayah'}
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  The system will detect mistakes and block progression if incorrect.
-                </p>
-              </div>
-            </div>
-
-            {/* Assessment Feedback Banner */}
-            {studentAssessment && (
-              <div
-                className={`p-5 rounded-2xl border text-left transition-all ${
-                  studentAssessment.passed
-                    ? 'bg-emerald-50 border-emerald-300'
-                    : 'bg-red-50 border-red-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-black text-lg border-2 ${
-                        studentAssessment.passed
-                          ? 'border-emerald-500 text-emerald-700 bg-emerald-100'
-                          : 'border-red-500 text-red-700 bg-red-100'
-                      }`}
-                    >
-                      {studentAssessment.score}%
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                        {studentAssessment.passed ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                            <span>Recitation Verified · Next Step Unlocked!</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-4 h-4 text-red-600" />
-                            <span>Mistake Detected · Cannot Proceed Until Correct!</span>
-                          </>
-                        )}
-                      </h4>
-                      <p className="text-xs text-slate-600">
-                        {studentAssessment.passed
-                          ? 'Excellent pronunciation! You may now move to the next Ayah.'
-                          : `Score (${studentAssessment.score}%) is below ${passingThreshold}%. Listen again and re-record.`}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleStartAyahVoiceTest}
-                    className="px-3.5 py-1.5 bg-white text-slate-800 rounded-xl text-xs font-bold border border-slate-300 shadow-xs hover:bg-slate-50 cursor-pointer"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Advancement Navigation Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-purple-100">
-            <button
-              onClick={() => {
-                if (currentStepAyahIndex > 0) {
-                  setCurrentStepAyahIndex(prev => prev - 1);
-                  setStepUnlocked(false);
-                  setStudentAssessment(null);
-                }
-              }}
-              disabled={currentStepAyahIndex === 0}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold disabled:opacity-40 cursor-pointer"
-            >
-              Previous Ayah
-            </button>
-
-            <div className="flex items-center gap-3">
-              {!stepUnlocked && (
-                <span className="text-xs text-red-600 font-bold flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5" /> Next Ayah Locked (Pass required)
-                </span>
-              )}
-
-              <button
-                onClick={handleNextStep}
-                disabled={!stepUnlocked || currentStepAyahIndex >= fullSurahData.ayahs.length - 1}
-                className={`px-6 py-3 rounded-xl text-xs font-black transition flex items-center gap-2 shadow-md cursor-pointer ${
-                  stepUnlocked
-                    ? 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                }`}
-              >
-                <span>{currentStepAyahIndex >= fullSurahData.ayahs.length - 1 ? 'Surah Completed!' : 'Next Ayah'}</span>
-                {stepUnlocked ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- MODE 2: ADD MY VOICE STUDIO --- */}
-      {mode === 'add_my_voice' && fullSurahData && (
-        <div className="bg-white border-2 border-[#6B1B7E]/30 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-100">
-            <div>
-              <h2 className="text-2xl font-black text-[#6B1B7E]">
-                Record Quran in Your Own Voice
-              </h2>
-              <p className="text-xs text-slate-500">
-                Record your voice for any Surah and Ayah. Once saved, students can select your voice to practice directly!
-              </p>
-            </div>
-
-            <div className="text-xs font-bold text-[#6B1B7E] bg-purple-50 px-3 py-1.5 rounded-xl border border-purple-200">
-              {customVoiceKeysCount} Ayahs Recorded
-            </div>
-          </div>
-
-          {/* Surah & Ayah Pickers */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Select Surah:</label>
-              <select
-                value={studioSurahNumber}
-                onChange={(e) => {
-                  setStudioSurahNumber(Number(e.target.value));
-                  setStudioAyahIndex(0);
-                  setStudioRecordedBlobUrl(null);
-                }}
-                className="w-full bg-purple-50/60 border border-purple-200 rounded-xl p-2.5 text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
-              >
-                {ALL_114_SURAHS.map(s => (
-                  <option key={s.number} value={s.number}>
-                    {s.number}. Surah {s.englishName} ({s.name})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Select Ayah to Record:</label>
-              <select
-                value={studioAyahIndex}
-                onChange={(e) => {
-                  setStudioAyahIndex(Number(e.target.value));
-                  setStudioRecordedBlobUrl(null);
-                }}
-                className="w-full bg-purple-50/60 border border-purple-200 rounded-xl p-2.5 text-xs text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#6B1B7E]"
-              >
-                {fullSurahData.ayahs.map((a, idx) => (
-                  <option key={a.numberInSurah} value={idx}>
-                    Ayah {a.numberInSurah}: {a.arabic.slice(0, 30)}...
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Studio Recording Canvas */}
-          {(() => {
-            const a = fullSurahData.ayahs[studioAyahIndex] || fullSurahData.ayahs[0];
-            const recordedKey = `${studioSurahNumber}_${a?.numberInSurah || 1}`;
-            const hasExisting = Boolean(customTeacherRecordings[recordedKey]);
-
-            return (
-              <div className="bg-purple-50/60 border border-[#6B1B7E]/20 rounded-3xl p-6 sm:p-8 text-center space-y-4">
-                <div className="font-arabic font-quran text-3xl sm:text-4xl font-bold text-[#6B1B7E] py-2 dir-rtl">
-                  {a?.arabic}
-                </div>
-                <p className="text-xs font-bold text-[#5B2A9A] italic">
-                  "{a?.transliteration}"
-                </p>
-
-                {hasExisting && (
-                  <div className="text-xs text-emerald-700 bg-emerald-100 font-bold px-3 py-1 rounded-full inline-block border border-emerald-300">
-                    ✓ Your custom voice is already saved for this Ayah
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-                  <button
-                    onClick={isStudioRecording ? handleStopStudioRecord : handleStartStudioRecord}
-                    className={`px-6 py-3 rounded-xl font-black text-xs flex items-center gap-2 transition shadow-md cursor-pointer ${
-                      isStudioRecording
-                        ? 'bg-red-600 text-white animate-pulse'
-                        : 'bg-gradient-to-r from-[#6B1B7E] to-[#E0107F] text-white'
-                    }`}
-                  >
-                    {isStudioRecording ? (
-                      <>
-                        <Square className="w-4 h-4 fill-current" />
-                        <span>Stop Recording</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4" />
-                        <span>Record My Voice</span>
-                      </>
-                    )}
-                  </button>
-
-                  {studioRecordedBlobUrl && (
-                    <button
-                      onClick={() => new Audio(studioRecordedBlobUrl).play()}
-                      className="px-4 py-3 bg-white hover:bg-purple-50 text-[#6B1B7E] border border-purple-200 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs cursor-pointer"
-                    >
-                      <Play className="w-4 h-4 text-emerald-600" />
-                      <span>Preview My Recording</span>
-                    </button>
-                  )}
-
-                  {studioRecordedBlobUrl && (
-                    <button
-                      onClick={handleSaveStudioVoice}
-                      className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black flex items-center gap-2 shadow-md cursor-pointer"
-                    >
-                      <Save className="w-4 h-4" />
-                      <span>Save as Teacher Voice</span>
-                    </button>
-                  )}
-                </div>
-
-                {studioSaveSuccess && (
-                  <p className="text-xs text-emerald-600 font-black mt-2">
-                    ✓ Voice saved! Now available as "My Teacher Recitation" in the reciter selector!
-                  </p>
-                )}
-              </div>
-            );
-          })()}
-        </div>
-      )}
-
-      {/* --- MODE 3: FULL QURAN READ & LISTEN (ALL AYAT VIEW) --- */}
+      {/* --- FULL QURAN READ & LISTEN (ALL AYAT VIEW) --- */}
       {mode === 'listen' && (
         <div className="space-y-6">
           
@@ -1880,17 +1304,6 @@ export const QuranReader: React.FC<QuranReaderProps> = ({
                                   <span>Stop</span>
                                 </button>
                               )}
-
-                              <button
-                                onClick={() => {
-                                  setCurrentStepAyahIndex(index);
-                                  setMode('recite_practice');
-                                }}
-                                className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-[#5B2A9A] rounded-lg text-xs font-bold border border-purple-200 flex items-center gap-1 cursor-pointer"
-                              >
-                                <Mic className="w-3.5 h-3.5 text-[#E0107F]" />
-                                <span>Practice</span>
-                              </button>
 
                               <button
                                 onClick={() => setExpandedTafseerAyah(isTafseerOpen ? null : index)}

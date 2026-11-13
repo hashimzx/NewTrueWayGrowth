@@ -103,6 +103,9 @@ export interface ParaJuzDetail {
   sampleVerses?: ParaVerseSample[];
 }
 
+export const TAJWEED_RULES_PDF_URL =
+  'https://islamic1articles.home.blog/wp-content/uploads/2019/01/tajweed-rules-for-reading-reciting-arabic-quran-juz-1-to-30-english-pdf.pdf';
+
 export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
   {
     paraNumber: 1,
@@ -112,8 +115,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ · الم ذَٰلِكَ الْكِتَابُ',
     totalVerses: 148,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-1-alif-laam-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/1',
-    onlineViewerUrl: '/api/pdf/juz/1',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-1-alif-laam-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-1-alif-laam-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-purple-900 to-[#6E1373]',
     sampleVerses: [
       {
@@ -150,8 +153,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'سَيَقُولُ السُّفَهَاءُ مِنَ النَّاسِ مَا وَلَّاهُمْ عَنْ قِبْلَتِهِمُ',
     totalVerses: 111,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-2-sayaqul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/2',
-    onlineViewerUrl: '/api/pdf/juz/2',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-2-sayaqul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-2-sayaqul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#6E1373] to-[#851C82]',
     sampleVerses: [
       {
@@ -176,8 +179,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'تِلْكَ الرُّسُلُ فَضَّلْنَا بَعْضَهُمْ عَلَىٰ بَعْضٍ',
     totalVerses: 126,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-3-tilka-arrusul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/3',
-    onlineViewerUrl: '/api/pdf/juz/3',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-3-tilka-arrusul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-3-tilka-arrusul-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#851C82] to-[#C72F8A]',
     sampleVerses: [
       {
@@ -196,8 +199,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'لَنْ تَنَالُوا الْبِرَّ حَتَّىٰ تُنْفِقُوا مِمَّا تُحِبُّونَ',
     totalVerses: 131,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-4-lan-tanalu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/4',
-    onlineViewerUrl: '/api/pdf/juz/4',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-4-lan-tanalu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-4-lan-tanalu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#561F79] to-indigo-900',
     sampleVerses: [
       {
@@ -216,8 +219,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَالْمُحْصَنَاتُ مِنَ النِّسَاءِ إِلَّا مَا مَلَكَتْ أَيْمَانُكُمْ',
     totalVerses: 124,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-5-walmuhsanat-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/5',
-    onlineViewerUrl: '/api/pdf/juz/5',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-5-walmuhsanat-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-5-walmuhsanat-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-indigo-900 to-purple-900',
     sampleVerses: [
       {
@@ -236,8 +239,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'لَا يُحِبُّ اللَّهُ الْجَهْرَ بِالسُّوءِ مِنَ الْقَوْلِ إِلَّا مَنْ ظُلِمَ',
     totalVerses: 110,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-6-la-yuhibullah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/6',
-    onlineViewerUrl: '/api/pdf/juz/6',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-6-la-yuhibullah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-6-la-yuhibullah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-purple-950 to-[#6E1373]',
     sampleVerses: [
       {
@@ -256,8 +259,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَإِذَا سَمِعُوا مَا أُنْزِلَ إِلَى الرَّسُولِ تَرَىٰ أَعْيُنَهُمْ تَفِيضُ مِنَ الدَّمْعِ',
     totalVerses: 148,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-7-wa-iza-samiu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/7',
-    onlineViewerUrl: '/api/pdf/juz/7',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-7-wa-iza-samiu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-7-wa-iza-samiu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#6E1373] to-emerald-900',
     sampleVerses: [
       {
@@ -276,8 +279,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَلَوْ أَنَّنَا نَزَّلْنَا إِلَيْهِمُ الْمَلَائِكَةَ وَكَلَّمَهُمُ الْمَوْتَىٰ',
     totalVerses: 142,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-8-walaw-annana-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/8',
-    onlineViewerUrl: '/api/pdf/juz/8',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-8-walaw-annana-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-8-walaw-annana-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-emerald-900 to-[#851C82]'
   },
   {
@@ -288,8 +291,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'قَالَ الْمَلَأُ الَّذِينَ اسْتَكْبَرُوا مِنْ قَوْمِهِ لَنُخْرِجَنَّكَ يَا شُعَيْبُ',
     totalVerses: 159,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-9-qal-al-mala-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/9',
-    onlineViewerUrl: '/api/pdf/juz/9',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-9-qal-al-mala-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-9-qal-al-mala-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#851C82] to-amber-900'
   },
   {
@@ -300,8 +303,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَاعْلَمُوا أَنَّمَا غَنِمْتُمْ مِنْ شَيْءٍ فَأَنَّ لِلَّهِ خُمُسَهُ',
     totalVerses: 127,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-10-wa-alamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/10',
-    onlineViewerUrl: '/api/pdf/juz/10',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-10-wa-alamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-10-wa-alamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-amber-900 to-purple-900'
   },
   {
@@ -312,8 +315,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'يَعْتَذِرُونَ إِلَيْكُمْ إِذَا رَجَعْتُمْ إِلَيْهِمْ قُلْ لَا تَعْتَذِرُوا',
     totalVerses: 151,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-11-yataziruna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/11',
-    onlineViewerUrl: '/api/pdf/juz/11',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-11-yataziruna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-11-yataziruna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-purple-900 to-[#561F79]'
   },
   {
@@ -324,8 +327,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَمَا مِنْ دَابَّةٍ فِي الْأَرْضِ إِلَّا عَلَى اللَّهِ رِزْقُهَا',
     totalVerses: 170,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-12-wama-min-daabbah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/12',
-    onlineViewerUrl: '/api/pdf/juz/12',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-12-wama-min-daabbah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-12-wama-min-daabbah-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#561F79] to-teal-900'
   },
   {
@@ -336,8 +339,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَمَا أُبَرِّئُ نَفْسِي إِنَّ النَّفْسَ لَأَمَّارَةٌ بِالسُّوءِ',
     totalVerses: 154,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-13-wama-ubarriu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/13',
-    onlineViewerUrl: '/api/pdf/juz/13',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-13-wama-ubarriu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-13-wama-ubarriu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-teal-900 to-[#6E1373]'
   },
   {
@@ -348,8 +351,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'الر تِلْكَ آيَاتُ الْكِتَابِ وَقُرْآنٍ مُبِينٍ · رُبَمَا يَوَدُّ الَّذِينَ كَفَرُوا',
     totalVerses: 227,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-14-rubama-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/14',
-    onlineViewerUrl: '/api/pdf/juz/14',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-14-rubama-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-14-rubama-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#6E1373] to-rose-900'
   },
   {
@@ -360,8 +363,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'سُبْحَانَ الَّذِي أَسْرَىٰ بِعَبْدِهِ لَيْلًا مِنَ الْمَسْجِدِ الْحَرَامِ',
     totalVerses: 185,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-15-subhan-allazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/15',
-    onlineViewerUrl: '/api/pdf/juz/15',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-15-subhan-allazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-15-subhan-allazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-rose-900 to-[#851C82]'
   },
   {
@@ -372,8 +375,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'قَالَ أَلَمْ أَقُلْ لَكَ إِنَّكَ لَنْ تَسْتَطِيعَ مَعِيَ صَبْرًا',
     totalVerses: 269,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-16-qala-alam-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/16',
-    onlineViewerUrl: '/api/pdf/juz/16',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-16-qala-alam-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-16-qala-alam-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#851C82] to-sky-900'
   },
   {
@@ -384,8 +387,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'اقْتَرَبَ لِلنَّاسِ حِسَابُهُمْ وَهُمْ فِي غَفْلَةٍ مُعْرِضُونَ',
     totalVerses: 190,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-17-iqtaraba-linnas-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/17',
-    onlineViewerUrl: '/api/pdf/juz/17',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-17-iqtaraba-linnas-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-17-iqtaraba-linnas-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-sky-900 to-[#561F79]'
   },
   {
@@ -396,8 +399,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'قَدْ أَفْلَحَ الْمُؤْمِنُونَ · الَّذِينَ هُمْ فِي صَلَاتِهِمْ خَاشِعُونَ',
     totalVerses: 202,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-18-qad-aflaha-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/18',
-    onlineViewerUrl: '/api/pdf/juz/18',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-18-qad-aflaha-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-18-qad-aflaha-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#561F79] to-emerald-950'
   },
   {
@@ -408,8 +411,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَقَالَ الَّذِينَ لَا يَرْجُونَ لِقَاءَنَا لَوْلَا أُنْزِلَ عَلَيْنَا الْمَلَائِكَةُ',
     totalVerses: 339,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-19-wa-qal-allazina-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/19',
-    onlineViewerUrl: '/api/pdf/juz/19',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-19-wa-qal-allazina-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-19-wa-qal-allazina-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-emerald-950 to-indigo-900'
   },
   {
@@ -420,8 +423,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'أَمَّنْ خَلَقَ السَّمَاوَاتِ وَالْأَرْضَ وَأَنْزَلَ لَكُمْ مِنَ السَّمَاءِ مَاءً',
     totalVerses: 171,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-20-fama-kana-jawaba-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/20',
-    onlineViewerUrl: '/api/pdf/juz/20',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-20-fama-kana-jawaba-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-20-fama-kana-jawaba-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-indigo-900 to-[#6E1373]'
   },
   {
@@ -432,8 +435,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'اتْلُ مَا أُوحِيَ إِلَيْكَ مِنَ الْكِتَابِ وَأَقِمِ الصَّلَاةَ',
     totalVerses: 178,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-21-wa-la-tujadiluu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/21',
-    onlineViewerUrl: '/api/pdf/juz/21',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-21-wa-la-tujadiluu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-21-wa-la-tujadiluu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#6E1373] to-purple-900'
   },
   {
@@ -444,8 +447,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَمَنْ يَقْنُتْ مِنْكُنَّ لِلَّهِ وَرَسُولِهِ وَتَعْمَلْ صَالِحًا',
     totalVerses: 169,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-22-waman-yaqnut-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/22',
-    onlineViewerUrl: '/api/pdf/juz/22',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-22-waman-yaqnut-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-22-waman-yaqnut-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-purple-900 to-amber-900'
   },
   {
@@ -456,8 +459,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'وَمَا لِيَ لَا أَعْبُدُ الَّذِي فَطَرَنِي وَإِلَيْهِ تُرْجَعُونَ',
     totalVerses: 357,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-23-wama-anzalna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/23',
-    onlineViewerUrl: '/api/pdf/juz/23',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-23-wama-anzalna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-23-wama-anzalna-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-amber-900 to-[#851C82]'
   },
   {
@@ -468,8 +471,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'فَمَنْ أَظْلَمُ مِمَّنْ كَذَبَ عَلَى اللَّهِ وَكَذَّبَ بِالصِّدْقِ إِذْ جَاءَهُ',
     totalVerses: 175,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-24-faman-azlamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/24',
-    onlineViewerUrl: '/api/pdf/juz/24',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-24-faman-azlamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-24-faman-azlamu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#851C82] to-teal-900'
   },
   {
@@ -480,8 +483,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'إِلَيْهِ يُرَدُّ عِلْمُ السَّاعَةِ وَمَا تَخْرُجُ مِنْ ثَمَرَاتٍ مِنْ أَكْمَامِهَا',
     totalVerses: 246,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-25-ilaihi-yuradu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/25',
-    onlineViewerUrl: '/api/pdf/juz/25',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-25-ilaihi-yuradu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-25-ilaihi-yuradu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-teal-900 to-indigo-900'
   },
   {
@@ -492,8 +495,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'حم تَنْزِيلُ الْكِتَابِ مِنَ اللَّهِ الْعَزِيزِ الْحَكِيمِ',
     totalVerses: 195,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-26-haa-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/26',
-    onlineViewerUrl: '/api/pdf/juz/26',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-26-haa-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-26-haa-meem-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-indigo-900 to-[#6E1373]'
   },
   {
@@ -504,8 +507,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'قَالَ فَمَا خَطْبُكُمْ أَيُّهَا الْمُرْسَلُونَ · قَالُوا إِنَّا أُرْسِلْنَا',
     totalVerses: 399,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-27-qala-fama-khatbukum-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/27',
-    onlineViewerUrl: '/api/pdf/juz/27',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-27-qala-fama-khatbukum-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-27-qala-fama-khatbukum-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#6E1373] to-rose-900'
   },
   {
@@ -516,8 +519,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'قَدْ سَمِعَ اللَّهُ قَوْلَ الَّتِي تُجَادِلُكَ فِي زَوْجِهَا',
     totalVerses: 137,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-28-qad-samiallahu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/28',
-    onlineViewerUrl: '/api/pdf/juz/28',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-28-qad-samiallahu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-28-qad-samiallahu-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-rose-900 to-purple-900'
   },
   {
@@ -528,8 +531,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'تَبَارَكَ الَّذِي بِيَدِهِ الْمُلْكُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ',
     totalVerses: 431,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-29-tabarak-alazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/29',
-    onlineViewerUrl: '/api/pdf/juz/29',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-29-tabarak-alazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-29-tabarak-alazi-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-purple-900 to-[#851C82]'
   },
   {
@@ -540,8 +543,8 @@ export const ALL_30_PARAS_DATA: ParaJuzDetail[] = [
     startingAyah: 'عَمَّ يَتَسَاءَلُونَ · عَنِ النَّبَإِ الْعَظِيمِ',
     totalVerses: 564,
     pdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-30-amma-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
-    proxyPdfUrl: '/api/pdf/juz/30',
-    onlineViewerUrl: '/api/pdf/juz/30',
+    proxyPdfUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-30-amma-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
+    onlineViewerUrl: 'https://islamic1articles.home.blog/wp-content/uploads/2020/08/quran-juz-30-amma-para-sipara-with-english-pdf-translation-meaning-tajwid-transliteration-for-hifz-15-line.pdf',
     thumbnailGradient: 'from-[#851C82] to-amber-700',
     sampleVerses: [
       {

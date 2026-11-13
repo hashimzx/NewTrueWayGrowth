@@ -66,7 +66,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({
         'Nazra Quran recitation with applied Tajweed rules',
         'Full Salah masterclass, Wudu, and Six Kalimas practice',
         'Complete access to Student Islamic Learning Portal',
-        'Voice recording & speech recognition recitation tests',
+        'Audio recitations & interactive Tajweed guidance',
         'Weekly Sabaq homework reviews & WhatsApp support',
         'Free rescheduling & 100% money-back guarantee'
       ],

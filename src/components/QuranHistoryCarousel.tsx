@@ -565,15 +565,15 @@ export const QURAN_HISTORY_SLIDES: HistorySlide[] = [
   },
   {
     id: 22,
-    period: 'Contemporary Era & Digital AI',
+    period: 'Contemporary Era & Digital Learning',
     year: '1984 CE – Present (Madinah & Global)',
-    title: 'King Fahd Complex to Real-Time Voice Verification',
-    arabicTitle: 'مُجَمَّعُ الْمَلِكِ فَهْدٍ وَالتَّحْقِيقُ الصَّوْتِيُّ الذَّكِيّ',
+    title: 'King Fahd Complex to Global Digital Quran Education',
+    arabicTitle: 'مُجَمَّعُ الْمَلِكِ فَهْدٍ وَالتَّعْلِيمُ الرَّقْمِيُّ لِلْقُرْآنِ',
     badge: 'Living Miraculous Isnad',
-    summary: 'The King Fahd Complex in Madinah has printed over 350 million Mus\'hafs in 70+ languages. Today, True Way Quran blends this sacred unbroken heritage with real-time acoustic Tajweed verification for global learners.',
+    summary: 'The King Fahd Complex in Madinah has printed over 350 million Mus\'hafs in 70+ languages. Today, True Way Quran blends this sacred unbroken heritage with structured live one-on-one Tajweed mentorship for global learners.',
     details: [
       'Over 10 million living Huffadh preserve the Holy Quran letter-for-letter across every continent.',
-      'High-precision audio recognition verifies Makharij and Tajweed rules down to milliseconds.',
+      'Structured Tajweed guidance and authentic recitation audio support Makharij mastery.',
       'Unbroken living transmission (Sanad) flows continuously from Prophet Muhammad ﷺ directly to our certified mentors and students.'
     ],
     keyFigures: ['King Fahd Complex Scholars', 'Global Sanad Holders & Huffadh', 'True Way Quran Academic Faculty'],

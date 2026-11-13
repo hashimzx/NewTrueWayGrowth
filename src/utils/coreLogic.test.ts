@@ -310,3 +310,20 @@ test('Verse audio playback state machine supports pause, resume, and replay tran
   assert.equal(state.pausedAyahIndex, null);
 });
 
+test('Tajweed Mushaf PDF links use direct HTTPS URLs instead of /api/pdf routes', async () => {
+  const { ALL_30_PARAS_DATA, TAJWEED_RULES_PDF_URL } = await import('../data/tajweedMushafData');
+  assert.equal(ALL_30_PARAS_DATA.length, 30);
+  assert.ok(TAJWEED_RULES_PDF_URL.startsWith('https://'));
+  assert.ok(!TAJWEED_RULES_PDF_URL.includes('/api/pdf'));
+
+  for (const para of ALL_30_PARAS_DATA) {
+    assert.ok(para.pdfUrl.startsWith('https://'), `Para ${para.paraNumber} pdfUrl must start with https://`);
+    assert.ok(para.proxyPdfUrl.startsWith('https://'), `Para ${para.paraNumber} proxyPdfUrl must start with https://`);
+    assert.ok(para.onlineViewerUrl.startsWith('https://'), `Para ${para.paraNumber} onlineViewerUrl must start with https://`);
+    assert.ok(!para.pdfUrl.includes('/api/pdf'));
+    assert.ok(!para.proxyPdfUrl.includes('/api/pdf'));
+    assert.ok(!para.onlineViewerUrl.includes('/api/pdf'));
+  }
+});
+
+

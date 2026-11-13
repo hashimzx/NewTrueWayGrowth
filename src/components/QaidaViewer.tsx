@@ -1,27 +1,16 @@
-import React, { useState, useRef } from 'react';
-import { QaidaLesson, QaidaWord, PronunciationAttempt, User } from '../types';
+import React, { useState } from 'react';
+import { QaidaLesson, QaidaWord, PronunciationAttempt } from '../types';
 import { soundEngine } from '../utils/audioSynth';
-import { StudentVoiceRecorder } from '../utils/speechEvaluator';
-import { VoicePracticeModal } from './VoicePracticeModal';
 import { 
   BookOpen, 
-  Mic, 
   Volume2, 
-  CheckCircle, 
   Search, 
   Sparkles, 
   Bookmark, 
   BookmarkCheck,
   CheckCircle2,
   ShieldAlert,
-  ArrowRight,
-  ArrowLeft,
-  Radio,
-  Play,
-  Square,
-  Save,
-  X,
-  PlusCircle
+  ArrowLeft
 } from 'lucide-react';
 
 interface QaidaViewerProps {
@@ -36,19 +25,16 @@ interface QaidaViewerProps {
 export const QaidaViewer: React.FC<QaidaViewerProps> = ({
   lessons,
   currentUser,
-  onRecordSuccess,
   onToggleBookmark,
-  onSaveTeacherVoice,
   onBack
 }) => {
   const [selectedLessonId, setSelectedLessonId] = useState<string>(lessons[0]?.id || 'lesson-1');
-  const [activeWordForVoice, setActiveWordForVoice] = useState<QaidaWord | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
   const [playingWordId, setPlayingWordId] = useState<string | null>(null);
 
   // Local storage persistence for Qaida mastered words and bookmarks
-  const [localMastered, setLocalMastered] = useState<string[]>(() => {
+  const [localMastered] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('twq_qaida_mastered');
       return saved ? JSON.parse(saved) : [];
@@ -65,12 +51,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
       return [];
     }
   });
-
-  // Teacher Voice Studio for Qaida letters/words
-  const [recordingWordForTeacher, setRecordingWordForTeacher] = useState<QaidaWord | null>(null);
-  const [isTeacherRecording, setIsTeacherRecording] = useState(false);
-  const [teacherRecordedUrl, setTeacherRecordedUrl] = useState<string | null>(null);
-  const teacherRecorderRef = useRef<StudentVoiceRecorder>(new StudentVoiceRecorder());
 
   const currentLesson = lessons.find(l => l.id === selectedLessonId) || lessons[0];
 
@@ -101,24 +81,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
     }
   };
 
-  const handleVoiceSuccess = (attempt: PronunciationAttempt) => {
-    if (attempt.score >= (currentLesson.passingScore || 80)) {
-      setLocalMastered(prev => {
-        if (!prev.includes(attempt.wordId)) {
-          const next = [...prev, attempt.wordId];
-          try {
-            localStorage.setItem('twq_qaida_mastered', JSON.stringify(next));
-          } catch {}
-          return next;
-        }
-        return prev;
-      });
-    }
-    if (onRecordSuccess) {
-      onRecordSuccess(attempt);
-    }
-  };
-
   const handlePlayWord = async (e: React.MouseEvent, word: QaidaWord, rate: number = 0.85) => {
     e.stopPropagation();
     setPlayingWordId(word.id);
@@ -140,35 +102,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
     }
   };
 
-  const handleStartTeacherRecording = async (word: QaidaWord) => {
-    setRecordingWordForTeacher(word);
-    setTeacherRecordedUrl(null);
-    const ok = await teacherRecorderRef.current.start();
-    if (ok) {
-      setIsTeacherRecording(true);
-      soundEngine.playCueSound('recording_start');
-    }
-  };
-
-  const handleStopTeacherRecording = async () => {
-    setIsTeacherRecording(false);
-    soundEngine.playCueSound('recording_stop');
-    const url = await teacherRecorderRef.current.stop();
-    if (url) {
-      setTeacherRecordedUrl(url);
-    }
-  };
-
-  const handleSaveTeacherVoiceForWord = () => {
-    if (!recordingWordForTeacher || !teacherRecordedUrl) return;
-    if (onSaveTeacherVoice) {
-      onSaveTeacherVoice(selectedLessonId, recordingWordForTeacher.id, teacherRecordedUrl);
-    }
-    soundEngine.playCueSound('success');
-    setRecordingWordForTeacher(null);
-    setTeacherRecordedUrl(null);
-  };
-
   const filteredWords = currentLesson.words.filter(word => {
     const matchesSearch = 
       word.arabic.includes(searchQuery) ||
@@ -179,22 +112,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
     const matchesLevel = levelFilter === 'all' || word.level === levelFilter;
     return matchesSearch && matchesLevel;
   });
-
-  const masteredCountInLesson = currentLesson.words.filter(w => isWordMastered(w.id)).length;
-  const lessonProgressPercent = Math.round((masteredCountInLesson / currentLesson.words.length) * 100);
-
-  const handleNextWordInModal = () => {
-    if (!activeWordForVoice) return;
-    const currentIndex = currentLesson.words.findIndex(w => w.id === activeWordForVoice.id);
-    if (currentIndex >= 0 && currentIndex < currentLesson.words.length - 1) {
-      setActiveWordForVoice(currentLesson.words[currentIndex + 1]);
-    }
-  };
-
-  const hasNextWord = Boolean(
-    activeWordForVoice &&
-    currentLesson.words.findIndex(w => w.id === activeWordForVoice.id) < currentLesson.words.length - 1
-  );
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -222,10 +139,10 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Interactive Madani Qaida with AI Voice Assessment
+              Interactive Madani Qaida & Audio Guide
             </h1>
             <p className="text-xs sm:text-sm text-purple-200 max-w-2xl leading-relaxed">
-              Step-by-step authentic Quran foundation. Click any Arabic letter or word to listen to pure pronunciation, then use the microphone to evaluate your Makhraj against the required accuracy threshold.
+              Step-by-step authentic Quran foundation. Click any Arabic letter or word to listen to clear pronunciation and study its Makhraj articulation point.
             </p>
           </div>
 
@@ -321,10 +238,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-purple-600 uppercase tracking-widest">
                     Lesson {currentLesson.lessonNumber}
-                  </span>
-                  <span className="text-slate-300">·</span>
-                  <span className="text-xs font-semibold text-slate-600">
-                    Passing Accuracy Threshold: <strong className="text-purple-900 font-extrabold">{currentLesson.passingScore}%</strong>
                   </span>
                 </div>
                 <h2 className="text-2xl font-black text-purple-950 mt-1">
@@ -431,7 +344,7 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
               return (
                 <div
                   key={word.id}
-                  onClick={() => setActiveWordForVoice(word)}
+                  onClick={(e) => handlePlayWord(e, word, 0.85)}
                   className={`group relative bg-white border rounded-3xl p-5 text-center flex flex-col justify-between transition-all cursor-pointer hover:scale-[1.02] shadow-sm hover:shadow-xl ${
                     mastered
                       ? 'border-emerald-300 ring-2 ring-emerald-100'
@@ -494,40 +407,19 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
                     </span>
                   </div>
 
-                  {/* Actions Bar: Audio Listen + Teacher Record + Mic Assessment */}
+                  {/* Actions Bar: Audio Listen */}
                   <div className="mt-3 pt-2 flex items-center justify-center gap-1.5">
                     <button
                       onClick={(e) => handlePlayWord(e, word, 0.85)}
-                      className={`p-2 rounded-xl transition ${
+                      className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                         isPlaying
                           ? 'bg-purple-600 text-white animate-pulse'
                           : 'bg-purple-50 text-purple-900 hover:bg-purple-100'
                       }`}
-                      title={word.teacherVoiceUrl ? "Listen Teacher Voice" : "Listen Authentic Qaida Voice"}
+                      title="Listen Authentic Qaida Voice"
                     >
                       <Volume2 className="w-4 h-4" />
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStartTeacherRecording(word);
-                      }}
-                      className="p-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 transition"
-                      title="Record Teacher Voice for this letter"
-                    >
-                      <Radio className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveWordForVoice(word);
-                      }}
-                      className="flex-1 py-1.5 px-2 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
-                    >
-                      <Mic className="w-3.5 h-3.5" />
-                      <span>Assess</span>
+                      <span>{isPlaying ? 'Playing...' : 'Listen Audio'}</span>
                     </button>
                   </div>
                 </div>
@@ -552,104 +444,6 @@ export const QaidaViewer: React.FC<QaidaViewerProps> = ({
         </div>
       </div>
 
-      {/* Voice Practice Modal */}
-      {activeWordForVoice && (
-        <VoicePracticeModal
-          word={activeWordForVoice}
-          passingScore={currentLesson.passingScore}
-          isOpen={Boolean(activeWordForVoice)}
-          onClose={() => setActiveWordForVoice(null)}
-          onSuccess={(attempt) => {
-            handleVoiceSuccess(attempt);
-          }}
-          onNextWord={handleNextWordInModal}
-          hasNextWord={hasNextWord}
-        />
-      )}
-
-      {/* Teacher Voice Recording Studio for Qaida Word */}
-      {recordingWordForTeacher && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-purple-950/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-6 shadow-2xl border border-purple-200 animate-fadeIn">
-            <div className="flex items-center justify-between pb-3 border-b border-purple-100">
-              <div className="flex items-center gap-2">
-                <Radio className="w-5 h-5 text-purple-600" />
-                <h3 className="text-base font-bold text-purple-950">Record Teacher Voice (Madani Qaida)</h3>
-              </div>
-              <button
-                onClick={() => {
-                  if (isTeacherRecording) handleStopTeacherRecording();
-                  setRecordingWordForTeacher(null);
-                  setTeacherRecordedUrl(null);
-                }}
-                className="text-slate-400 hover:text-slate-600 p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="text-center py-4 space-y-2 bg-purple-50/50 rounded-2xl border border-purple-100">
-              <span className="text-xs font-semibold text-purple-700">Target Letter / Word</span>
-              <p className="font-arabic text-6xl font-bold text-purple-950">{recordingWordForTeacher.arabic}</p>
-              <p className="text-sm font-bold text-slate-800">{recordingWordForTeacher.transliteration}</p>
-              <p className="text-xs text-slate-500">{recordingWordForTeacher.makhraj}</p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center space-y-3">
-              <button
-                onClick={isTeacherRecording ? handleStopTeacherRecording : () => handleStartTeacherRecording(recordingWordForTeacher)}
-                className={`w-16 h-16 rounded-full flex items-center justify-center text-white transition-all shadow-lg ${
-                  isTeacherRecording
-                    ? 'bg-red-600 ring-4 ring-red-300 animate-pulse'
-                    : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                {isTeacherRecording ? <Square className="w-6 h-6 fill-current" /> : <Mic className="w-7 h-7" />}
-              </button>
-              <p className="text-xs font-semibold text-slate-600">
-                {isTeacherRecording ? 'Recording... Click square to stop' : 'Click to record your voice'}
-              </p>
-            </div>
-
-            {teacherRecordedUrl && (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span className="text-xs font-bold text-emerald-900">Audio Recorded!</span>
-                </div>
-                <button
-                  onClick={() => {
-                    const audio = new Audio(teacherRecordedUrl);
-                    audio.play();
-                  }}
-                  className="px-3 py-1 bg-white text-emerald-700 border border-emerald-300 rounded-lg text-xs font-bold flex items-center gap-1 shadow-xs"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" /> Preview
-                </button>
-              </div>
-            )}
-
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setRecordingWordForTeacher(null);
-                  setTeacherRecordedUrl(null);
-                }}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveTeacherVoiceForWord}
-                disabled={!teacherRecordedUrl}
-                className="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-md"
-              >
-                <Save className="w-4 h-4" /> Save Teacher Voice
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

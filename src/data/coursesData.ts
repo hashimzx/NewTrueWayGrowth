@@ -227,7 +227,7 @@ export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     period: 'per month',
     features: [
       'Unlimited access to interactive Madani Qaida',
-      'AI Voice Recognition & instant pronunciation grading',
+      'Clear audio recitation & letter pronunciation guides',
       '2 One-on-one live tutor classes per month',
       'Full access to Islamic Resources & Salah Guides',
       'Cancel anytime with zero penalty'
@@ -251,7 +251,7 @@ export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
       '8 One-on-one live tutor classes per quarter',
       'Access to All Paid Quran & Tajweed Courses',
       'Priority international time zone slot reservation',
-      'Dedicated teacher audio review on student recordings',
+      'Dedicated live tutor Tajweed feedback sessions',
       'Official verified graduation certificate'
     ]
   },

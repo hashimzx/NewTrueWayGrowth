@@ -36,7 +36,6 @@ import {
   Menu,
   X,
   RotateCcw,
-  Mic,
   Search,
   TrendingUp,
   BarChart3,
@@ -74,7 +73,6 @@ import { PortalHadithSection } from './portal/PortalHadithSection';
 import { PortalKnowledgeSection } from './portal/PortalKnowledgeSection';
 import { PortalQuizzesSection } from './portal/PortalQuizzesSection';
 import { PortalProgressSection } from './portal/PortalProgressSection';
-import { PortalVoiceVaultSection } from './portal/PortalVoiceVaultSection';
 import { PortalHifzTrackerSection } from './portal/PortalHifzTrackerSection';
 import { PortalHabitTrackerSection } from './portal/PortalHabitTrackerSection';
 
@@ -98,7 +96,6 @@ export type StudentPortalTab =
   | 'overview'
   | 'quran'
   | 'tajweed_quran'
-  | 'voice_vault'
   | 'hifz_tracker'
   | 'habit_tracker'
   | 'duas'
@@ -290,7 +287,6 @@ Headquarters: True Way Quran, United Kingdom & International Desks
         { id: 'overview', label: 'Dashboard Overview', icon: Sparkles },
         { id: 'quran', label: 'Holy Quran (114 Surahs)', icon: BookOpen, badge: '114' },
         { id: 'tajweed_quran', label: 'Color-Coded Tajweed (30 Paras)', icon: Sparkles, badge: 'PDFs' },
-        { id: 'voice_vault', label: 'My Voice Studio', icon: Mic },
         { id: 'hifz_tracker', label: 'Hifz Roadmap (30 Juz)', icon: Award, badge: '30 Juz' },
         { id: 'habit_tracker', label: 'Salah & Sunnah Habits', icon: Clock }
       ]
@@ -420,7 +416,6 @@ Headquarters: True Way Quran, United Kingdom & International Desks
             { id: 'overview', label: 'Dashboard' },
             { id: 'quran', label: 'Holy Quran' },
             { id: 'tajweed_quran', label: 'Color Tajweed (30 Paras)' },
-            { id: 'voice_vault', label: 'My Voice Studio' },
             { id: 'hifz_tracker', label: 'Hifz (30 Juz)' },
             { id: 'habit_tracker', label: 'Salah Habits' },
             { id: 'duas', label: 'Daily Duas' },
@@ -435,7 +430,7 @@ Headquarters: True Way Quran, United Kingdom & International Desks
             { id: 'asma_ul_husna', label: '99 Names of Allah' },
             { id: 'prophets', label: 'Stories of Prophets' },
             { id: 'manners', label: 'Islamic Manners' },
-            { id: 'quizzes', label: 'Quizzes & Tests' },
+            { id: 'quizzes', label: 'Quizzes & Awards' },
             { id: 'progress', label: 'Progress & Bookmarks' },
             { id: 'timetable', label: 'Class Timetable' },
             { id: 'profile', label: 'Profile' }
@@ -809,7 +804,7 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                 </h2>
 
                 <p className="text-xs sm:text-sm text-purple-100 leading-relaxed">
-                  Continue your recitation of <strong>Surah Al-Mulk</strong> with Qari Muhammad Bilal Al-Azhari. Master articulation points, test your pronunciation against the 75% accuracy threshold, and record your voice.
+                  Continue your recitation of <strong>Surah Al-Mulk</strong> with Qari Muhammad Bilal Al-Azhari. Master Tajweed rules, Makharij articulation points, and authentic Quran fluency.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
@@ -821,8 +816,6 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                   </div>
                   <span className="text-white/40">·</span>
                   <div>Current Sabaq: <strong>Verses 1 to 8</strong></div>
-                  <span className="text-white/40">·</span>
-                  <div className="text-amber-300 font-bold">Passing Mark: 75%</div>
                 </div>
               </div>
 
@@ -894,13 +887,13 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-[#851C82] uppercase tracking-wider">Ayah-by-Ayah</span>
-                        <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">75% Test</span>
+                        <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">Audio & Tafsir</span>
                       </div>
                       <h4 className="font-black text-slate-900 text-base group-hover:text-[#6E1373] transition-colors">
                         Holy Quran (القرآن الكريم)
                       </h4>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Complete Uthmani text, English translation, Sheikh audio streams, and interactive voice assessment.
+                        Complete Uthmani text, English translation, Sheikh audio streams, and word-by-word meanings.
                       </p>
                     </div>
 
@@ -937,13 +930,13 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Arabic Foundations</span>
-                        <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-md">AI Assessment</span>
+                        <span className="text-[10px] text-purple-700 font-bold bg-purple-50 px-2 py-0.5 rounded-md">Audio Guide</span>
                       </div>
                       <h4 className="font-black text-slate-900 text-base group-hover:text-emerald-700 transition-colors">
                         Madani Qaida Interactive
                       </h4>
                       <p className="text-xs text-slate-500 leading-relaxed">
-                        Master Arabic alphabets, Huroof Maddah, Tanween, and Sukoon with instant voice correction.
+                        Master Arabic alphabets, Huroof Maddah, Tanween, and Sukoon with authentic pronunciation audio.
                       </p>
                     </div>
 
@@ -1429,7 +1422,7 @@ Headquarters: True Way Quran, United Kingdom & International Desks
                   <div className="grid grid-cols-2 gap-2.5">
                     {[
                       { icon: '⭐', name: 'Tajweed Star', desc: 'Flawless Makharij on Al-Fatihah' },
-                      { icon: '🎙️', name: '75% Pass Club', desc: 'Recitation test passed on first attempt' },
+                      { icon: '📖', name: 'Surah Scholar', desc: 'Completed Al-Fatihah & Al-Mulk reading' },
                       { icon: '🕌', name: 'Salah Champion', desc: '7 days continuous prayer completion' },
                       { icon: '📜', name: 'Level 1 Scholar', desc: 'Completed basic Qaida & Kalimas' }
                     ].map((b, idx) => (
@@ -1502,16 +1495,6 @@ Headquarters: True Way Quran, United Kingdom & International Desks
             onBackToSurahList={() => {
               setActiveTab('overview');
               window.scrollTo({ top: 100, behavior: 'smooth' });
-            }}
-          />
-        )}
-
-        {/* 2B. MY QURAN VOICE VAULT */}
-        {activeTab === 'voice_vault' && (
-          <PortalVoiceVaultSection
-            studentName={dbUser.name}
-            onNavigateToVerse={(surahNum) => {
-              setActiveTab('quran');
             }}
           />
         )}

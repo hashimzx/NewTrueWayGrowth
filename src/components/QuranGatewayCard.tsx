@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Mic, Volume2, Sparkles, ArrowRight, CheckCircle2, Award, Headphones } from 'lucide-react';
+import { BookOpen, Volume2, Sparkles, ArrowRight, CheckCircle2, Headphones } from 'lucide-react';
 
 interface QuranGatewayCardProps {
   onOpenQuran: () => void;
@@ -24,14 +24,14 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
             {/* Left Content */}
             <div className="lg:col-span-7 space-y-6">
               <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
-                Read, Listen & Verify Your{' '}
+                Read, Listen & Understand Your{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-200 to-amber-300">
                   Holy Quran Recitation
                 </span>
               </h2>
 
               <p className="text-purple-200 text-sm sm:text-base leading-relaxed max-w-xl">
-                Access our full Quran player in a dedicated view with studio-grade audio by Sheikh Mishary Rashid Alafasy, English translations, and real-time AI pronunciation feedback for each Ayah.
+                Access our full Quran reader in a dedicated view with studio-grade audio by Sheikh Mishary Rashid Alafasy, English translations, and detailed Tafsir insights for each Ayah.
               </p>
 
               {/* Feature Points */}
@@ -46,7 +46,7 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
                 </div>
                 <div className="flex items-center gap-2.5 text-xs text-purple-100">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Speech-to-Text Tajweed Verifier</span>
+                  <span>Color-Coded Tajweed & Tafsir</span>
                 </div>
                 <div className="flex items-center gap-2.5 text-xs text-purple-100">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -69,7 +69,7 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
                   onClick={onOpenQaida}
                   className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <Mic className="w-4 h-4 text-pink-300" />
+                  <BookOpen className="w-4 h-4 text-pink-300" />
                   <span>Interactive Qaida Lessons</span>
                 </button>
               </div>
@@ -111,7 +111,7 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
                   </div>
                   <div className="flex items-center gap-1.5 text-pink-300">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>Voice Verifier</span>
+                    <span>English Translation</span>
                   </div>
                 </div>
 
@@ -119,7 +119,7 @@ export const QuranGatewayCard: React.FC<QuranGatewayCardProps> = ({ onOpenQuran,
                   onClick={onOpenQuran}
                   className="w-full py-3 bg-white text-purple-950 hover:bg-purple-50 font-black text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
-                  <span>Launch Quran Player & Verifier</span>
+                  <span>Launch Quran Reader</span>
                   <ArrowRight className="w-3.5 h-3.5 text-purple-700" />
                 </button>
               </div>

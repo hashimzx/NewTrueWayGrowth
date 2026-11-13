@@ -5,30 +5,26 @@ import {
   Download, 
   ExternalLink, 
   Sparkles, 
-  Maximize2, 
   X, 
   ChevronLeft, 
   ChevronRight, 
   CheckCircle2, 
   Layers, 
   Info,
-  Compass,
   ArrowLeft,
-  FileText,
   Eye,
   Play,
   Pause,
-  RotateCcw,
-  Check,
-  AlertCircle
+  Check
 } from 'lucide-react';
 import { 
   ALL_30_PARAS_DATA, 
   TAJWEED_COLOR_RULES, 
+  TAJWEED_RULES_PDF_URL,
   ParaJuzDetail, 
   parseTajweedTokens 
 } from '../../data/tajweedMushafData';
-import { ALL_114_SURAHS, SurahSummary } from '../../data/allSurahsMeta';
+import { ALL_114_SURAHS } from '../../data/allSurahsMeta';
 
 interface ColorCodedTajweedSectionProps {
   onSelectSurah?: (surahNum: number) => void;
@@ -42,7 +38,6 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
   const [activeTab, setActiveTab] = useState<'paras' | 'surahs' | 'rules'>('paras');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeModalPara, setActiveModalPara] = useState<ParaJuzDetail | null>(null);
-  const [modalViewMode, setModalViewMode] = useState<'interactive' | 'pdf'>('interactive');
   const [downloadingPara, setDownloadingPara] = useState<number | null>(null);
   const [downloadSuccessPara, setDownloadSuccessPara] = useState<number | null>(null);
   const [surahPage, setSurahPage] = useState(1);
@@ -68,7 +63,7 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
   const totalSurahPages = Math.ceil(filteredSurahs.length / SURAHS_PER_PAGE);
   const currentSurahs = filteredSurahs.slice((surahPage - 1) * SURAHS_PER_PAGE, surahPage * SURAHS_PER_PAGE);
 
-  // Reliable, foolproof PDF download handler
+  // Direct verified PDF open/download handler (avoids /api/pdf/* 404 on static hosting)
   const handleDownloadPdf = (para: ParaJuzDetail, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -76,10 +71,10 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
     setDownloadingPara(para.paraNumber);
 
     try {
-      // Create a direct anchor download to our proxy streaming endpoint
-      const downloadUrl = `${para.proxyPdfUrl}?download=1`;
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = para.pdfUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
       link.setAttribute('download', `TrueWayQuran-Juz-${String(para.paraNumber).padStart(2, '0')}-Tajweed-English.pdf`);
       document.body.appendChild(link);
       link.click();
@@ -89,16 +84,10 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
         setDownloadingPara(null);
         setDownloadSuccessPara(para.paraNumber);
         setTimeout(() => setDownloadSuccessPara(null), 3000);
-      }, 1200);
-    } catch (err) {
-      // Fallback: direct window open to upstream PDF
-      window.open(para.pdfUrl, '_blank', 'noopener,noreferrer');
+      }, 800);
+    } catch {
       setDownloadingPara(null);
     }
-  };
-
-  const handleOpenPdfWindow = (para: ParaJuzDetail) => {
-    window.open(para.proxyPdfUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handlePlayRecitation = (verseText: string, index: number) => {
@@ -134,14 +123,14 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>Real Color-Coded Tajweed Quran Pak</span>
               <span className="text-white/40">·</span>
-              <span>15/16 Line Mushaf & PDFs</span>
+              <span>30 Paras Interactive & PDFs</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black leading-tight text-white">
               Holy Quran with Color Coded Tajweed & English Translation
             </h2>
             <p className="text-xs sm:text-sm text-purple-100 leading-relaxed">
               Read the Holy Quran with authentic color-coded Tajweed notation and English translation. 
-              Features complete 30 Paras (Juz), high-resolution Uthmani & Indo-Pak script rules, and verified printable PDF editions with instant browser viewing and reliable one-click download.
+              Features complete 30 Paras (Juz), high-resolution Uthmani & Indo-Pak script rules, and verified printable PDF editions with direct browser viewing and one-click download.
             </p>
           </div>
 
@@ -158,7 +147,6 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
             <button
               onClick={() => {
                 setActiveModalPara(ALL_30_PARAS_DATA[0]);
-                setModalViewMode('interactive');
               }}
               className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition cursor-pointer flex items-center gap-1.5 shadow-md"
             >
@@ -186,7 +174,7 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
               </span>
             </h4>
             <p className="text-xs text-slate-600">
-              Download or view the complete high-resolution 15-line Quran Pak with Color-Coded Tajweed, English translation, and transliteration in a single book.
+              Download or view the complete high-resolution Quran Pak with Color-Coded Tajweed, English translation, and transliteration in a single book.
             </p>
           </div>
         </div>
@@ -340,7 +328,7 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                       <span className="text-slate-300">·</span>
                       <span className="text-emerald-600 font-bold flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
-                        <span>15-Line Color Tajweed</span>
+                        <span>Color-Coded Tajweed</span>
                       </span>
                     </div>
                   </div>
@@ -351,7 +339,6 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                   <button
                     onClick={() => {
                       setActiveModalPara(para);
-                      setModalViewMode('interactive');
                     }}
                     className="flex-1 py-2 px-3 rounded-xl bg-[#6E1373] hover:bg-[#561F79] text-white text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                   >
@@ -359,27 +346,31 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                     <span>Read in Viewer</span>
                   </button>
 
-                  <button
-                    onClick={(e) => handleDownloadPdf(para, e)}
-                    disabled={downloadingPara === para.paraNumber}
+                  <a
+                    href={para.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadSuccessPara(para.paraNumber);
+                      setTimeout(() => setDownloadSuccessPara(null), 3000);
+                    }}
                     className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
                       downloadSuccessPara === para.paraNumber
                         ? 'bg-emerald-500 text-white'
                         : 'bg-purple-50 hover:bg-purple-100 text-[#6E1373]'
                     }`}
-                    title="Download 15-Line Color-Coded Tajweed PDF with English Translation"
+                    title="Open & Download Color-Coded Tajweed PDF with English Translation"
                   >
-                    {downloadingPara === para.paraNumber ? (
-                      <span className="w-3.5 h-3.5 border-2 border-[#6E1373] border-t-transparent rounded-full animate-spin" />
-                    ) : downloadSuccessPara === para.paraNumber ? (
+                    {downloadSuccessPara === para.paraNumber ? (
                       <Check className="w-3.5 h-3.5" />
                     ) : (
                       <Download className="w-3.5 h-3.5" />
                     )}
                     <span className="hidden sm:inline">
-                      {downloadSuccessPara === para.paraNumber ? 'Downloaded' : 'Download PDF'}
+                      {downloadSuccessPara === para.paraNumber ? 'Opened PDF' : 'Open / PDF'}
                     </span>
-                  </button>
+                  </a>
                 </div>
               </div>
             ))}
@@ -492,7 +483,9 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
               </div>
 
               <a
-                href="/api/pdf/tajweed-rules?download=1"
+                href={TAJWEED_RULES_PDF_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="px-4 py-2 rounded-xl bg-[#6E1373] hover:bg-[#561F79] text-white text-xs font-black transition flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -559,48 +552,24 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                     <span className="font-arabic font-bold text-amber-200" dir="rtl">({activeModalPara.arabicName})</span>
                   </h3>
                   <p className="text-xs text-purple-200">
-                    {activeModalPara.surahRange} · 15-Line Color-Coded Tajweed with English Meaning
+                    {activeModalPara.surahRange} · Color-Coded Tajweed with English Meaning
                   </p>
                 </div>
               </div>
 
-              {/* Viewer Mode Switcher & Actions */}
+              {/* Direct Browser PDF Open & Download Actions */}
               <div className="flex flex-wrap items-center gap-2 self-stretch md:self-auto justify-between md:justify-end">
-                {/* Mode Switcher */}
-                <div className="bg-white/15 p-1 rounded-xl flex items-center gap-1 border border-white/20">
-                  <button
-                    onClick={() => setModalViewMode('interactive')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
-                      modalViewMode === 'interactive'
-                        ? 'bg-amber-400 text-slate-950 shadow-xs'
-                        : 'text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Interactive Tajweed</span>
-                  </button>
-                  <button
-                    onClick={() => setModalViewMode('pdf')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
-                      modalViewMode === 'pdf'
-                        ? 'bg-amber-400 text-slate-950 shadow-xs'
-                        : 'text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>15-Line PDF View</span>
-                  </button>
-                </div>
-
                 {/* Direct Window Open */}
-                <button
-                  onClick={() => handleOpenPdfWindow(activeModalPara)}
+                <a
+                  href={activeModalPara.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                   title="Open PDF in a fresh browser tab"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Open in Tab</span>
-                </button>
+                </a>
 
                 {/* Download PDF button */}
                 <button
@@ -620,7 +589,7 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                     <Download className="w-3.5 h-3.5" />
                   )}
                   <span>
-                    {downloadSuccessPara === activeModalPara.paraNumber ? 'Downloaded' : 'Download PDF'}
+                    {downloadSuccessPara === activeModalPara.paraNumber ? 'Opened PDF' : 'Download PDF'}
                   </span>
                 </button>
 
@@ -643,9 +612,8 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto bg-slate-50 relative">
               
-              {/* MODE 1: INTERACTIVE COLOR-CODED TAJWEED MUSHAF (Instant & 100% reliable) */}
-              {modalViewMode === 'interactive' && (
-                <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto">
+              {/* INTERACTIVE COLOR-CODED TAJWEED MUSHAF */}
+              <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto">
                   
                   {/* Para Header Card */}
                   <div className="bg-white p-5 rounded-3xl border border-purple-100 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -662,20 +630,15 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleDownloadPdf(activeModalPara)}
-                        className="px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#6E1373] font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download 15-Line PDF</span>
-                      </button>
-                      <button
-                        onClick={() => setModalViewMode('pdf')}
+                      <a
+                        href={activeModalPara.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-3.5 py-2 rounded-xl bg-[#6E1373] hover:bg-[#561F79] text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>View PDF Embed</span>
-                      </button>
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download Tajweed PDF</span>
+                      </a>
                     </div>
                   </div>
 
@@ -800,103 +763,35 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
                   <div className="p-6 bg-gradient-to-br from-purple-50 via-white to-purple-50 rounded-3xl border border-purple-200 text-center space-y-3">
                     <BookOpen className="w-8 h-8 text-[#6E1373] mx-auto" />
                     <h4 className="text-base font-black text-slate-900">
-                      Need the Complete 15-Line Indo-Pak / Uthmani Mushaf for Para {activeModalPara.paraNumber}?
+                      Need the Complete Color-Coded Tajweed Mushaf PDF for Para {activeModalPara.paraNumber}?
                     </h4>
                     <p className="text-xs text-slate-600 max-w-lg mx-auto">
-                      Get the complete, verified 15-line color-coded PDF edition for Para {activeModalPara.paraNumber} ({activeModalPara.englishTransliteration}) featuring all {activeModalPara.totalVerses} Ayat, full English translation, and transliteration for print or offline study.
+                      Get the complete, verified color-coded Tajweed PDF edition for Para {activeModalPara.paraNumber} ({activeModalPara.englishTransliteration}) featuring all {activeModalPara.totalVerses} Ayat, full English translation, and transliteration for print or offline study.
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                      <button
-                        onClick={() => handleDownloadPdf(activeModalPara)}
+                      <a
+                        href={activeModalPara.pdfUrl}
+                        download={`TrueWayQuran-Juz-${String(activeModalPara.paraNumber).padStart(2, '0')}-Tajweed-English.pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-5 py-2.5 rounded-xl bg-[#6E1373] hover:bg-[#561F79] text-white font-black text-xs transition flex items-center gap-2 shadow-md cursor-pointer"
                       >
                         <Download className="w-4 h-4" />
                         <span>Download Full Para {activeModalPara.paraNumber} PDF</span>
-                      </button>
-                      <button
-                        onClick={() => handleOpenPdfWindow(activeModalPara)}
+                      </a>
+                      <a
+                        href={activeModalPara.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
                       >
                         <ExternalLink className="w-4 h-4" />
                         <span>Open in Browser Window</span>
-                      </button>
+                      </a>
                     </div>
                   </div>
 
                 </div>
-              )}
-
-              {/* MODE 2: HIGH-DEFINITION 15-LINE COLOR PDF VIEWER */}
-              {modalViewMode === 'pdf' && (
-                <div className="w-full h-full flex flex-col">
-                  {/* PDF Notice & Direct Action Toolbar */}
-                  <div className="p-3 bg-amber-50 border-b border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-amber-900 shrink-0">
-                    <div className="flex items-center gap-2">
-                      <Info className="w-4 h-4 text-amber-700 shrink-0" />
-                      <span>
-                        Viewing high-definition 15-line Color Coded Tajweed PDF for <strong>Para {activeModalPara.paraNumber} ({activeModalPara.englishTransliteration})</strong>.
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleOpenPdfWindow(activeModalPara)}
-                        className="px-3 py-1 bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold rounded-lg transition flex items-center gap-1 cursor-pointer"
-                      >
-                        <Maximize2 className="w-3 h-3" />
-                        <span>Full Window</span>
-                      </button>
-                      <button
-                        onClick={() => handleDownloadPdf(activeModalPara)}
-                        className="px-3 py-1 bg-[#6E1373] hover:bg-[#561F79] text-white font-bold rounded-lg transition flex items-center gap-1 cursor-pointer"
-                      >
-                        <Download className="w-3 h-3" />
-                        <span>Save File</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Embedded PDF Viewer Object with iframe and direct fallbacks */}
-                  <div className="flex-1 w-full bg-slate-900 relative min-h-[500px]">
-                    <object
-                      data={activeModalPara.proxyPdfUrl}
-                      type="application/pdf"
-                      className="w-full h-full min-h-[600px] border-0"
-                    >
-                      {/* Fallback iframe */}
-                      <iframe
-                        src={activeModalPara.proxyPdfUrl}
-                        title={`Color Coded Tajweed Para ${activeModalPara.paraNumber}`}
-                        className="w-full h-full min-h-[600px] border-0"
-                        allow="fullscreen"
-                      >
-                        {/* Final fallback when browser blocks inline document viewing */}
-                        <div className="p-8 text-center text-white space-y-4">
-                          <FileText className="w-12 h-12 text-amber-400 mx-auto" />
-                          <h4 className="text-lg font-bold">PDF Ready to View</h4>
-                          <p className="text-sm text-slate-300 max-w-md mx-auto">
-                            Your browser environment prefers opening PDFs in an external window or downloading directly.
-                          </p>
-                          <div className="flex justify-center gap-3">
-                            <button
-                              onClick={() => handleOpenPdfWindow(activeModalPara)}
-                              className="px-4 py-2 bg-amber-400 text-slate-950 font-black rounded-xl"
-                            >
-                              Open in New Tab
-                            </button>
-                            <button
-                              onClick={() => handleDownloadPdf(activeModalPara)}
-                              className="px-4 py-2 bg-[#6E1373] text-white font-black rounded-xl"
-                            >
-                              Download PDF
-                            </button>
-                          </div>
-                        </div>
-                      </iframe>
-                    </object>
-                  </div>
-                </div>
-              )}
 
             </div>
 
@@ -934,7 +829,7 @@ export const ColorCodedTajweedSection: React.FC<ColorCodedTajweedSectionProps> =
               </div>
 
               <div className="flex items-center gap-3 font-semibold text-slate-600">
-                <span className="text-[#6E1373] font-bold">15-Line Tajweed Edition</span>
+                <span className="text-[#6E1373] font-bold">Color-Coded Tajweed Edition</span>
                 <span>·</span>
                 <a
                   href={activeModalPara.pdfUrl}

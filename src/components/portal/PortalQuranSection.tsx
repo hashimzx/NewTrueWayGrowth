@@ -7,24 +7,19 @@ import {
   RotateCcw, 
   Bookmark, 
   BookmarkCheck, 
-  Volume2, 
   Eye, 
   EyeOff, 
   Sparkles, 
   Info, 
   CheckCircle2, 
   Layers, 
-  ArrowRight, 
   ArrowLeft, 
   ChevronLeft, 
   ChevronRight, 
-  Mic, 
-  Award, 
   Compass,
-  FileText,
-  Download
+  FileText
 } from 'lucide-react';
-import { ALL_114_SURAHS, SurahSummary } from '../../data/allSurahsMeta';
+import { ALL_114_SURAHS } from '../../data/allSurahsMeta';
 import { loadFullSurah, FullSurahData } from '../../utils/quranFullLoader';
 import { POPULAR_RECITERS, QuranReciter, QuranAyah } from '../../data/quranData';
 import { SURAH_HISTORICAL_BACKGROUNDS, getAyahInsight } from '../../utils/quranTafseerData';
@@ -35,7 +30,6 @@ import {
   updateLastReadingPosition,
   getStudentLearningProfile
 } from '../../utils/studentLearningStorage';
-import { AyahRecitationStudio } from './AyahRecitationStudio';
 import { ColorCodedTajweedSection } from './ColorCodedTajweedSection';
 import { parseTajweedTokens, TAJWEED_COLOR_RULES } from '../../data/tajweedMushafData';
 
@@ -87,11 +81,6 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
   const [showTranslation, setShowTranslation] = useState<boolean>(true);
   const [memorizationMode, setMemorizationMode] = useState<boolean>(false);
   const [hiddenAyahIndexes, setHiddenAyahIndexes] = useState<Set<number>>(new Set());
-  const [showBackgroundInfo, setShowBackgroundInfo] = useState<boolean>(false);
-
-  // Voice Studio
-  const [activeStudioAyahIndex, setActiveStudioAyahIndex] = useState<number>(0);
-  const [showStudio, setShowStudio] = useState<boolean>(true);
 
   // Open a specific Surah on the dedicated Reader page (Next Page)
   const handleOpenSurahReader = (surahNum: number) => {
@@ -118,7 +107,6 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
     let isMounted = true;
     setLoading(true);
     stopAudio();
-    setActiveStudioAyahIndex(0);
 
     loadFullSurah(selectedSurahNumber).then(data => {
       if (isMounted) {
@@ -267,9 +255,9 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
       <div className="space-y-6 animate-fadeIn">
         
         {/* Navigation & Direct Surah Switcher Top Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-purple-100 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-purple-100 shadow-xs flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 overflow-hidden">
           
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
             {/* Back to Surahs Directory Button */}
             <button
               onClick={() => {
@@ -306,12 +294,16 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
           </div>
 
           {/* Option to select which Surah to read directly on this page */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-purple-50/70 p-2 rounded-2xl border border-purple-100">
-            <label className="text-xs font-black text-[#6E1373] flex items-center gap-1 shrink-0 px-1">
-              <Compass className="w-3.5 h-3.5" />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-purple-50/70 p-2.5 rounded-2xl border border-purple-100 min-w-0 w-full xl:w-[390px] xl:shrink-0 max-w-full overflow-hidden">
+            <label
+              htmlFor="portal-surah-reader-select"
+              className="text-xs font-black text-[#6E1373] flex items-center gap-1 shrink-0 px-1"
+            >
+              <Compass className="w-3.5 h-3.5 shrink-0" />
               <span>Select Surah to Read:</span>
             </label>
             <select
+              id="portal-surah-reader-select"
               value={selectedSurahNumber}
               onChange={(e) => {
                 const num = Number(e.target.value);
@@ -319,7 +311,7 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
                 setVersePage(1);
                 window.scrollTo({ top: 120, behavior: 'smooth' });
               }}
-              className="px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E1373] shadow-xs cursor-pointer"
+              className="w-full min-w-0 max-w-full flex-1 px-3 py-1.5 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E1373] shadow-xs cursor-pointer truncate"
             >
               {ALL_114_SURAHS.map((s) => (
                 <option key={s.number} value={s.number}>
@@ -472,16 +464,6 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
                     <EyeOff className="w-3.5 h-3.5 text-amber-700" />
                     <span>Hifz Mode</span>
                   </button>
-
-                  <button
-                    onClick={() => setShowStudio(!showStudio)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center gap-1 ${
-                      showStudio ? 'bg-[#6E1373] text-white border-[#6E1373]' : 'bg-slate-50 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    <Mic className="w-3.5 h-3.5" />
-                    <span>Voice Test Studio</span>
-                  </button>
                 </div>
               </div>
 
@@ -592,57 +574,6 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
               </div>
             </div>
 
-            {/* Recitation Testing & Voice Recording Studio for this Surah */}
-            {showStudio && (
-              <div className="bg-white rounded-3xl border border-purple-100 p-5 sm:p-6 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                  <div>
-                    <h4 className="font-black text-slate-900 text-base flex items-center gap-2">
-                      <Mic className="w-4 h-4 text-[#6E1373]" />
-                      <span>Interactive Recitation Voice & Speaking Studio (75% to Pass)</span>
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      Listen to Sheikh recitation, record your voice, and test speech accuracy.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <label className="text-xs font-bold text-slate-600">Select Ayah:</label>
-                    <select
-                      value={activeStudioAyahIndex}
-                      onChange={(e) => setActiveStudioAyahIndex(Number(e.target.value))}
-                      className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6E1373]"
-                    >
-                      {currentSurahData.ayahs.map((ay, idx) => (
-                        <option key={ay.numberInSurah} value={idx}>
-                          Ayah {ay.numberInSurah}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {currentSurahData.ayahs[activeStudioAyahIndex] && (
-                  <AyahRecitationStudio
-                    surahNumber={currentSurahData.number}
-                    surahName={currentSurahData.englishName}
-                    totalVerses={currentSurahData.ayahsCount}
-                    currentAyah={currentSurahData.ayahs[activeStudioAyahIndex]}
-                    reciter={selectedReciter}
-                    onSelectAyah={(num) => {
-                      const idx = currentSurahData.ayahs.findIndex(a => a.numberInSurah === num);
-                      if (idx !== -1) setActiveStudioAyahIndex(idx);
-                    }}
-                    onRecitationPassed={(_num, _score) => {
-                      if (activeStudioAyahIndex + 1 < currentSurahData.ayahs.length) {
-                        setActiveStudioAyahIndex(prev => prev + 1);
-                      }
-                    }}
-                  />
-                )}
-              </div>
-            )}
-
             {/* Bismillah Header (Except Surah At-Tawbah #9) */}
             {currentSurahData.number !== 9 && currentSurahData.number !== 1 && (
               <div className="bg-white rounded-2xl border border-purple-100 p-4 text-center shadow-2xs">
@@ -707,19 +638,6 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
                         >
                           {isPlayingThis ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                           <span>{isPlayingThis ? 'Pause' : 'Recite'}</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveStudioAyahIndex(globalAyahIndex);
-                            setShowStudio(true);
-                            window.scrollTo({ top: 380, behavior: 'smooth' });
-                          }}
-                          className="px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200 text-[#6E1373] text-xs font-bold transition cursor-pointer flex items-center gap-1"
-                          title="Record your voice & test speaking accuracy (75% to pass)"
-                        >
-                          <Mic className="w-3.5 h-3.5 text-[#C72F8A]" />
-                          <span className="hidden sm:inline">Voice & Test</span>
                         </button>
 
                         <button
@@ -973,7 +891,7 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
               Holy Quran & English Translation
             </h2>
             <p className="text-xs sm:text-sm text-purple-100 max-w-2xl">
-              Select any of the 114 Surahs below to open the dedicated reader page with 10–15 Ayat per page, voice assessment, word-by-word meaning, and audio recitations.
+              Select any of the 114 Surahs below to open the dedicated reader page with 10–15 Ayat per page, word-by-word meaning, Tafsir explanations, and audio recitations.
             </p>
           </div>
 
@@ -1045,16 +963,20 @@ export const PortalQuranSection: React.FC<PortalQuranSectionProps> = ({
         </div>
 
         {/* Direct Jump to Surah Bar */}
-        <div className="p-3.5 bg-purple-50/80 border border-purple-200 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <label className="text-xs font-black text-[#6E1373] flex items-center gap-1.5 shrink-0">
-              <Compass className="w-4 h-4 text-[#851C82]" />
+        <div className="p-3.5 bg-purple-50/80 border border-purple-200 rounded-2xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 flex-1">
+            <label
+              htmlFor="portal-surah-directory-jump"
+              className="text-xs font-black text-[#6E1373] flex items-center gap-1.5 shrink-0"
+            >
+              <Compass className="w-4 h-4 text-[#851C82] shrink-0" />
               <span>Direct Jump to Surah:</span>
             </label>
             <select
+              id="portal-surah-directory-jump"
               value={selectedSurahNumber}
               onChange={(e) => handleOpenSurahReader(Number(e.target.value))}
-              className="px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E1373] shadow-xs cursor-pointer"
+              className="w-full min-w-0 max-w-full sm:max-w-md px-3 py-2 bg-white border border-purple-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6E1373] shadow-xs cursor-pointer truncate"
             >
               {ALL_114_SURAHS.map((s) => (
                 <option key={s.number} value={s.number}>

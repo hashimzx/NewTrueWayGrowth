@@ -45,7 +45,7 @@ export const ALL_ISLAMIC_TASKS_POOL: Omit<IslamicTask, 'completed'>[] = [
   },
   {
     id: 'task-qaida',
-    title: 'Practice 15 minutes of Madani Qaida with AI Voice Assessment',
+    title: 'Practice 15 minutes of Madani Qaida Tajweed recitation',
     arabic: 'تَجْوِيدُ الْقَاعِدَةِ',
     category: 'qaida',
     rewardNote: 'Mastering pronunciation opens the door to fluent and beautiful Tarteel.'
